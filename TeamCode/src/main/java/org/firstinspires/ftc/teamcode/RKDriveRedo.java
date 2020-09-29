@@ -37,38 +37,29 @@ public class RKDriveRedo extends LinearOpMode {
         while (opModeIsActive()) {
 
 
-            motorFrontRight.setPower(right);
-            motorBackRight.setPower(right);
-            motorFrontLeft.setPower(left);
-            motorBackLeft.setPower(left);
 
 
-            if (gamepad1.left_stick_y > 0.2 || gamepad1.left_stick_y < -0.2){
-                while (gamepad1.left_stick_y > 0.2 || gamepad1.left_stick_y < -0.2) {
-                    left = left - gamepad1.left_stick_y;
-                    right = right - gamepad1.left_stick_y;
-                }} else{
-                left = 0;
-                right = 0;
-            }
+            double s = gamepad1.left_stick_y;
+            double t = gamepad1.right_stick_x;
 
-            if (gamepad1.right_stick_x > 0.2){
-                while (gamepad1.right_stick_x > 0.2) {
-                    right = right + gamepad1.left_stick_y;
-                    left = left - gamepad1.left_stick_y;
-                }} else{
-                left = 0;
-                right = 0;
-            }
 
-            if (gamepad1.right_stick_x < -0.2) {
-                while (gamepad1.right_stick_x < -0.2) {
-                    right = right + gamepad1.left_stick_y;
-                    left = left - gamepad1.left_stick_y;
-                } } else {
-                left = 0;
-                right = 0;
-            }
+            /*
+            double lp = s+t;
+            double rp = -s+t;
+            double max = Math.max(lp, rp)*s;
+            motorFrontLeft.setPower(lp);
+            motorBackLeft.setPower(lp);
+            motorFrontRight.setPower(rp);
+            motorFrontRight.setPower(rp);
+*/
+
+            motorFrontRight.setPower((-gamepad1.left_stick_y/2)-(gamepad1.right_stick_x/2));
+            motorBackRight.setPower((-gamepad1.left_stick_y/2)-(gamepad1.right_stick_x/2));
+            motorFrontLeft.setPower((-gamepad1.left_stick_y/2)+(gamepad1.right_stick_x/2));
+            motorBackLeft.setPower((-gamepad1.left_stick_y/2)+(gamepad1.right_stick_x/2));
+
+
+
 
             if (gamepad1.left_stick_x > 0.2){
                 while (gamepad1.left_stick_x > 0.2) {
