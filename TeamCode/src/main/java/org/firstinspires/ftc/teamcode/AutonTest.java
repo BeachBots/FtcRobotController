@@ -170,8 +170,7 @@ public class AutonTest extends LinearOpMode
     public void runOpMode() throws InterruptedException
     {
 
-        initVuforia();
-        initTfod();
+
 
         if (tfod != null) {
             tfod.activate();
