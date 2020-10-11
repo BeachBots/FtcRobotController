@@ -18,6 +18,44 @@ public class RKDriveRedo extends LinearOpMode {
     private Servo flick;
     private Servo stopper;
 
+    public void shoot(double power, int distance){
+
+        motorFrontRight.setMode(DcMotor.RunMode.RESET_ENCODERS);
+        motorFrontLeft.setMode(DcMotor.RunMode.RESET_ENCODERS);
+        motorBackRight.setMode(DcMotor.RunMode.RESET_ENCODERS);
+        motorBackLeft.setMode(DcMotor.RunMode.RESET_ENCODERS);
+
+        motorFrontRight.setTargetPosition(distance);
+        motorFrontLeft.setTargetPosition(distance);
+        motorBackRight.setTargetPosition(distance);
+        motorBackLeft.setTargetPosition(distance);
+
+        motorFrontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motorFrontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motorBackRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motorBackLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        motorFrontRight.setPower(power);
+        motorFrontLeft.setPower(power);
+        motorBackRight.setPower(power);
+        motorBackLeft.setPower(power);
+
+        while (motorFrontRight.isBusy() && motorFrontLeft.isBusy() && motorBackRight.isBusy() && motorBackLeft.isBusy()){
+
+        }
+
+        motorFrontRight.setPower(0);
+        motorFrontLeft.setPower(0);
+        motorBackRight.setPower(0);
+        motorBackLeft.setPower(0);
+
+        motorFrontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorFrontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorBackRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorBackLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+    }
+
     @Override
     public void runOpMode() throws InterruptedException {
         motorFrontRight = hardwareMap.dcMotor.get("motorFrontRight");
@@ -37,22 +75,19 @@ public class RKDriveRedo extends LinearOpMode {
         motorBackRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorBackLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        double left = 0;
-        double right = 0;
+
+
 
         flick.setPosition(0.0);
         stopper.setPosition(0.0);
-
         waitForStart();
         waitForStart();
 
         while (opModeIsActive()) {
 
+            shoot1.setPower(0.3);
+            shoot2.setPower(0.3);
 
-
-
-            double s = gamepad1.left_stick_y;
-            double t = gamepad1.right_stick_x;
 
 
 
@@ -64,10 +99,10 @@ public class RKDriveRedo extends LinearOpMode {
 
             if (gamepad1.a){
                 shoot1.setPower(1);
-                shoot2.setPower(1);
+                shoot2.setPower(-1);
                 sleep(500);
-                stopper.setPosition(0.5);
-                sleep(100);
+                //stopper.setPosition(0.5);
+                //sleep(100);
                 flick.setPosition(0.5);
                 flick.setPosition(0.0);
                 sleep(500);
@@ -77,9 +112,9 @@ public class RKDriveRedo extends LinearOpMode {
                 flick.setPosition(0.5);
                 flick.setPosition(0.0);
                 sleep(500);
-                stopper.setPosition(0.0);
+                //stopper.setPosition(0.0);
                 shoot1.setPower(0.3);
-                shoot2.setPower(0.3);
+                shoot2.setPower(-0.3);
             }
 
 
