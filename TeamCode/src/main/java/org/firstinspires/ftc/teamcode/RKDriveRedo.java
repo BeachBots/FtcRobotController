@@ -53,14 +53,16 @@ public class RKDriveRedo extends LinearOpMode {
             motorFrontRight.setPower(rp);
 */
 
-            motorFrontRight.setPower((-gamepad1.left_stick_y/2)-(gamepad1.right_stick_x/2));
-            motorBackRight.setPower((-gamepad1.left_stick_y/2)-(gamepad1.right_stick_x/2));
-            motorFrontLeft.setPower((-gamepad1.left_stick_y/2)+(gamepad1.right_stick_x/2));
-            motorBackLeft.setPower((-gamepad1.left_stick_y/2)+(gamepad1.right_stick_x/2));
+
+            motorFrontRight.setPower(-gamepad1.left_stick_y/2 + gamepad1.right_stick_x/2 - gamepad1.left_stick_x/2);
+            motorBackRight.setPower(-gamepad1.left_stick_y/2 + gamepad1.right_stick_x/2 + gamepad1.left_stick_x/2);
+            motorFrontLeft.setPower(-gamepad1.left_stick_y/2 - gamepad1.right_stick_x/2 + gamepad1.left_stick_x/2);
+            motorBackLeft.setPower(-gamepad1.left_stick_y/2 - gamepad1.right_stick_x/2 - gamepad1.left_stick_x/2);
 
 
 
 
+  /*-
             if (gamepad1.left_stick_x > 0.2){
                 while (gamepad1.left_stick_x > 0.2) {
                     motorFrontRight.setPower(-gamepad1.left_stick_x/2);
@@ -85,6 +87,8 @@ public class RKDriveRedo extends LinearOpMode {
                 motorFrontLeft.setPower(0);
                 motorBackLeft.setPower(0);
             }
+
+   */
 
         }
         idle();
