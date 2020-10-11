@@ -105,6 +105,45 @@ public class AutonTest extends LinearOpMode
 
     }
 
+    public void strafe(double power, int distance){
+
+        motorFrontRight.setMode(DcMotor.RunMode.RESET_ENCODERS);
+        motorFrontLeft.setMode(DcMotor.RunMode.RESET_ENCODERS);
+        motorBackRight.setMode(DcMotor.RunMode.RESET_ENCODERS);
+        motorBackLeft.setMode(DcMotor.RunMode.RESET_ENCODERS);
+
+        motorFrontRight.setTargetPosition(distance);
+        motorFrontLeft.setTargetPosition(-distance);
+        motorBackRight.setTargetPosition(-distance);
+        motorBackLeft.setTargetPosition(distance);
+
+        motorFrontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motorFrontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motorBackRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motorBackLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        motorFrontRight.setPower(power);
+        motorFrontLeft.setPower(power);
+        motorBackRight.setPower(power);
+        motorBackLeft.setPower(power);
+
+        while (motorFrontRight.isBusy() && motorFrontLeft.isBusy() && motorBackRight.isBusy() && motorBackLeft.isBusy()){
+
+        }
+
+        motorFrontRight.setPower(0);
+        motorFrontLeft.setPower(0);
+        motorBackRight.setPower(0);
+        motorBackLeft.setPower(0);
+
+        motorFrontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorFrontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorBackRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorBackLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+    }
+
+
 
 
     @Override
@@ -131,11 +170,68 @@ public class AutonTest extends LinearOpMode
 
         imu.initialize(parameters);
 
-        driveForwardDistance(0.5, 2000);
-        sleep(500);
-        turn(0.5, 90);
-        sleep(500);
-        turn(0.5, -90);
+        //detect using camera
+
+//half the distance from the wall to the rings
+        driveForwardDistance(0.5, 100);
+        sleep(100);
+
+//strafe left to line up with power shot
+        strafe(0.5, 100);
+        sleep(100);
+
+//Move to the launch line to shoot
+        driveForwardDistance(0.5,100);
+        sleep(100);
+
+//splits off here depending on abc
+
+//strafe to the right to line up with wobble goal zones
+        strafe(-0.5, 100);
+        sleep(100);
+
+//go forward
+        driveForwardDistance(0.5,100);
+        sleep(100);
+
+//put down wobble goal
+
+//drive backwards to get other wobble goal
+        driveForwardDistance(-0.5, 100);
+        sleep(100);
+
+//strafe left to pick up other wobble goal
+        strafe(0.5, 100);
+        sleep(100);
+
+//drive backwards a little to get other wobble goal
+        driveForwardDistance(-0.5, 100);
+        sleep(100);
+
+//strafe right a little to pick up other wobble goal
+        strafe(-0.5, 100);
+        sleep(100);
+
+//pick up wobble goal
+
+//strafe right to line up with zone
+        strafe(-0.5, 100);
+        sleep(100);
+
+//go forward and drop off the wobble goal
+        driveForwardDistance(0.5, 100);
+        sleep(100);
+
+//go backwards over the line
+        driveForwardDistance(-0.5, 100);
+        sleep(100);
+
+//strafe left to line up with rings
+        strafe(0.5, 100);
+        sleep(100);
+
+//spin 180
+        turn(0.5, 180);
 
 
 
