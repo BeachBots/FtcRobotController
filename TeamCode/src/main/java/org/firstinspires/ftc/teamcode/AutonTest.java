@@ -26,8 +26,15 @@ import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 
 
 @Autonomous(name = "AutonTest")
-public class AutonTest extends LinearOpMode
-{
+public class AutonTest extends LinearOpMode {
+    private DcMotor motorFrontRight;
+    private DcMotor motorFrontLeft;
+    private DcMotor motorBackRight;
+    private DcMotor motorBackLeft;
+    private BNO055IMU imu;
+    Orientation lastAngles = new Orientation();
+    double globalAngle, power = .30, correction;
+
     private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
     private static final String LABEL_FIRST_ELEMENT = "Quad";
     private static final String LABEL_SECOND_ELEMENT = "Single";
@@ -37,18 +44,11 @@ public class AutonTest extends LinearOpMode
 
 
     private VuforiaLocalizer vuforia;
-
     private TFObjectDetector tfod;
 
-    private DcMotor motorFrontRight;
-    private DcMotor motorFrontLeft;
-    private DcMotor motorBackRight;
-    private DcMotor motorBackLeft;
-    private BNO055IMU imu;
-    Orientation lastAngles = new Orientation();
-    double globalAngle, power = .30, correction;
 
-    public void driveForwardDistance(double power, int distance){
+    //Function that takes power and distance and goes forward that distance
+    public void driveForwardDistance(double power, int distance) {
 
         motorFrontRight.setMode(DcMotor.RunMode.RESET_ENCODERS);
         motorFrontLeft.setMode(DcMotor.RunMode.RESET_ENCODERS);
@@ -70,7 +70,7 @@ public class AutonTest extends LinearOpMode
         motorBackRight.setPower(power);
         motorBackLeft.setPower(power);
 
-        while (motorFrontRight.isBusy() && motorFrontLeft.isBusy() && motorBackRight.isBusy() && motorBackLeft.isBusy()){
+        while (motorFrontRight.isBusy() && motorFrontLeft.isBusy() && motorBackRight.isBusy() && motorBackLeft.isBusy()) {
 
         }
 
@@ -85,7 +85,9 @@ public class AutonTest extends LinearOpMode
         motorBackLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
     }
-    public void turn(double power, double angle){
+
+    //fuction that turns
+    public void turn(double power, double angle) {
 
 
         motorFrontRight.setMode(DcMotor.RunMode.RESET_ENCODERS);
@@ -94,10 +96,10 @@ public class AutonTest extends LinearOpMode
         motorBackLeft.setMode(DcMotor.RunMode.RESET_ENCODERS);
 
 
-        motorFrontRight.setTargetPosition((int)((((3600/360) * angle))));
-        motorBackRight.setTargetPosition((int)((((3600/360) * angle))));
-        motorFrontLeft.setTargetPosition((int)((-((3600/360) * angle))));
-        motorBackLeft.setTargetPosition((int)((-((3600/360) * angle))));
+        motorFrontRight.setTargetPosition((int) ((((3600 / 360) * angle))));
+        motorBackRight.setTargetPosition((int) ((((3600 / 360) * angle))));
+        motorFrontLeft.setTargetPosition((int) ((-((3600 / 360) * angle))));
+        motorBackLeft.setTargetPosition((int) ((-((3600 / 360) * angle))));
 
         motorFrontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motorFrontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -109,7 +111,7 @@ public class AutonTest extends LinearOpMode
         motorBackRight.setPower(power);
         motorBackLeft.setPower(power);
 
-        while (motorFrontRight.isBusy() && motorFrontLeft.isBusy() && motorBackRight.isBusy() && motorBackLeft.isBusy()){
+        while (motorFrontRight.isBusy() && motorFrontLeft.isBusy() && motorBackRight.isBusy() && motorBackLeft.isBusy()) {
 
         }
 
@@ -125,7 +127,8 @@ public class AutonTest extends LinearOpMode
 
     }
 
-    public void strafe(double power, int distance){
+
+    public void strafe(double power, int distance) {
 
         motorFrontRight.setMode(DcMotor.RunMode.RESET_ENCODERS);
         motorFrontLeft.setMode(DcMotor.RunMode.RESET_ENCODERS);
@@ -147,7 +150,7 @@ public class AutonTest extends LinearOpMode
         motorBackRight.setPower(power);
         motorBackLeft.setPower(power);
 
-        while (motorFrontRight.isBusy() && motorFrontLeft.isBusy() && motorBackRight.isBusy() && motorBackLeft.isBusy()){
+        while (motorFrontRight.isBusy() && motorFrontLeft.isBusy() && motorBackRight.isBusy() && motorBackLeft.isBusy()) {
 
         }
 
@@ -164,19 +167,42 @@ public class AutonTest extends LinearOpMode
     }
 
 
-
-
     @Override
-    public void runOpMode() throws InterruptedException
-    {
+    public void runOpMode() throws InterruptedException {
 
-
+        initVuforia();
+        initTfod();
 
         if (tfod != null) {
             tfod.activate();
 
-            tfod.setZoom(2.5, 1.78);
+
+            tfod.setZoom(3.5, 1.78);
         }
+
+        motorFrontRight = hardwareMap.dcMotor.get("motorFrontRight");
+        motorFrontLeft = hardwareMap.dcMotor.get("motorFrontLeft");
+        motorBackRight = hardwareMap.dcMotor.get("motorBackRight");
+        motorBackLeft = hardwareMap.dcMotor.get("motorBackLeft");
+
+        motorBackLeft.setDirection(DcMotor.Direction.REVERSE);
+        motorFrontLeft.setDirection(DcMotor.Direction.REVERSE);
+
+        int rings = 0;
+
+
+        waitForStart();
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+
+        parameters.mode = BNO055IMU.SensorMode.IMU;
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.loggingEnabled = false;
+
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+
+        imu.initialize(parameters);
+        //detect using camera
 
         if (opModeIsActive()) {
             while (opModeIsActive()) {
@@ -194,6 +220,13 @@ public class AutonTest extends LinearOpMode
                                     recognition.getLeft(), recognition.getTop());
                             telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
                                     recognition.getRight(), recognition.getBottom());
+                            if (recognition.getLabel().equals(null)) {
+                                rings = 0;
+                            } else if (recognition.getLabel().equals("Quad")) {
+                                rings = 1;
+                            } else if (recognition.getLabel().equals("Single")) {
+                                rings = 4;
+                            }
                         }
                         telemetry.update();
                     }
@@ -201,99 +234,97 @@ public class AutonTest extends LinearOpMode
             }
         }
 
-        motorFrontRight = hardwareMap.dcMotor.get("motorFrontRight");
-        motorFrontLeft = hardwareMap.dcMotor.get("motorFrontLeft");
-        motorBackRight = hardwareMap.dcMotor.get("motorBackRight");
-        motorBackLeft = hardwareMap.dcMotor.get("motorBackLeft");
+        if (tfod != null) {
+            tfod.shutdown();
 
-        motorBackLeft.setDirection(DcMotor.Direction.REVERSE);
-        motorFrontLeft.setDirection(DcMotor.Direction.REVERSE);
+            private void initVuforia () {
 
+                VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
-        waitForStart();
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+                parameters.vuforiaLicenseKey = VUFORIA_KEY;
+                parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam");
 
-        parameters.mode = BNO055IMU.SensorMode.IMU;
-        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.loggingEnabled = false;
+                //  Instantiate the Vuforia engine
+                vuforia = ClassFactory.getInstance().createVuforia(parameters);
 
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
+                // Loading trackables is not necessary for the TensorFlow Object Detection engine.
+            }
 
-        imu.initialize(parameters);
+            private void initTfod(){
+                int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+                        "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+                TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+                tfodParameters.minResultConfidence = 0.8f;
+                tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+                tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
 
-        //detect using camera
-
-//half the distance from the wall to the rings
-        driveForwardDistance(0.5, 100);
-        sleep(100);
-
-//strafe left to line up with power shot
-        strafe(0.5, 100);
-        sleep(100);
-
-//Move to the launch line to shoot
-        driveForwardDistance(0.5,100);
-        sleep(100);
-
-//splits off here depending on abc
-
-//strafe to the right to line up with wobble goal zones
-        strafe(-0.5, 100);
-        sleep(100);
-
-//go forward
-        driveForwardDistance(0.5,100);
-        sleep(100);
-
-//put down wobble goal
-
-//drive backwards to get other wobble goal
-        driveForwardDistance(-0.5, 100);
-        sleep(100);
-
-//strafe left to pick up other wobble goal
-        strafe(0.5, 100);
-        sleep(100);
-
-//drive backwards a little to get other wobble goal
-        driveForwardDistance(-0.5, 100);
-        sleep(100);
-
-//strafe right a little to pick up other wobble goal
-        strafe(-0.5, 100);
-        sleep(100);
-
-//pick up wobble goal
-
-//strafe right to line up with zone
-        strafe(-0.5, 100);
-        sleep(100);
-
-//go forward and drop off the wobble goal
-        driveForwardDistance(0.5, 100);
-        sleep(100);
-
-//go backwards over the line
-        driveForwardDistance(-0.5, 100);
-        sleep(100);
-
-//strafe left to line up with rings
-        strafe(0.5, 100);
-        sleep(100);
-
-//spin 180
-        turn(0.5, 180);
+            }
 
 
+            //half the distance from the wall to the rings
+            driveForwardDistance(0.5, 100);
+            sleep(100);
+
+            //strafe left to line up with power shot
+            strafe(0.5, 100);
+            sleep(100);
+
+            //Move to the launch line to shoot
+            driveForwardDistance(0.5, 100);
+            sleep(100);
+
+            //splits off here depending on abc
+
+            //strafe to the right to line up with wobble goal zones
+            strafe(-0.5, 100);
+            sleep(100);
+
+            //go forward
+            driveForwardDistance(0.5, 100);
+            sleep(100);
+
+            //put down wobble goal
+
+            //drive backwards to get other wobble goal
+            driveForwardDistance(-0.5, 100);
+            sleep(100);
+
+            //strafe left to pick up other wobble goal
+            strafe(0.5, 100);
+            sleep(100);
+
+            //drive backwards a little to get other wobble goal
+            driveForwardDistance(-0.5, 100);
+            sleep(100);
+
+            //strafe right a little to pick up other wobble goal
+            strafe(-0.5, 100);
+            sleep(100);
+
+            //pick up wobble goal
+
+            //strafe right to line up with zone
+            strafe(-0.5, 100);
+            sleep(100);
+
+            //go forward and drop off the wobble goal
+            driveForwardDistance(0.5, 100);
+            sleep(100);
+
+            //go backwards over the line
+            driveForwardDistance(-0.5, 100);
+            sleep(100);
+
+            //strafe left to line up with rings
+            strafe(0.5, 100);
+            sleep(100);
+
+            //spin 180
+            turn(0.5, 180);
 
 
-
-
+        }
 
 
     }
-
-
-
 }
