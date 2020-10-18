@@ -31,7 +31,7 @@ public class AutonTest extends LinearOpMode {
     private DcMotor motorFrontLeft;
     private DcMotor motorBackRight;
     private DcMotor motorBackLeft;
-    private BNO055IMU imu;
+    //private BNO055IMU imu;
     Orientation lastAngles = new Orientation();
     double globalAngle, power = .30, correction;
 
@@ -55,10 +55,14 @@ public class AutonTest extends LinearOpMode {
         motorBackRight.setMode(DcMotor.RunMode.RESET_ENCODERS);
         motorBackLeft.setMode(DcMotor.RunMode.RESET_ENCODERS);
 
-        motorFrontRight.setTargetPosition(distance);
-        motorFrontLeft.setTargetPosition(distance);
-        motorBackRight.setTargetPosition(distance);
-        motorBackLeft.setTargetPosition(distance);
+        long ticks1 = Math.round(distance*1.7);
+        int ticks2 = (int)ticks1;
+
+
+        motorFrontRight.setTargetPosition(ticks2);
+        motorFrontLeft.setTargetPosition(ticks2);
+        motorBackRight.setTargetPosition(ticks2);
+        motorBackLeft.setTargetPosition(ticks2);
 
         motorFrontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motorFrontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -135,10 +139,13 @@ public class AutonTest extends LinearOpMode {
         motorBackRight.setMode(DcMotor.RunMode.RESET_ENCODERS);
         motorBackLeft.setMode(DcMotor.RunMode.RESET_ENCODERS);
 
-        motorFrontRight.setTargetPosition(distance);
-        motorFrontLeft.setTargetPosition(-distance);
-        motorBackRight.setTargetPosition(-distance);
-        motorBackLeft.setTargetPosition(distance);
+        long ticks1 = Math.round(distance*1.7);
+        int ticks2 = (int)ticks1;
+
+        motorFrontRight.setTargetPosition(ticks2);
+        motorFrontLeft.setTargetPosition(-ticks2);
+        motorBackRight.setTargetPosition(-ticks2);
+        motorBackLeft.setTargetPosition(ticks2);
 
         motorFrontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motorFrontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -166,7 +173,7 @@ public class AutonTest extends LinearOpMode {
 
     }
 
-
+    boolean isRunning = true;
     @Override
     public void runOpMode() throws InterruptedException {
 
@@ -177,7 +184,7 @@ public class AutonTest extends LinearOpMode {
             tfod.activate();
 
 
-            tfod.setZoom(3.5, 1.78);
+            tfod.setZoom(1.5, 1.78);
         }
 
         motorFrontRight = hardwareMap.dcMotor.get("motorFrontRight");
@@ -192,6 +199,7 @@ public class AutonTest extends LinearOpMode {
 
 
         waitForStart();
+        /*
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
 
         parameters.mode = BNO055IMU.SensorMode.IMU;
@@ -202,41 +210,75 @@ public class AutonTest extends LinearOpMode {
         imu = hardwareMap.get(BNO055IMU.class, "imu");
 
         imu.initialize(parameters);
-        //detect using camera
+        */
 
-        if (opModeIsActive()) {
-            while (opModeIsActive()) {
-                if (tfod != null) {
-                    // getUpdatedRecognitions() will return null if no new information is available since
-                    // the last time that call was made.
-                    List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-                    if (updatedRecognitions != null) {
-                        telemetry.addData("# Object Detected", updatedRecognitions.size());
-                        // step through the list of recognitions and display boundary info.
-                        int i = 0;
-                        for (Recognition recognition : updatedRecognitions) {
-                            telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
-                            telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
-                                    recognition.getLeft(), recognition.getTop());
-                            telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
-                                    recognition.getRight(), recognition.getBottom());
-                            if (recognition.getLabel().equals(null)) {
-                                rings = 0;
-                            } else if (recognition.getLabel().equals("Quad")) {
-                                rings = 1;
-                            } else if (recognition.getLabel().equals("Single")) {
-                                rings = 4;
+        //detect using camera
+        boolean ison = true;
+
+
+            if (opModeIsActive()) {
+                while (opModeIsActive()) {
+                    while (isRunning == true) {
+                    if (tfod != null) {
+                        // getUpdatedRecognitions() will return null if no new information is available since
+                        // the last time that call was made.
+                        List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+                        if (updatedRecognitions != null) {
+                            telemetry.addData("# Object Detected", updatedRecognitions.size());
+                            // step through the list of recognitions and display boundary info.
+                            int i = 0;
+                            for (Recognition recognition : updatedRecognitions) {
+                                telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
+                                telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+                                        recognition.getLeft(), recognition.getTop());
+                                telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+                                        recognition.getRight(), recognition.getBottom());
+                                if (recognition.getLabel().equals(null)) {
+                                    rings = 0;
+                                    isRunning = false;
+                                } else if (recognition.getLabel().equals(LABEL_SECOND_ELEMENT)) {
+                                    rings = 1;
+                                    isRunning = false;
+                                } else if (recognition.getLabel().equals(LABEL_FIRST_ELEMENT)) {
+                                    rings = 4;
+                                    isRunning = false;
+                                }
                             }
+                            telemetry.addData("rings = ", rings);
+                            telemetry.update();
                         }
-                        telemetry.update();
                     }
                 }
-            }
+
+                    if (rings == 0){
+                        driveForwardDistance(1, 50);
+
+                    } else if (rings == 1){
+                        strafe(1,50);
+
+                    } else if (rings == 4){
+                        strafe(1,-50);
+
+                    }
+
+
+
+
+
+
+
+                }
         }
+
+
+
 
 
         if (tfod != null) {
             tfod.shutdown();
+        }
+
+        /*
             //half the distance from the wall to the rings
             driveForwardDistance(0.5, 100);
             sleep(100);
@@ -297,7 +339,21 @@ public class AutonTest extends LinearOpMode {
 
             //spin 180
             turn(0.5, 180);
+            */
+
+        driveForwardDistance(0.5, 100);
+
+        if (rings == 0){
+            driveForwardDistance(1, 50);
+
+        } else if (rings == 1){
+            strafe(1,50);
+
+        } else if (rings == 4){
+            strafe(1,-50);
+
         }
+
     }
 
             private void initVuforia() {
