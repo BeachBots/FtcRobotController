@@ -234,33 +234,9 @@ public class AutonTest extends LinearOpMode {
             }
         }
 
+
         if (tfod != null) {
             tfod.shutdown();
-
-            private void initVuforia () {
-
-                VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-
-                parameters.vuforiaLicenseKey = VUFORIA_KEY;
-                parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam");
-
-                //  Instantiate the Vuforia engine
-                vuforia = ClassFactory.getInstance().createVuforia(parameters);
-
-                // Loading trackables is not necessary for the TensorFlow Object Detection engine.
-            }
-
-            private void initTfod(){
-                int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
-                        "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-                TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-                tfodParameters.minResultConfidence = 0.8f;
-                tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-                tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
-
-            }
-
-
             //half the distance from the wall to the rings
             driveForwardDistance(0.5, 100);
             sleep(100);
@@ -321,10 +297,40 @@ public class AutonTest extends LinearOpMode {
 
             //spin 180
             turn(0.5, 180);
-
-
         }
-
-
     }
+
+            private void initVuforia() {
+
+                VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+
+                parameters.vuforiaLicenseKey = VUFORIA_KEY;
+                parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam");
+
+                //  Instantiate the Vuforia engine
+                vuforia = ClassFactory.getInstance().createVuforia(parameters);
+
+                // Loading trackables is not necessary for the TensorFlow Object Detection engine.
+            }
+
+            private void initTfod(){
+                int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+                        "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+                TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+                tfodParameters.minResultConfidence = 0.8f;
+                tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+                tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
+
+            }
+
+
+
+
+
+
+
+
+
+
+
 }
