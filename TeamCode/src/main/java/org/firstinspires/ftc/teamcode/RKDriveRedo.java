@@ -88,10 +88,18 @@ public class RKDriveRedo extends LinearOpMode {
             motorBackRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             motorBackLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-            motorFrontRight.setPower(-gamepad1.left_stick_y/2 + gamepad1.right_stick_x/2 - gamepad1.left_stick_x/2);
-            motorBackRight.setPower(-gamepad1.left_stick_y/2 + gamepad1.right_stick_x/2 + gamepad1.left_stick_x/2);
-            motorFrontLeft.setPower(-gamepad1.left_stick_y/2 - gamepad1.right_stick_x/2 + gamepad1.left_stick_x/2);
-            motorBackLeft.setPower(gamepad1.left_stick_y/2 - gamepad1.right_stick_x/2 - gamepad1.left_stick_x/2);
+
+            float deadZone = (float) 0.2;
+            gamepad1.setJoystickDeadzone(deadZone);
+
+
+                motorFrontRight.setPower((gamepad1.left_stick_y * 0.8) - (gamepad1.right_stick_x * 0.8) + (gamepad1.left_stick_x * 0.8));
+                motorBackRight.setPower((gamepad1.left_stick_y * 0.8) - (gamepad1.right_stick_x * 0.8) - (gamepad1.left_stick_x * 0.8));
+                motorFrontLeft.setPower((gamepad1.left_stick_y * 0.8) + (gamepad1.right_stick_x * 0.8) - (gamepad1.left_stick_x * 0.8));
+                motorBackLeft.setPower((gamepad1.left_stick_y * 0.8) + (gamepad1.right_stick_x * 0.8) + (gamepad1.left_stick_x * 0.8));
+
+
+
 
 
 

@@ -55,14 +55,14 @@ public class AutonTest extends LinearOpMode {
         motorBackRight.setMode(DcMotor.RunMode.RESET_ENCODERS);
         motorBackLeft.setMode(DcMotor.RunMode.RESET_ENCODERS);
 
-        long ticks1 = Math.round(distance*1.7);
+        long ticks1 = Math.round(distance/0.0229);
         int ticks2 = (int)ticks1;
 
 
-        motorFrontRight.setTargetPosition(ticks2);
-        motorFrontLeft.setTargetPosition(ticks2);
-        motorBackRight.setTargetPosition(ticks2);
-        motorBackLeft.setTargetPosition(ticks2);
+        motorFrontRight.setTargetPosition(-ticks2);
+        motorFrontLeft.setTargetPosition(-ticks2);
+        motorBackRight.setTargetPosition(-ticks2);
+        motorBackLeft.setTargetPosition(-ticks2);
 
         motorFrontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motorFrontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -139,13 +139,13 @@ public class AutonTest extends LinearOpMode {
         motorBackRight.setMode(DcMotor.RunMode.RESET_ENCODERS);
         motorBackLeft.setMode(DcMotor.RunMode.RESET_ENCODERS);
 
-        long ticks1 = Math.round(distance*1.7);
+        long ticks1 = Math.round(distance/0.0229);
         int ticks2 = (int)ticks1;
 
-        motorFrontRight.setTargetPosition(ticks2);
-        motorFrontLeft.setTargetPosition(-ticks2);
-        motorBackRight.setTargetPosition(-ticks2);
-        motorBackLeft.setTargetPosition(ticks2);
+        motorFrontRight.setTargetPosition(-ticks2);
+        motorFrontLeft.setTargetPosition(ticks2);
+        motorBackRight.setTargetPosition(ticks2);
+        motorBackLeft.setTargetPosition(-ticks2);
 
         motorFrontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motorFrontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -170,6 +170,47 @@ public class AutonTest extends LinearOpMode {
         motorFrontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorBackRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorBackLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+    }
+
+    //set starting position
+    double currentX = 34;
+    double currentY = 0;
+
+
+    public void xfGoTo(double x, double y){
+        if (x > currentX || x < currentX){
+            long changeX1 = Math.round(x - currentX);
+            int changeX2 = (int)changeX1;
+            strafe(0.5, changeX2);
+        }
+        if (y > currentY || y < currentY){
+            long changeY1 = Math.round(y - currentY);
+            int changeY2 = (int)changeY1;
+            driveForwardDistance(0.5, changeY2);
+        }
+
+        currentX = x;
+        currentY = y;
+
+    }
+
+    public void yfGoTo(double x, double y){
+
+        if (y > currentY || y < currentY){
+            long changeY1 = Math.round(y - currentY);
+            int changeY2 = (int)changeY1;
+            driveForwardDistance(0.5, changeY2);
+        }
+
+        if (x > currentX || x < currentX){
+            long changeX1 = Math.round(x - currentX);
+            int changeX2 = (int)changeX1;
+            strafe(0.5, changeX2);
+        }
+
+        currentX = x;
+        currentY = y;
 
     }
 
@@ -250,23 +291,18 @@ public class AutonTest extends LinearOpMode {
                     }
                 }
 
-                    if (rings == 0){
-                        driveForwardDistance(1, 50);
-
-                    } else if (rings == 1){
-                        strafe(1,50);
-
-                    } else if (rings == 4){
-                        strafe(1,-50);
-
+                    if (tfod != null) {
+                        tfod.shutdown();
                     }
 
+                    xfGoTo(52, 50);
+                    sleep(200);
+                    xfGoTo(44.5, 50);
+                    sleep(200);
+                    xfGoTo(37, 50);
+                    sleep(200);
 
-
-
-
-
-
+                    stop();
                 }
         }
 
@@ -274,85 +310,10 @@ public class AutonTest extends LinearOpMode {
 
 
 
-        if (tfod != null) {
-            tfod.shutdown();
-        }
 
-        /*
-            //half the distance from the wall to the rings
-            driveForwardDistance(0.5, 100);
-            sleep(100);
 
-            //strafe left to line up with power shot
-            strafe(0.5, 100);
-            sleep(100);
 
-            //Move to the launch line to shoot
-            driveForwardDistance(0.5, 100);
-            sleep(100);
 
-            //splits off here depending on abc
-
-            //strafe to the right to line up with wobble goal zones
-            strafe(-0.5, 100);
-            sleep(100);
-
-            //go forward
-            driveForwardDistance(0.5, 100);
-            sleep(100);
-
-            //put down wobble goal
-
-            //drive backwards to get other wobble goal
-            driveForwardDistance(-0.5, 100);
-            sleep(100);
-
-            //strafe left to pick up other wobble goal
-            strafe(0.5, 100);
-            sleep(100);
-
-            //drive backwards a little to get other wobble goal
-            driveForwardDistance(-0.5, 100);
-            sleep(100);
-
-            //strafe right a little to pick up other wobble goal
-            strafe(-0.5, 100);
-            sleep(100);
-
-            //pick up wobble goal
-
-            //strafe right to line up with zone
-            strafe(-0.5, 100);
-            sleep(100);
-
-            //go forward and drop off the wobble goal
-            driveForwardDistance(0.5, 100);
-            sleep(100);
-
-            //go backwards over the line
-            driveForwardDistance(-0.5, 100);
-            sleep(100);
-
-            //strafe left to line up with rings
-            strafe(0.5, 100);
-            sleep(100);
-
-            //spin 180
-            turn(0.5, 180);
-            */
-
-        driveForwardDistance(0.5, 100);
-
-        if (rings == 0){
-            driveForwardDistance(1, 50);
-
-        } else if (rings == 1){
-            strafe(1,50);
-
-        } else if (rings == 4){
-            strafe(1,-50);
-
-        }
 
     }
 

@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-@TeleOp(name = "ShootPowerTest")
+@TeleOp(name = "TeleOPgood")
 public class ShootPowerTest extends LinearOpMode {
 
     private DcMotor shoot1;
@@ -15,6 +15,10 @@ public class ShootPowerTest extends LinearOpMode {
     private Servo flick;
     private Servo stopper;
     private DcMotor intake;
+    private DcMotor motorFrontRight;
+    private DcMotor motorFrontLeft;
+    private DcMotor motorBackRight;
+    private DcMotor motorBackLeft;
 
 
 
@@ -26,6 +30,20 @@ public class ShootPowerTest extends LinearOpMode {
         intake = hardwareMap.dcMotor.get("intake");
         flick = hardwareMap.servo.get("flick");
         stopper = hardwareMap.servo.get("stopper");
+
+        motorFrontRight = hardwareMap.dcMotor.get("motorFrontRight");
+        motorFrontLeft = hardwareMap.dcMotor.get("motorFrontLeft");
+        motorBackRight = hardwareMap.dcMotor.get("motorBackRight");
+        motorBackLeft = hardwareMap.dcMotor.get("motorBackLeft");
+
+
+        motorBackLeft.setDirection(DcMotor.Direction.REVERSE);
+        motorFrontLeft.setDirection(DcMotor.Direction.REVERSE);
+
+        motorFrontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorFrontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorBackRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorBackLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // motorBackLeft.setDirection(DcMotor.Direction.REVERSE);
         //motorFrontLeft.setDirection(DcMotor.Direction.REVERSE);
@@ -44,39 +62,54 @@ public class ShootPowerTest extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            boolean shootOn = false;
 
-            if (gamepad1.a && shootOn == false){
+            float deadZone = (float) 0.2;
+            gamepad1.setJoystickDeadzone(deadZone);
+
+                motorFrontRight.setPower(gamepad1.left_stick_y * 0.8 - gamepad1.right_stick_x * 0.8 + gamepad1.left_stick_x * 0.8);
+                motorBackRight.setPower(gamepad1.left_stick_y * 0.8 - gamepad1.right_stick_x * 0.8 - gamepad1.left_stick_x * 0.8);
+                motorFrontLeft.setPower(gamepad1.left_stick_y * 0.8 + gamepad1.right_stick_x * 0.8 - gamepad1.left_stick_x * 0.8);
+                motorBackLeft.setPower(gamepad1.left_stick_y * 0.8 + gamepad1.right_stick_x * 0.8 + gamepad1.left_stick_x * 0.8);
+
+
+
+
+
+
+            if (gamepad1.a){
+
                 shoot1.setPower(-power);
                 shoot2.setPower(-power);
-                shootOn = true;
-            } else if (gamepad1.a && shootOn == true){
+            }
+            if (gamepad1.b){
+
                 shoot1.setPower(0);
                 shoot2.setPower(0);
-                shootOn = false;
             }
 
 
-            boolean intaking = false;
 
-            if (gamepad1.b && intaking == false){
+
+            if (gamepad1.right_bumper){
                 intake.setPower(1);
-                intaking = true;
-            } else if (gamepad1.b && intaking == true){
+            }
+            if (gamepad1.left_bumper){
                 intake.setPower((0));
-                intaking = false;
             }
 
-
+/*
             boolean output = false;
 
-            if (gamepad1.b && output == false){
-                intake.setPower(-1);
+            if (gamepad1.x && output == false){
                 output = true;
+
+                intake.setPower(-0.5);
+                sleep(100);
             } else if (gamepad1.b && output == true){
-                intake.setPower((0));
                 output = false;
-            }
+                intake.setPower((0));
+                sleep(100);
+            }*/
 
 
 
