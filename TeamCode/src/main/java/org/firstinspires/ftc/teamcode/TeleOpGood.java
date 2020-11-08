@@ -7,8 +7,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-@TeleOp(name = "TeleOPgood")
-public class ShootPowerTest extends LinearOpMode {
+@TeleOp(name = "TeleOP")
+public class TeleOpGood extends LinearOpMode {
 
     private DcMotor shoot1;
     private DcMotor shoot2;
@@ -63,13 +63,13 @@ public class ShootPowerTest extends LinearOpMode {
         while (opModeIsActive()) {
 
 
-            float deadZone = (float) 0.5;
+            float deadZone = (float) 0.9;
             gamepad1.setJoystickDeadzone(deadZone);
 
-                motorFrontRight.setPower(gamepad1.left_stick_y * 0.8 - gamepad1.right_stick_x * 0.8 + gamepad1.left_stick_x * 0.8);
-                motorBackRight.setPower(gamepad1.left_stick_y * 0.8 - gamepad1.right_stick_x * 0.8 - gamepad1.left_stick_x * 0.8);
-                motorFrontLeft.setPower(gamepad1.left_stick_y * 0.8 + gamepad1.right_stick_x * 0.8 - gamepad1.left_stick_x * 0.8);
-                motorBackLeft.setPower(gamepad1.left_stick_y * 0.8 + gamepad1.right_stick_x * 0.8 + gamepad1.left_stick_x * 0.8);
+            motorFrontRight.setPower(gamepad1.left_stick_y * 0.8 - gamepad1.right_stick_x * 0.8 + gamepad1.left_stick_x * 0.8);
+            motorBackRight.setPower(gamepad1.left_stick_y * 0.8 - gamepad1.right_stick_x * 0.8 - gamepad1.left_stick_x * 0.8);
+            motorFrontLeft.setPower(gamepad1.left_stick_y * 0.8 + gamepad1.right_stick_x * 0.8 - gamepad1.left_stick_x * 0.8);
+            motorBackLeft.setPower(gamepad1.left_stick_y * 0.8 + gamepad1.right_stick_x * 0.8 + gamepad1.left_stick_x * 0.8);
 
 
 

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.os.SystemClock;
+
 import  com.qualcomm.hardware.bosch.BNO055IMU;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -8,6 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -31,7 +34,12 @@ public class AutonTest extends LinearOpMode {
     private DcMotor motorFrontLeft;
     private DcMotor motorBackRight;
     private DcMotor motorBackLeft;
-    //private BNO055IMU imu;
+    private DcMotor shoot1;
+    private DcMotor shoot2;
+    private Servo flick;
+    private Servo stopper;
+    private DcMotor intake;
+    private BNO055IMU imu;
     Orientation lastAngles = new Orientation();
     double globalAngle, power = .30, correction;
 
@@ -55,14 +63,12 @@ public class AutonTest extends LinearOpMode {
         motorBackRight.setMode(DcMotor.RunMode.RESET_ENCODERS);
         motorBackLeft.setMode(DcMotor.RunMode.RESET_ENCODERS);
 
-        long ticks1 = Math.round(distance/0.0229);
-        int ticks2 = (int)ticks1;
 
 
-        motorFrontRight.setTargetPosition(-ticks2);
-        motorFrontLeft.setTargetPosition(-ticks2);
-        motorBackRight.setTargetPosition(-ticks2);
-        motorBackLeft.setTargetPosition(-ticks2);
+        motorFrontRight.setTargetPosition(-distance);
+        motorFrontLeft.setTargetPosition(-distance);
+        motorBackRight.setTargetPosition(-distance);
+        motorBackLeft.setTargetPosition(-distance);
 
         motorFrontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motorFrontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -75,6 +81,58 @@ public class AutonTest extends LinearOpMode {
         motorBackLeft.setPower(power);
 
         while (motorFrontRight.isBusy() && motorFrontLeft.isBusy() && motorBackRight.isBusy() && motorBackLeft.isBusy()) {
+
+        }
+
+        motorFrontRight.setPower(0);
+        motorFrontLeft.setPower(0);
+        motorBackRight.setPower(0);
+        motorBackLeft.setPower(0);
+
+        motorFrontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorFrontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorBackRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorBackLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+    }
+
+    long prevTime = 0;
+    long currentTime = 0;
+    double motorCurrent = 0;
+    double motorPrev = 0;
+
+    public double getVelocity(){
+        long changeTime = currentTime - prevTime;
+        double changeMotor = motorCurrent - motorPrev;
+        double velocity = changeMotor/changeTime;
+        return velocity;
+    }
+
+    public void turn(double power, double angle){
+
+
+        motorFrontRight.setMode(DcMotor.RunMode.RESET_ENCODERS);
+        motorFrontLeft.setMode(DcMotor.RunMode.RESET_ENCODERS);
+        motorBackRight.setMode(DcMotor.RunMode.RESET_ENCODERS);
+        motorBackLeft.setMode(DcMotor.RunMode.RESET_ENCODERS);
+
+
+        motorFrontRight.setTargetPosition((int)((((3596/360) * angle))));
+        motorBackRight.setTargetPosition((int)((((3596/360) * angle))));
+        motorFrontLeft.setTargetPosition((int)((-((3596/360) * angle))));
+        motorBackLeft.setTargetPosition((int)((-((3596/360) * angle))));
+
+        motorFrontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motorFrontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motorBackRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motorBackLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        motorFrontRight.setPower(power);
+        motorFrontLeft.setPower(power);
+        motorBackRight.setPower(power);
+        motorBackLeft.setPower(power);
+
+        while (motorFrontRight.isBusy() && motorFrontLeft.isBusy() && motorBackRight.isBusy() && motorBackLeft.isBusy()){
 
         }
 
@@ -91,7 +149,39 @@ public class AutonTest extends LinearOpMode {
     }
 
     //fuction that turns
-    public void turn(double power, double angle) {
+    public void turnright(double power, double angle) {
+
+        Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        double Gyro = angles.firstAngle;
+
+        telemetry.addData("gyro", Gyro);
+        telemetry.update();
+        sleep(400);
+        motorFrontRight.setMode(DcMotor.RunMode.RESET_ENCODERS);
+        motorFrontLeft.setMode(DcMotor.RunMode.RESET_ENCODERS);
+        motorBackRight.setMode(DcMotor.RunMode.RESET_ENCODERS);
+        motorBackLeft.setMode(DcMotor.RunMode.RESET_ENCODERS);
+
+        while (Gyro > angle - 3 && Gyro < angle + 3){
+            Orientation angles1 = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            Gyro = angles1.firstAngle;
+
+
+
+            motorFrontRight.setPower(-power);
+            motorFrontLeft.setPower(power);
+            motorBackRight.setPower(-power);
+            motorBackLeft.setPower(power);
+        }
+
+
+
+    }
+
+    public void turnleft(double power, double angle) {
+
+        Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        double Gyro = angles.firstAngle;
 
 
         motorFrontRight.setMode(DcMotor.RunMode.RESET_ENCODERS);
@@ -99,35 +189,17 @@ public class AutonTest extends LinearOpMode {
         motorBackRight.setMode(DcMotor.RunMode.RESET_ENCODERS);
         motorBackLeft.setMode(DcMotor.RunMode.RESET_ENCODERS);
 
+        while (Gyro > angle - 3 && Gyro < angle + 3){
+            Orientation angles1 = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            Gyro = angles1.firstAngle;
 
-        motorFrontRight.setTargetPosition((int) ((((3600 / 360) * angle))));
-        motorBackRight.setTargetPosition((int) ((((3600 / 360) * angle))));
-        motorFrontLeft.setTargetPosition((int) ((-((3600 / 360) * angle))));
-        motorBackLeft.setTargetPosition((int) ((-((3600 / 360) * angle))));
-
-        motorFrontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorFrontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorBackRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorBackLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        motorFrontRight.setPower(power);
-        motorFrontLeft.setPower(power);
-        motorBackRight.setPower(power);
-        motorBackLeft.setPower(power);
-
-        while (motorFrontRight.isBusy() && motorFrontLeft.isBusy() && motorBackRight.isBusy() && motorBackLeft.isBusy()) {
-
+            motorFrontRight.setPower(power);
+            motorFrontLeft.setPower(-power);
+            motorBackRight.setPower(power);
+            motorBackLeft.setPower(-power);
         }
 
-        motorFrontRight.setPower(0);
-        motorFrontLeft.setPower(0);
-        motorBackRight.setPower(0);
-        motorBackLeft.setPower(0);
 
-        motorFrontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motorFrontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motorBackRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motorBackLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
     }
 
@@ -139,13 +211,11 @@ public class AutonTest extends LinearOpMode {
         motorBackRight.setMode(DcMotor.RunMode.RESET_ENCODERS);
         motorBackLeft.setMode(DcMotor.RunMode.RESET_ENCODERS);
 
-        long ticks1 = Math.round(distance/0.0229);
-        int ticks2 = (int)ticks1;
 
-        motorFrontRight.setTargetPosition(-ticks2);
-        motorFrontLeft.setTargetPosition(ticks2);
-        motorBackRight.setTargetPosition(ticks2);
-        motorBackLeft.setTargetPosition(-ticks2);
+        motorFrontRight.setTargetPosition(-distance);
+        motorFrontLeft.setTargetPosition(distance);
+        motorBackRight.setTargetPosition(distance);
+        motorBackLeft.setTargetPosition(-distance);
 
         motorFrontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motorFrontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -228,6 +298,11 @@ public class AutonTest extends LinearOpMode {
             tfod.setZoom(1.5, 1.78);
         }
 
+        shoot1 = hardwareMap.dcMotor.get("shoot1");
+        shoot2 = hardwareMap.dcMotor.get("shoot2");
+        intake = hardwareMap.dcMotor.get("intake");
+        flick = hardwareMap.servo.get("flick");
+        stopper = hardwareMap.servo.get("stopper");
         motorFrontRight = hardwareMap.dcMotor.get("motorFrontRight");
         motorFrontLeft = hardwareMap.dcMotor.get("motorFrontLeft");
         motorBackRight = hardwareMap.dcMotor.get("motorBackRight");
@@ -239,8 +314,8 @@ public class AutonTest extends LinearOpMode {
         int rings = 0;
 
 
-        waitForStart();
-        /*
+
+
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
 
         parameters.mode = BNO055IMU.SensorMode.IMU;
@@ -251,15 +326,14 @@ public class AutonTest extends LinearOpMode {
         imu = hardwareMap.get(BNO055IMU.class, "imu");
 
         imu.initialize(parameters);
-        */
+
 
         //detect using camera
         boolean ison = true;
 
 
-            if (opModeIsActive()) {
-                while (opModeIsActive()) {
-                    while (isRunning == true) {
+
+                    while (isStarted() == false){
                     if (tfod != null) {
                         // getUpdatedRecognitions() will return null if no new information is available since
                         // the last time that call was made.
@@ -268,43 +342,150 @@ public class AutonTest extends LinearOpMode {
                             telemetry.addData("# Object Detected", updatedRecognitions.size());
                             // step through the list of recognitions and display boundary info.
                             int i = 0;
+                            if (updatedRecognitions.size() == 0){
+                                rings = 0;
+                            }
                             for (Recognition recognition : updatedRecognitions) {
                                 telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
                                 telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
                                         recognition.getLeft(), recognition.getTop());
                                 telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
                                         recognition.getRight(), recognition.getBottom());
-                                if (recognition.getLabel().equals(null)) {
-                                    rings = 0;
-                                    isRunning = false;
-                                } else if (recognition.getLabel().equals(LABEL_SECOND_ELEMENT)) {
+
+                                if (recognition.getLabel().equals(LABEL_SECOND_ELEMENT)) {
                                     rings = 1;
                                     isRunning = false;
                                 } else if (recognition.getLabel().equals(LABEL_FIRST_ELEMENT)) {
                                     rings = 4;
                                     isRunning = false;
                                 }
+
                             }
                             telemetry.addData("rings = ", rings);
                             telemetry.update();
                         }
-                    }
-                }
+                    }}
 
-                    if (tfod != null) {
-                        tfod.shutdown();
+
+
+        waitForStart();
+
+
+
+
+                    flick.setPosition(0.5);
+                while (opModeIsActive()) {
+
+
+
+
+
+                    //shoot1.setPower(-0.68);
+                    //shoot2.setPower(-0.68);
+                    sleep(100);
+                    driveForwardDistance(0.5, 100);
+                    sleep(150);
+                    strafe(0.5, 180);
+                    sleep(100);
+                    flick .setPosition(0);
+                    sleep(100);
+                    flick.setPosition(0.5);
+                    sleep(150);
+                    strafe(0.5, 225);
+                    sleep(200);
+                    flick .setPosition(0);
+                    sleep(100);
+                    flick.setPosition(0.5);
+                    sleep(150);
+                    strafe(0.5, 225);
+                    //shoot1.setPower(-0.7);
+                    //shoot2.setPower(-0.7);
+                    sleep(200);
+                    flick .setPosition(0);
+                    sleep(100);
+                    flick.setPosition(0.5);
+                    sleep(150);
+
+                    shoot1.setPower(0);
+                    shoot2.setPower(0);
+
+                    if (rings == 0) {
+                        driveForwardDistance(0.5, 300);
+                        sleep(100);
+                        turn(0.5, -28);
+                        sleep(100);
+                        driveForwardDistance(0.5, 2300);
+                        sleep(100);
+                        turn(0.5, 28);
+                        sleep(100);
+                        strafe(0.5, 250);
+                        driveForwardDistance(0.5, -2400);
+                        sleep(100);
+                        driveForwardDistance(0.5, 2400);
+                        sleep(100);
+                        strafe(0.5, -450);
                     }
 
-                    xfGoTo(52, 50);
-                    sleep(200);
-                    xfGoTo(44.5, 50);
-                    sleep(200);
-                    xfGoTo(37, 50);
-                    sleep(200);
+                    if (rings == 1){
+                        strafe(0.5, -850);
+                        sleep(100);
+                        driveForwardDistance(0.5, 750);
+                        sleep(100);
+                        strafe(0.5, 500);
+                        turn(0.5, -6);
+                        sleep(100);
+                        driveForwardDistance(0.5, 2600);
+                        sleep(100);
+                        driveForwardDistance(0.5, -3000);
+                        sleep(250);
+                        strafe(0.5, -700);
+                        sleep(250);
+                        strafe(0.5, 700);
+                        sleep(100);
+                        driveForwardDistance(0.5, 3000);
+                        sleep(100);
+                        driveForwardDistance(0.5, -500);
+                    }
+
+                    if (rings == 4){
+                        strafe(0.5, -850);
+                        sleep(100);
+                        driveForwardDistance(0.5, 750);
+                        sleep(100);
+                        strafe(0.5, 500);
+                        turn(0.5, -6);
+                        sleep(100);
+                        driveForwardDistance(0.5, 3400);
+                        sleep(100);
+                        strafe(0.5, -900);
+                        sleep(100);
+                        strafe(0.5, 900);
+                        sleep(100);
+                        turn(0.5, -6);
+                        sleep(100);
+                        driveForwardDistance(0.5, -4000);
+                        sleep(200);
+                        strafe(0.5,-900);
+                        sleep(100);
+                        strafe(0.5, 900);
+                        sleep(100);
+                        driveForwardDistance(0.5, 3400);
+                        sleep(100);
+                        strafe(0.5, -1200);
+                        sleep(100);
+                        driveForwardDistance(0.5, -800);
+
+                    }
+
+
+
+
+
+
 
                     stop();
                 }
-        }
+
 
 
 
