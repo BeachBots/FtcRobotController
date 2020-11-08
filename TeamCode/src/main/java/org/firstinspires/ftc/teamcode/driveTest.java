@@ -7,16 +7,15 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-@TeleOp(name = "RKdrive redo")
-public class RKDriveRedo extends LinearOpMode {
+@TeleOp(name = "distance test")
+public class driveTest extends LinearOpMode {
     private DcMotor motorFrontRight;
     private DcMotor motorFrontLeft;
     private DcMotor motorBackRight;
     private DcMotor motorBackLeft;
 
 
-
-    public void shoot(double power, int distance){
+    public void driveForwardDistance(double power, int distance) {
 
         motorFrontRight.setMode(DcMotor.RunMode.RESET_ENCODERS);
         motorFrontLeft.setMode(DcMotor.RunMode.RESET_ENCODERS);
@@ -24,10 +23,11 @@ public class RKDriveRedo extends LinearOpMode {
         motorBackLeft.setMode(DcMotor.RunMode.RESET_ENCODERS);
 
 
-        motorFrontRight.setTargetPosition(distance);
-        motorFrontLeft.setTargetPosition(distance);
-        motorBackRight.setTargetPosition(distance);
-        motorBackLeft.setTargetPosition(distance);
+
+        motorFrontRight.setTargetPosition(-distance);
+        motorFrontLeft.setTargetPosition(-distance);
+        motorBackRight.setTargetPosition(-distance);
+        motorBackLeft.setTargetPosition(-distance);
 
         motorFrontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motorFrontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -39,7 +39,7 @@ public class RKDriveRedo extends LinearOpMode {
         motorBackRight.setPower(power);
         motorBackLeft.setPower(power);
 
-        while (motorFrontRight.isBusy() && motorFrontLeft.isBusy() && motorBackRight.isBusy() && motorBackLeft.isBusy()){
+        while (motorFrontRight.isBusy() && motorFrontLeft.isBusy() && motorBackRight.isBusy() && motorBackLeft.isBusy()) {
 
         }
 
@@ -78,6 +78,8 @@ public class RKDriveRedo extends LinearOpMode {
         waitForStart();
         waitForStart();
 
+        int distance = 0;
+
         while (opModeIsActive()) {
 
 
@@ -93,13 +95,66 @@ public class RKDriveRedo extends LinearOpMode {
             float deadZone = (float) 0.2;
             gamepad1.setJoystickDeadzone(deadZone);
 
+            if (gamepad1.right_bumper){
+                distance = distance + 1000;
+                telemetry.addData("Ticks = ", distance);
+                telemetry.update();
+                sleep(200);
+            }
 
-                motorFrontRight.setPower((gamepad1.left_stick_y * 0.8) - (gamepad1.right_stick_x * 0.8) + (gamepad1.left_stick_x * 0.8));
-                motorBackRight.setPower((gamepad1.left_stick_y * 0.8) - (gamepad1.right_stick_x * 0.8) - (gamepad1.left_stick_x * 0.8));
-                motorFrontLeft.setPower((gamepad1.left_stick_y * 0.8) + (gamepad1.right_stick_x * 0.8) - (gamepad1.left_stick_x * 0.8));
-                motorBackLeft.setPower((gamepad1.left_stick_y * 0.8) + (gamepad1.right_stick_x * 0.8) + (gamepad1.left_stick_x * 0.8));
+            if (gamepad1.left_bumper){
+                distance = distance - 1000;
+                telemetry.addData("Ticks = ", distance);
+                telemetry.update();
+                sleep(200);
+            }
 
 
+          if (gamepad1.a){
+              distance = distance + 100;
+              telemetry.addData("Ticks = ", distance);
+              telemetry.update();
+              sleep(200);
+          }
+
+            if (gamepad1.b){
+                distance = distance - 100;
+                telemetry.addData("Ticks = ", distance);
+                telemetry.update();
+                sleep(200);
+            }
+
+            if (gamepad1.dpad_up){
+                distance = distance + 10;
+                telemetry.addData("Ticks = ", distance);
+                telemetry.update();
+                sleep(200);
+            }
+
+            if (gamepad1.dpad_down){
+                distance = distance - 10;
+                telemetry.addData("Ticks = ", distance);
+                telemetry.update();
+                sleep(200);
+            }
+
+            if (gamepad1.dpad_right){
+                distance = distance + 1;
+                telemetry.addData("Ticks = ", distance);
+                telemetry.update();
+                sleep(200);
+            }
+
+            if (gamepad1.dpad_left){
+                distance = distance - 1;
+                telemetry.addData("Ticks = ", distance);
+                telemetry.update();
+                sleep(200);
+            }
+
+            if  (gamepad1.y){
+                driveForwardDistance(0.5, distance);
+            }
 
 
 
