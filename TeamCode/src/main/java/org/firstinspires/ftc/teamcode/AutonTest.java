@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import android.os.SystemClock;
+import android.provider.Settings;
 
 import  com.qualcomm.hardware.bosch.BNO055IMU;
 
@@ -20,6 +21,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -101,11 +103,66 @@ public class AutonTest extends LinearOpMode {
     double motorCurrent = 0;
     double motorPrev = 0;
 
+
+
+
     public double getVelocity(){
-        long changeTime = currentTime - prevTime;
-        double changeMotor = motorCurrent - motorPrev;
-        double velocity = changeMotor/changeTime;
-        return velocity;
+
+        double vel = 0;
+        for (int i = 0 ; i < 30 ; i++) {
+            motorCurrent = -shoot1.getCurrentPosition();
+            currentTime = System.currentTimeMillis();
+            long changeTime = currentTime - prevTime;
+            double changeMotor = motorCurrent - motorPrev;
+            double velocity = changeMotor / changeTime;
+            motorPrev = -shoot1.getCurrentPosition();
+            prevTime = System.currentTimeMillis();
+            vel = vel + velocity;
+        }
+        double velocity1 = vel / 30;
+        return velocity1;
+    }
+
+
+//find what velocity works for shooting
+
+
+    public void PIDwait(double targetvelocity, double power){
+        sleep(2000);
+        motorPrev = -shoot1.getCurrentPosition();
+        prevTime = System.currentTimeMillis();
+        double prevError = 0;
+        for (int i = 0 ; i < 500 ; i++) {
+            currentTime = System.currentTimeMillis();
+            double currentVelocity = getVelocity();
+            double error = targetvelocity - currentVelocity;
+            double kp = 0.1;
+            double kd = 0.1;
+            //we don't know what kp should be yet
+            double p = kp * error;
+            double d = kd * ((error - prevError) / (currentTime - prevTime));
+            shoot1.setPower(-(p+d+power));
+            shoot2.setPower(-(p+d+power));
+            power = p + d + power;
+
+            prevError = error;
+            prevTime = currentTime;
+
+
+        }
+    }
+    public void PID(double targetvelocity, double power){
+        motorPrev = -shoot1.getCurrentPosition();
+        prevTime = System.currentTimeMillis();
+        for (int i = 0 ; i < 5 ; i++) {
+            double currentVelocity = getVelocity();
+            double error = targetvelocity - currentVelocity;
+            double kp = 0.5;
+            //we don't know what kp should be yet
+            shoot1.setPower(-(kp * error + power));
+            shoot2.setPower(-(kp * error + power));
+            power = kp * error + power;
+        }
     }
 
     public void turn(double power, double angle){
@@ -380,102 +437,113 @@ public class AutonTest extends LinearOpMode {
 
 
 
-                    //shoot1.setPower(-0.68);
-                    //shoot2.setPower(-0.68);
+
+
+                    shoot1.setPower(-0.68);
+                    shoot2.setPower(-0.68);
+                    PIDwait(1.495, 0.68);
+
+
                     sleep(100);
-                    driveForwardDistance(0.5, 100);
+                    //driveForwardDistance(0.5, 150);
                     sleep(150);
-                    strafe(0.5, 180);
+                    //strafe(0.5, 230);
                     sleep(100);
-                    flick .setPosition(0);
+                    //flick .setPosition(0);
                     sleep(100);
-                    flick.setPosition(0.5);
-                    sleep(150);
-                    strafe(0.5, 225);
+                    //flick.setPosition(0.5);
+                    sleep(1000);
+                    /*
+                    PID(1.51, 0.58);
+                    //strafe(0.5, 245);
                     sleep(200);
                     flick .setPosition(0);
                     sleep(100);
                     flick.setPosition(0.5);
                     sleep(150);
-                    strafe(0.5, 225);
-                    //shoot1.setPower(-0.7);
-                    //shoot2.setPower(-0.7);
+                    PID(1.51, 0.58);
+                    //strafe(0.5, 255);
                     sleep(200);
                     flick .setPosition(0);
                     sleep(100);
                     flick.setPosition(0.5);
-                    sleep(150);
+                    sleep(1000);
+                    */
 
                     shoot1.setPower(0);
                     shoot2.setPower(0);
+                    /*
+
 
                     if (rings == 0) {
-                        driveForwardDistance(0.5, 300);
+                        driveForwardDistance(0.5, 340);
                         sleep(100);
-                        turn(0.5, -28);
+                        turn(0.5, -32);
                         sleep(100);
-                        driveForwardDistance(0.5, 2300);
+                        driveForwardDistance(0.5, 2700);
                         sleep(100);
-                        turn(0.5, 28);
+                        turn(0.5, 32);
                         sleep(100);
-                        strafe(0.5, 250);
-                        driveForwardDistance(0.5, -2400);
+                        strafe(0.5, 290);
+                        driveForwardDistance(0.5, -2800);
                         sleep(100);
-                        driveForwardDistance(0.5, 2400);
+                        driveForwardDistance(0.5, 2800);
                         sleep(100);
-                        strafe(0.5, -450);
+                        strafe(0.5, -490);
                     }
 
                     if (rings == 1){
-                        strafe(0.5, -850);
+                        strafe(0.5, -890);
                         sleep(100);
-                        driveForwardDistance(0.5, 750);
+                        driveForwardDistance(0.5, 790);
                         sleep(100);
-                        strafe(0.5, 500);
+                        strafe(0.5, 540);
                         turn(0.5, -6);
-                        sleep(100);
-                        driveForwardDistance(0.5, 2600);
-                        sleep(100);
-                        driveForwardDistance(0.5, -3000);
-                        sleep(250);
-                        strafe(0.5, -700);
-                        sleep(250);
-                        strafe(0.5, 700);
                         sleep(100);
                         driveForwardDistance(0.5, 3000);
                         sleep(100);
-                        driveForwardDistance(0.5, -500);
+                        driveForwardDistance(0.5, -3400);
+                        sleep(250);
+                        strafe(0.5, -800);
+                        sleep(250);
+                        strafe(0.5, 750);
+                        sleep(100);
+                        driveForwardDistance(0.5, 3300);
+                        sleep(100);
+                        driveForwardDistance(0.5, -700);
                     }
 
                     if (rings == 4){
-                        strafe(0.5, -850);
+                        strafe(0.5, -950);
                         sleep(100);
-                        driveForwardDistance(0.5, 750);
+                        driveForwardDistance(0.5, 850);
                         sleep(100);
-                        strafe(0.5, 500);
+                        strafe(0.5, 650);
                         turn(0.5, -6);
                         sleep(100);
-                        driveForwardDistance(0.5, 3400);
+                        driveForwardDistance(0.5, 3700);
                         sleep(100);
-                        strafe(0.5, -900);
+                        strafe(0.5, -1000);
                         sleep(100);
-                        strafe(0.5, 900);
+                        strafe(0.5, 1000);
                         sleep(100);
                         turn(0.5, -6);
                         sleep(100);
-                        driveForwardDistance(0.5, -4000);
+                        driveForwardDistance(0.5, -4300);
                         sleep(200);
-                        strafe(0.5,-900);
+                        strafe(0.5,-1000);
                         sleep(100);
-                        strafe(0.5, 900);
+                        strafe(0.5, 1000);
                         sleep(100);
-                        driveForwardDistance(0.5, 3400);
+                        driveForwardDistance(0.5, 3700);
                         sleep(100);
-                        strafe(0.5, -1200);
+                        strafe(0.5, -1700);
                         sleep(100);
-                        driveForwardDistance(0.5, -800);
+                        driveForwardDistance(0.5, -1000);
 
                     }
+                    */
+
 
 
 
