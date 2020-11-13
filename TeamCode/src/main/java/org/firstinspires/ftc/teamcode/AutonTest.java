@@ -109,7 +109,7 @@ public class AutonTest extends LinearOpMode {
     public double getVelocity(){
 
         double vel = 0;
-        for (int i = 0 ; i < 30 ; i++) {
+        for (int i = 0 ; i < 20 ; i++) {
             motorCurrent = -shoot1.getCurrentPosition();
             currentTime = System.currentTimeMillis();
             long changeTime = currentTime - prevTime;
@@ -118,8 +118,10 @@ public class AutonTest extends LinearOpMode {
             motorPrev = -shoot1.getCurrentPosition();
             prevTime = System.currentTimeMillis();
             vel = vel + velocity;
+
+            sleep(1);
         }
-        double velocity1 = vel / 30;
+        double velocity1 = vel / 20;
         return velocity1;
     }
 
@@ -127,17 +129,18 @@ public class AutonTest extends LinearOpMode {
 //find what velocity works for shooting
 
 
-    public void PIDwait(double targetvelocity, double power){
-        sleep(2000);
+    public double PIDwait(double targetvelocity, double power){
+        //sleep(1000);
         motorPrev = -shoot1.getCurrentPosition();
         prevTime = System.currentTimeMillis();
         double prevError = 0;
-        for (int i = 0 ; i < 500 ; i++) {
+        double avg = 0;
+        for (int i = 0 ; i < 7 ; i++) {
             currentTime = System.currentTimeMillis();
             double currentVelocity = getVelocity();
             double error = targetvelocity - currentVelocity;
-            double kp = 0.1;
-            double kd = 0.1;
+            double kp = 0.07;
+            double kd = 0.05;
             //we don't know what kp should be yet
             double p = kp * error;
             double d = kd * ((error - prevError) / (currentTime - prevTime));
@@ -150,19 +153,85 @@ public class AutonTest extends LinearOpMode {
 
 
         }
-    }
-    public void PID(double targetvelocity, double power){
-        motorPrev = -shoot1.getCurrentPosition();
-        prevTime = System.currentTimeMillis();
-        for (int i = 0 ; i < 5 ; i++) {
+        for (int i = 0 ; i < 12 ; i++) {
+            currentTime = System.currentTimeMillis();
             double currentVelocity = getVelocity();
             double error = targetvelocity - currentVelocity;
-            double kp = 0.5;
+            double kp = 0.07;
+            double kd = 0.05;
             //we don't know what kp should be yet
-            shoot1.setPower(-(kp * error + power));
-            shoot2.setPower(-(kp * error + power));
-            power = kp * error + power;
+            double p = kp * error;
+            double d = kd * ((error - prevError) / (currentTime - prevTime));
+            shoot1.setPower(-(p+d+power));
+            shoot2.setPower(-(p+d+power));
+            avg = avg + p+d+power;
+            power = p + d + power;
+
+            prevError = error;
+            prevTime = currentTime;
+
         }
+
+        shoot1.setPower(-(avg/12));
+        shoot1.setPower(-(avg/12));
+        telemetry.addData("power", avg/12);
+        telemetry.update();
+
+        return -(avg/12);
+    }
+    public double PID(double targetvelocity, double power){
+        motorPrev = -shoot1.getCurrentPosition();
+        prevTime = System.currentTimeMillis();
+        double prevError = 0;
+        double avg = 0;
+        for (int i = 0 ; i < 7 ; i++) {
+            currentTime = System.currentTimeMillis();
+            double currentVelocity = getVelocity();
+            double error = targetvelocity - currentVelocity;
+            double kp = 0.07;
+            double kd = 0.05;
+            //we don't know what kp should be yet
+            double p = kp * error;
+            double d = kd * ((error - prevError) / (currentTime - prevTime));
+            shoot1.setPower(-(p+d+power));
+            shoot2.setPower(-(p+d+power));
+            power = p + d + power;
+
+            prevError = error;
+            prevTime = currentTime;
+
+            telemetry.addData("power", power);
+            telemetry.addData("velocity", currentVelocity);
+            telemetry.update();
+        }
+        for (int i = 0 ; i < 8 ; i++) {
+            currentTime = System.currentTimeMillis();
+            double currentVelocity = getVelocity();
+            double error = targetvelocity - currentVelocity;
+            double kp = 0.07;
+            double kd = 0.05;
+            //we don't know what kp should be yet
+            double p = kp * error;
+            double d = kd * ((error - prevError) / (currentTime - prevTime));
+            shoot1.setPower(-(p+d+power));
+            shoot2.setPower(-(p+d+power));
+            avg = avg + p+d+power;
+            power = p + d + power;
+
+            prevError = error;
+            prevTime = currentTime;
+
+            telemetry.addData("power", power);
+            telemetry.addData("velocity", currentVelocity);
+            telemetry.update();
+        }
+
+        shoot1.setPower(-(avg/8));
+        shoot1.setPower(-(avg/8));
+        telemetry.addData("power", avg/8);
+        telemetry.update();
+
+        return -(avg/8);
     }
 
     public void turn(double power, double angle){
@@ -441,34 +510,35 @@ public class AutonTest extends LinearOpMode {
 
                     shoot1.setPower(-0.68);
                     shoot2.setPower(-0.68);
-                    PIDwait(1.495, 0.68);
+                     double pw = PIDwait(1.580, 0.68);
 
 
                     sleep(100);
-                    //driveForwardDistance(0.5, 150);
+                    driveForwardDistance(0.5, 150);
                     sleep(150);
-                    //strafe(0.5, 230);
+                    strafe(0.5, 280);
                     sleep(100);
-                    //flick .setPosition(0);
+                    flick .setPosition(0);
                     sleep(100);
-                    //flick.setPosition(0.5);
-                    sleep(1000);
-                    /*
-                    PID(1.51, 0.58);
-                    //strafe(0.5, 245);
+                    flick.setPosition(0.5);
+                    sleep(100);
+                    strafe(0.5, 250);
                     sleep(200);
+                    shoot1.setPower(pw);
+                    shoot2.setPower(pw);
                     flick .setPosition(0);
                     sleep(100);
                     flick.setPosition(0.5);
                     sleep(150);
-                    PID(1.51, 0.58);
-                    //strafe(0.5, 255);
+                    shoot1.setPower(pw - 0.0);
+                    shoot2.setPower(pw - 0.0);
+                    strafe(0.5, 250);
                     sleep(200);
                     flick .setPosition(0);
                     sleep(100);
                     flick.setPosition(0.5);
                     sleep(1000);
-                    */
+
 
                     shoot1.setPower(0);
                     shoot2.setPower(0);
