@@ -13,6 +13,10 @@ import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -109,7 +113,7 @@ public class AutonTest extends LinearOpMode {
     public double getVelocity(){
 
         double vel = 0;
-        for (int i = 0 ; i < 30 ; i++) {
+        for (int i = 0 ; i < 25 ; i++) {
             motorCurrent = -shoot1.getCurrentPosition();
             currentTime = System.currentTimeMillis();
             long changeTime = currentTime - prevTime;
@@ -118,38 +122,69 @@ public class AutonTest extends LinearOpMode {
             motorPrev = -shoot1.getCurrentPosition();
             prevTime = System.currentTimeMillis();
             vel = vel + velocity;
+            sleep(12);
         }
-        double velocity1 = vel / 30;
+        double velocity1 = vel / 25;
+
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        Telemetry dashboardTelemetry = dashboard.getTelemetry();
+
+        dashboardTelemetry.addData("velocity",velocity1);
+        dashboardTelemetry.update();
+
         return velocity1;
+
     }
 
 
 //find what velocity works for shooting
 
 
-    public void PIDwait(double targetvelocity, double power){
-        sleep(2000);
+    public double PIDwait(double targetvelocity, double power){
+        //sleep(900);
         motorPrev = -shoot1.getCurrentPosition();
         prevTime = System.currentTimeMillis();
         double prevError = 0;
-        for (int i = 0 ; i < 500 ; i++) {
+        double avg = 0;
+
+        double fin = 0;
+
+        for (int i = 0 ; i < 10 ; i++) {
             currentTime = System.currentTimeMillis();
             double currentVelocity = getVelocity();
             double error = targetvelocity - currentVelocity;
-            double kp = 0.1;
-            double kd = 0.1;
+            double kp = 0.15;
+            double kd = 0.00;
             //we don't know what kp should be yet
             double p = kp * error;
             double d = kd * ((error - prevError) / (currentTime - prevTime));
             shoot1.setPower(-(p+d+power));
             shoot2.setPower(-(p+d+power));
+
+            FtcDashboard dashboard = FtcDashboard.getInstance();
+            Telemetry dashboardTelemetry = dashboard.getTelemetry();
+
+            dashboardTelemetry.addData("power",p+d+power );
+            dashboardTelemetry.addData("p",p );
+            dashboardTelemetry.addData("d",d );
+            dashboardTelemetry.addData("velocity",currentVelocity );
+            dashboardTelemetry.update();
+
+
             power = p + d + power;
 
             prevError = error;
             prevTime = currentTime;
 
+            avg = avg + (p + d + power);
 
+            fin = p + d + power;
         }
+
+        //shoot1.setPower(-(avg/10));
+        //shoot2.setPower(-(avg/10));
+
+        return fin;
     }
     public void PID(double targetvelocity, double power){
         motorPrev = -shoot1.getCurrentPosition();
@@ -439,39 +474,54 @@ public class AutonTest extends LinearOpMode {
 
 
 
-            shoot1.setPower(-0.68);
-            shoot2.setPower(-0.68);
-            PIDwait(1.495, 0.68);
+
+            shoot1.setPower(-0.58);
+            shoot2.setPower(-0.58);
+            sleep(100);
+            driveForwardDistance(0.5, 0);
+            sleep(200);
+            //strafe(0.5, 260);
+            sleep(400);
+            double pw = PIDwait(1.510, 0.58);
+            telemetry.addData("power", pw);
+            telemetry.update();
 
 
+
             sleep(100);
-            //driveForwardDistance(0.5, 150);
-            sleep(150);
-            //strafe(0.5, 230);
+            flick .setPosition(0);
             sleep(100);
-            //flick .setPosition(0);
+            flick.setPosition(0.5);
             sleep(100);
-            //flick.setPosition(0.5);
-            sleep(100);
-                    /*
-                    PID(1.51, 0.58);
-                    //strafe(0.5, 245);
+
+            shoot1.setPower(-pw - 0.01);
+            shoot2.setPower(-pw - 0.01);
+
+            sleep(1000);
+
+                  //strafe(0.5, 245);
                     sleep(200);
                     flick .setPosition(0);
                     sleep(100);
                     flick.setPosition(0.5);
+
+            sleep(1000);
+
+            shoot1.setPower(-pw - 0.01);
+            shoot2.setPower(-pw - 0.01);
                     sleep(150);
-                    PID(1.51, 0.58);
-                    //strafe(0.5, 255);
+                   // strafe(0.5, 255);
                     sleep(200);
                     flick .setPosition(0);
                     sleep(100);
                     flick.setPosition(0.5);
                     sleep(1000);
-                    */
+
 
             shoot1.setPower(0);
             shoot2.setPower(0);
+
+
                     /*
                     if (rings == 0) {
                         driveForwardDistance(0.5, 340);

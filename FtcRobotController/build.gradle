@@ -24,6 +24,13 @@ android {
 repositories {
     maven { url = "https://dl.bintray.com/first-tech-challenge/ftcsdk/" }
 
+
+    allprojects {
+        repositories {
+            jcenter()
+        }
+    }
+
     flatDir {
         dirs '../libs'
     }
