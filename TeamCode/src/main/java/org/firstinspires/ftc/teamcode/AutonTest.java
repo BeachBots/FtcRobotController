@@ -109,7 +109,7 @@ public class AutonTest extends LinearOpMode {
     public double getVelocity(){
 
         double vel = 0;
-        for (int i = 0 ; i < 20 ; i++) {
+        for (int i = 0 ; i < 30 ; i++) {
             motorCurrent = -shoot1.getCurrentPosition();
             currentTime = System.currentTimeMillis();
             long changeTime = currentTime - prevTime;
@@ -118,10 +118,8 @@ public class AutonTest extends LinearOpMode {
             motorPrev = -shoot1.getCurrentPosition();
             prevTime = System.currentTimeMillis();
             vel = vel + velocity;
-
-            sleep(1);
         }
-        double velocity1 = vel / 20;
+        double velocity1 = vel / 30;
         return velocity1;
     }
 
@@ -129,18 +127,17 @@ public class AutonTest extends LinearOpMode {
 //find what velocity works for shooting
 
 
-    public double PIDwait(double targetvelocity, double power){
-        //sleep(1000);
+    public void PIDwait(double targetvelocity, double power){
+        sleep(2000);
         motorPrev = -shoot1.getCurrentPosition();
         prevTime = System.currentTimeMillis();
         double prevError = 0;
-        double avg = 0;
-        for (int i = 0 ; i < 7 ; i++) {
+        for (int i = 0 ; i < 500 ; i++) {
             currentTime = System.currentTimeMillis();
             double currentVelocity = getVelocity();
             double error = targetvelocity - currentVelocity;
-            double kp = 0.07;
-            double kd = 0.05;
+            double kp = 0.1;
+            double kd = 0.1;
             //we don't know what kp should be yet
             double p = kp * error;
             double d = kd * ((error - prevError) / (currentTime - prevTime));
@@ -153,85 +150,19 @@ public class AutonTest extends LinearOpMode {
 
 
         }
-        for (int i = 0 ; i < 12 ; i++) {
-            currentTime = System.currentTimeMillis();
-            double currentVelocity = getVelocity();
-            double error = targetvelocity - currentVelocity;
-            double kp = 0.07;
-            double kd = 0.05;
-            //we don't know what kp should be yet
-            double p = kp * error;
-            double d = kd * ((error - prevError) / (currentTime - prevTime));
-            shoot1.setPower(-(p+d+power));
-            shoot2.setPower(-(p+d+power));
-            avg = avg + p+d+power;
-            power = p + d + power;
-
-            prevError = error;
-            prevTime = currentTime;
-
-        }
-
-        shoot1.setPower(-(avg/12));
-        shoot1.setPower(-(avg/12));
-        telemetry.addData("power", avg/12);
-        telemetry.update();
-
-        return -(avg/12);
     }
-    public double PID(double targetvelocity, double power){
+    public void PID(double targetvelocity, double power){
         motorPrev = -shoot1.getCurrentPosition();
         prevTime = System.currentTimeMillis();
-        double prevError = 0;
-        double avg = 0;
-        for (int i = 0 ; i < 7 ; i++) {
-            currentTime = System.currentTimeMillis();
+        for (int i = 0 ; i < 5 ; i++) {
             double currentVelocity = getVelocity();
             double error = targetvelocity - currentVelocity;
-            double kp = 0.07;
-            double kd = 0.05;
+            double kp = 0.5;
             //we don't know what kp should be yet
-            double p = kp * error;
-            double d = kd * ((error - prevError) / (currentTime - prevTime));
-            shoot1.setPower(-(p+d+power));
-            shoot2.setPower(-(p+d+power));
-            power = p + d + power;
-
-            prevError = error;
-            prevTime = currentTime;
-
-            telemetry.addData("power", power);
-            telemetry.addData("velocity", currentVelocity);
-            telemetry.update();
+            shoot1.setPower(-(kp * error + power));
+            shoot2.setPower(-(kp * error + power));
+            power = kp * error + power;
         }
-        for (int i = 0 ; i < 8 ; i++) {
-            currentTime = System.currentTimeMillis();
-            double currentVelocity = getVelocity();
-            double error = targetvelocity - currentVelocity;
-            double kp = 0.07;
-            double kd = 0.05;
-            //we don't know what kp should be yet
-            double p = kp * error;
-            double d = kd * ((error - prevError) / (currentTime - prevTime));
-            shoot1.setPower(-(p+d+power));
-            shoot2.setPower(-(p+d+power));
-            avg = avg + p+d+power;
-            power = p + d + power;
-
-            prevError = error;
-            prevTime = currentTime;
-
-            telemetry.addData("power", power);
-            telemetry.addData("velocity", currentVelocity);
-            telemetry.update();
-        }
-
-        shoot1.setPower(-(avg/8));
-        shoot1.setPower(-(avg/8));
-        telemetry.addData("power", avg/8);
-        telemetry.update();
-
-        return -(avg/8);
     }
 
     public void turn(double power, double angle){
@@ -459,38 +390,38 @@ public class AutonTest extends LinearOpMode {
 
 
 
-                    while (isStarted() == false){
-                    if (tfod != null) {
-                        // getUpdatedRecognitions() will return null if no new information is available since
-                        // the last time that call was made.
-                        List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-                        if (updatedRecognitions != null) {
-                            telemetry.addData("# Object Detected", updatedRecognitions.size());
-                            // step through the list of recognitions and display boundary info.
-                            int i = 0;
-                            if (updatedRecognitions.size() == 0){
-                                rings = 0;
-                            }
-                            for (Recognition recognition : updatedRecognitions) {
-                                telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
-                                telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
-                                        recognition.getLeft(), recognition.getTop());
-                                telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
-                                        recognition.getRight(), recognition.getBottom());
+        while (isStarted() == false){
+            if (tfod != null) {
+                // getUpdatedRecognitions() will return null if no new information is available since
+                // the last time that call was made.
+                List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+                if (updatedRecognitions != null) {
+                    telemetry.addData("# Object Detected", updatedRecognitions.size());
+                    // step through the list of recognitions and display boundary info.
+                    int i = 0;
+                    if (updatedRecognitions.size() == 0){
+                        rings = 0;
+                    }
+                    for (Recognition recognition : updatedRecognitions) {
+                        telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
+                        telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+                                recognition.getLeft(), recognition.getTop());
+                        telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+                                recognition.getRight(), recognition.getBottom());
 
-                                if (recognition.getLabel().equals(LABEL_SECOND_ELEMENT)) {
-                                    rings = 1;
-                                    isRunning = false;
-                                } else if (recognition.getLabel().equals(LABEL_FIRST_ELEMENT)) {
-                                    rings = 4;
-                                    isRunning = false;
-                                }
-
-                            }
-                            telemetry.addData("rings = ", rings);
-                            telemetry.update();
+                        if (recognition.getLabel().equals(LABEL_SECOND_ELEMENT)) {
+                            rings = 1;
+                            isRunning = false;
+                        } else if (recognition.getLabel().equals(LABEL_FIRST_ELEMENT)) {
+                            rings = 4;
+                            isRunning = false;
                         }
-                    }}
+
+                    }
+                    telemetry.addData("rings = ", rings);
+                    telemetry.update();
+                }
+            }}
 
 
 
@@ -499,8 +430,8 @@ public class AutonTest extends LinearOpMode {
 
 
 
-                    flick.setPosition(0.5);
-                while (opModeIsActive()) {
+        flick.setPosition(0.5);
+        while (opModeIsActive()) {
 
 
 
@@ -508,43 +439,40 @@ public class AutonTest extends LinearOpMode {
 
 
 
-                    shoot1.setPower(-0.68);
-                    shoot2.setPower(-0.68);
-                     double pw = PIDwait(1.580, 0.68);
+            shoot1.setPower(-0.68);
+            shoot2.setPower(-0.68);
+            PIDwait(1.495, 0.68);
 
 
-                    sleep(100);
-                    driveForwardDistance(0.5, 150);
-                    sleep(150);
-                    strafe(0.5, 280);
-                    sleep(100);
-                    flick .setPosition(0);
-                    sleep(100);
-                    flick.setPosition(0.5);
-                    sleep(100);
-                    strafe(0.5, 250);
+            sleep(100);
+            //driveForwardDistance(0.5, 150);
+            sleep(150);
+            //strafe(0.5, 230);
+            sleep(100);
+            //flick .setPosition(0);
+            sleep(100);
+            //flick.setPosition(0.5);
+            sleep(1000);
+                    /*
+                    PID(1.51, 0.58);
+                    //strafe(0.5, 245);
                     sleep(200);
-                    shoot1.setPower(pw);
-                    shoot2.setPower(pw);
                     flick .setPosition(0);
                     sleep(100);
                     flick.setPosition(0.5);
                     sleep(150);
-                    shoot1.setPower(pw - 0.0);
-                    shoot2.setPower(pw - 0.0);
-                    strafe(0.5, 250);
+                    PID(1.51, 0.58);
+                    //strafe(0.5, 255);
                     sleep(200);
                     flick .setPosition(0);
                     sleep(100);
                     flick.setPosition(0.5);
                     sleep(1000);
+                    */
 
-
-                    shoot1.setPower(0);
-                    shoot2.setPower(0);
+            shoot1.setPower(0);
+            shoot2.setPower(0);
                     /*
-
-
                     if (rings == 0) {
                         driveForwardDistance(0.5, 340);
                         sleep(100);
@@ -561,7 +489,6 @@ public class AutonTest extends LinearOpMode {
                         sleep(100);
                         strafe(0.5, -490);
                     }
-
                     if (rings == 1){
                         strafe(0.5, -890);
                         sleep(100);
@@ -582,7 +509,6 @@ public class AutonTest extends LinearOpMode {
                         sleep(100);
                         driveForwardDistance(0.5, -700);
                     }
-
                     if (rings == 4){
                         strafe(0.5, -950);
                         sleep(100);
@@ -610,7 +536,6 @@ public class AutonTest extends LinearOpMode {
                         strafe(0.5, -1700);
                         sleep(100);
                         driveForwardDistance(0.5, -1000);
-
                     }
                     */
 
@@ -621,8 +546,8 @@ public class AutonTest extends LinearOpMode {
 
 
 
-                    stop();
-                }
+            stop();
+        }
 
 
 
@@ -636,28 +561,28 @@ public class AutonTest extends LinearOpMode {
 
     }
 
-            private void initVuforia() {
+    private void initVuforia() {
 
-                VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
-                parameters.vuforiaLicenseKey = VUFORIA_KEY;
-                parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam");
+        parameters.vuforiaLicenseKey = VUFORIA_KEY;
+        parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam");
 
-                //  Instantiate the Vuforia engine
-                vuforia = ClassFactory.getInstance().createVuforia(parameters);
+        //  Instantiate the Vuforia engine
+        vuforia = ClassFactory.getInstance().createVuforia(parameters);
 
-                // Loading trackables is not necessary for the TensorFlow Object Detection engine.
-            }
+        // Loading trackables is not necessary for the TensorFlow Object Detection engine.
+    }
 
-            private void initTfod(){
-                int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
-                        "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-                TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-                tfodParameters.minResultConfidence = 0.8f;
-                tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-                tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
+    private void initTfod(){
+        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+        tfodParameters.minResultConfidence = 0.8f;
+        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
 
-            }
+    }
 
 
 
