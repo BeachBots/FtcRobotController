@@ -390,38 +390,38 @@ public class AutonTest extends LinearOpMode {
 
 
 
-                    while (isStarted() == false){
-                    if (tfod != null) {
-                        // getUpdatedRecognitions() will return null if no new information is available since
-                        // the last time that call was made.
-                        List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-                        if (updatedRecognitions != null) {
-                            telemetry.addData("# Object Detected", updatedRecognitions.size());
-                            // step through the list of recognitions and display boundary info.
-                            int i = 0;
-                            if (updatedRecognitions.size() == 0){
-                                rings = 0;
-                            }
-                            for (Recognition recognition : updatedRecognitions) {
-                                telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
-                                telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
-                                        recognition.getLeft(), recognition.getTop());
-                                telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
-                                        recognition.getRight(), recognition.getBottom());
+        while (isStarted() == false){
+            if (tfod != null) {
+                // getUpdatedRecognitions() will return null if no new information is available since
+                // the last time that call was made.
+                List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+                if (updatedRecognitions != null) {
+                    telemetry.addData("# Object Detected", updatedRecognitions.size());
+                    // step through the list of recognitions and display boundary info.
+                    int i = 0;
+                    if (updatedRecognitions.size() == 0){
+                        rings = 0;
+                    }
+                    for (Recognition recognition : updatedRecognitions) {
+                        telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
+                        telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+                                recognition.getLeft(), recognition.getTop());
+                        telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+                                recognition.getRight(), recognition.getBottom());
 
-                                if (recognition.getLabel().equals(LABEL_SECOND_ELEMENT)) {
-                                    rings = 1;
-                                    isRunning = false;
-                                } else if (recognition.getLabel().equals(LABEL_FIRST_ELEMENT)) {
-                                    rings = 4;
-                                    isRunning = false;
-                                }
-
-                            }
-                            telemetry.addData("rings = ", rings);
-                            telemetry.update();
+                        if (recognition.getLabel().equals(LABEL_SECOND_ELEMENT)) {
+                            rings = 1;
+                            isRunning = false;
+                        } else if (recognition.getLabel().equals(LABEL_FIRST_ELEMENT)) {
+                            rings = 4;
+                            isRunning = false;
                         }
-                    }}
+
+                    }
+                    telemetry.addData("rings = ", rings);
+                    telemetry.update();
+                }
+            }}
 
 
 
@@ -430,8 +430,8 @@ public class AutonTest extends LinearOpMode {
 
 
 
-                    flick.setPosition(0.5);
-                while (opModeIsActive()) {
+        flick.setPosition(0.5);
+        while (opModeIsActive()) {
 
 
 
@@ -439,20 +439,20 @@ public class AutonTest extends LinearOpMode {
 
 
 
-                    shoot1.setPower(-0.68);
-                    shoot2.setPower(-0.68);
-                    PIDwait(1.495, 0.68);
+            shoot1.setPower(-0.68);
+            shoot2.setPower(-0.68);
+            PIDwait(1.495, 0.68);
 
 
-                    sleep(100);
-                    //driveForwardDistance(0.5, 150);
-                    sleep(150);
-                    //strafe(0.5, 230);
-                    sleep(100);
-                    //flick .setPosition(0);
-                    sleep(100);
-                    //flick.setPosition(0.5);
-                    sleep(1000);
+            sleep(100);
+            //driveForwardDistance(0.5, 150);
+            sleep(150);
+            //strafe(0.5, 230);
+            sleep(100);
+            //flick .setPosition(0);
+            sleep(100);
+            //flick.setPosition(0.5);
+            sleep(100);
                     /*
                     PID(1.51, 0.58);
                     //strafe(0.5, 245);
@@ -470,11 +470,9 @@ public class AutonTest extends LinearOpMode {
                     sleep(1000);
                     */
 
-                    shoot1.setPower(0);
-                    shoot2.setPower(0);
+            shoot1.setPower(0);
+            shoot2.setPower(0);
                     /*
-
-
                     if (rings == 0) {
                         driveForwardDistance(0.5, 340);
                         sleep(100);
@@ -491,7 +489,6 @@ public class AutonTest extends LinearOpMode {
                         sleep(100);
                         strafe(0.5, -490);
                     }
-
                     if (rings == 1){
                         strafe(0.5, -890);
                         sleep(100);
@@ -512,7 +509,6 @@ public class AutonTest extends LinearOpMode {
                         sleep(100);
                         driveForwardDistance(0.5, -700);
                     }
-
                     if (rings == 4){
                         strafe(0.5, -950);
                         sleep(100);
@@ -540,7 +536,6 @@ public class AutonTest extends LinearOpMode {
                         strafe(0.5, -1700);
                         sleep(100);
                         driveForwardDistance(0.5, -1000);
-
                     }
                     */
 
@@ -551,8 +546,8 @@ public class AutonTest extends LinearOpMode {
 
 
 
-                    stop();
-                }
+            stop();
+        }
 
 
 
@@ -566,28 +561,28 @@ public class AutonTest extends LinearOpMode {
 
     }
 
-            private void initVuforia() {
+    private void initVuforia() {
 
-                VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
-                parameters.vuforiaLicenseKey = VUFORIA_KEY;
-                parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam");
+        parameters.vuforiaLicenseKey = VUFORIA_KEY;
+        parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam");
 
-                //  Instantiate the Vuforia engine
-                vuforia = ClassFactory.getInstance().createVuforia(parameters);
+        //  Instantiate the Vuforia engine
+        vuforia = ClassFactory.getInstance().createVuforia(parameters);
 
-                // Loading trackables is not necessary for the TensorFlow Object Detection engine.
-            }
+        // Loading trackables is not necessary for the TensorFlow Object Detection engine.
+    }
 
-            private void initTfod(){
-                int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
-                        "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-                TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-                tfodParameters.minResultConfidence = 0.8f;
-                tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-                tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
+    private void initTfod(){
+        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+        tfodParameters.minResultConfidence = 0.8f;
+        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
 
-            }
+    }
 
 
 
