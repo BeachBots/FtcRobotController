@@ -452,7 +452,7 @@ public class AutonTest extends LinearOpMode {
             //flick .setPosition(0);
             sleep(100);
             //flick.setPosition(0.5);
-            sleep(1000);
+            sleep(100);
                     /*
                     PID(1.51, 0.58);
                     //strafe(0.5, 245);
