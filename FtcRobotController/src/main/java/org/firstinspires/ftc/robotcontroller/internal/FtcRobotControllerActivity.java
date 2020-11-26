@@ -686,6 +686,7 @@ public class FtcRobotControllerActivity extends Activity
         return service.getRobot().eventLoopManager;
       }
     });
+
     FtcDashboard.attachWebServer(service.getWebServer());
   }
 
@@ -726,6 +727,7 @@ public class FtcRobotControllerActivity extends Activity
 
     passReceivedUsbAttachmentsToEventLoop();
     AndroidBoard.showErrorIfUnknownControlHub();
+
     FtcDashboard.attachEventLoop(eventLoop);
   }
 
