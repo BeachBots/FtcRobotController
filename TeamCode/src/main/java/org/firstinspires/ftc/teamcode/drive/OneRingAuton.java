@@ -1,66 +1,18 @@
-package org.firstinspires.ftc.teamcode;
-
-import android.os.SystemClock;
-import android.provider.Settings;
-
-import  com.qualcomm.hardware.bosch.BNO055IMU;
-
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorController;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
+package org.firstinspires.ftc.teamcode.drive;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Pose2dKt;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.robotcore.external.navigation.Position;
-import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Servo;
 
 
-import java.util.ArrayList;
-import java.util.List;
-import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+@Autonomous (name="OneRingAuton", group="LinearOpmode")
 
-public class OneRingAuton {
-
-
-
-
-public void runOpMode() {
-
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        package org.firstinspires.ftc.teamcode.drive;
-
-        import com.acmerobotics.roadrunner.geometry.Pose2d;
-        import com.acmerobotics.roadrunner.geometry.Pose2dKt;
-        import com.acmerobotics.roadrunner.geometry.Vector2d;
-        import com.acmerobotics.roadrunner.trajectory.Trajectory;
-        import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-        import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-        import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-        import com.qualcomm.robotcore.hardware.Servo;
-
-
-@Autonomous (name="SampleAuton", group="LinearOpmode")
-
-public class SampleAuton extends LinearOpMode {
+public class OneRingAuton extends LinearOpMode {
 
     private Servo flick;
 
@@ -75,74 +27,74 @@ public class SampleAuton extends LinearOpMode {
 
         // This identifies the starting position of our robot -- otherwise it default to (0,0) which is the center of the field.
         // We should tune this number, which I'm estimating to be (-63, -30).
-
         Pose2d startPose = new Pose2d(-63, -30, Math.toRadians(0));
         drive.setPoseEstimate(startPose);
 
 
-//The distances, powers, and sleeps are all estimates. This is a shell that will be tuned in person.
+        // This is where we build all the trajectories. We won't call them until the bottom.
 
-        driveForwardDistance(power0.5, 100);
-        sleep(100);
+        // #1: MOVE UP TO RING STACK
+        Trajectory zeroRings1 = drive.trajectoryBuilder(startPose)
+                .splineToConstantHeading(new Vector2d(-37, -37), Math.toRadians(0))
 
-        shoot1.setPower(-1);
-        shoot2.setPower(-1);
+                .build();
 
-//(Here I copied the code from the tele op for shooting, so this might not work in auton. I couldn't find the auton shooting code.)
+        //  #2: SHOOT THREE HIGH GOALS HERE
 
-//Shoot all three loaded rings into high goal
 
-        driveForwardDistance(power0.5, 100);
-        sleep (100)
+        //  #3: INTAKE REMAINING RING
 
-//Here we're driving forward so that we can intake the ring more easily
 
-//Intake the one ring on the ground
-//Sleep command for the intake
+        //  #4  SHOOT REMAINING RING
 
-        shoot1.setPower(-1);
-        shoot2.setPower(-1);
-        sleep(100);
 
-//This is shooting the ring into the high goal and then turning off the shooter
+        //  #5  DROP OFF FIRST WOBBLE GOAL
 
-        strafe(0.5, 100);
-        sleep(100);
+        Trajectory zeroRings2 = drive.trajectoryBuilder(zeroRings1.end())
+                .splineToConstantHeading(new Vector2d(30, -37), Math.to
 
-//Here we strafe to the right to allign with the drop zone. We are strafing to the right.
+                    // Run shoot loop here!
+                    flick.setPosition (0);
+                    flick.setPosition (0.5);
+                    flick.setPosition (0);
+                    flick.setPosition (0.5);
+                    flick.setPosition (0);
+                    flick.setPosition (0.5);
 
-        driveForwardDistance(power0.5, 100);
-        sleep(100);
+                })
 
-//This command is to get the robot into zone B
+                .build();
 
-//Here we would release the wobble goal into the zone
+        //  WOBBLE GOAL DROP ROUTINE OCCURS HERE, BUT IS CALLED BELOW
 
-        driveForwardDistance(power0.5), -100);
-        sleep(100);
+        //  #3 MOVE TO PICK UP WOBBLE GOAL 2
+        Trajectory zeroRings3 = drive.trajectoryBuilder(zeroRings2.end())
+                .splineToConstantHeading(new Vector2d(-45,-33), Math.toRadians(0))
+                .build();
 
-//This is supposed to let the robot drive backwards so that it can strafe and pick up the wobble. I'm not sure if I did it right.
+        //  WOBBLE GOAL PICK UP ROUTINE OCCURS HERE, BUT IS CALLED BELOW
 
-        strafe(0.5, -100);
-        sleep(100);
+        //  #4 MOVE TO BOX A TO DROP OFF WOBBLE GOAL 2, AND PARK ON WHITE LINE
+        Trajectory zeroRings4 = drive.trajectoryBuilder(zeroRings3.end())
+                .splineToConstantHeading(new Vector2d(15, -40), Math.toRadians(0))
+                .build();
 
-//Here we are strafing to pick up the wobble goal. We are strafing left.
+        //  WOBBLE GOAL DROP OFF ROUTINE OCCURS HERE, BUT IS CALLED BELOW
 
-//Pick up wobble goal
 
-        strafe(0.5, 100);
-        sleep(100);
+        // This is where we call all the trajectories. For now I've added sleeps in between themCto simulate where actions go.
 
-//We are following the exact same path as we did to drop off the first wobble. We are strafing right.
+        waitForStart();
 
-        driveForwardDistance(power0.5, 100);
-        sleep(100);
+        if(isStopRequested()) return;
 
-//Release wobble goal
+        drive.followTrajectory(zeroRings1);  // MOVE TO SHOOTING LINE
+        drive.followTrajectory(zeroRings2);  // MOVE RIGHT WHILE SHOOTING
+        sleep (1000); // CALL WOBBLE GOAL DROP ROUTINE
+        drive.followTrajectory(zeroRings3);  // MOVE TO PICK UP WOBBLE 2
+        sleep (1000); // CALL WOBBLE GOAL PICK UP ROUTINE
+        drive.followTrajectory(zeroRings4);  // MOVE TO DROP OFF WOBBLE 2
+        // CALL WOBBLE GOAL DROP ROUTINE
 
-        driveForwardDistance(power0.5, -100);
-        sleep(100);
-
-//This is meant to put us over the launch line. We are moving backwards.
-
-    }}}}
+    }
+}
