@@ -41,6 +41,13 @@ public class OneRingAuton extends LinearOpMode {
 
         //  #2: SHOOT THREE HIGH GOALS HERE
 
+            // Run shoot loop here!
+            flick.setPosition (0);
+            flick.setPosition (0.5);
+            flick.setPosition (0);
+            flick.setPosition (0.5);
+            flick.setPosition (0);
+            flick.setPosition (0.5);
 
         //  #3: INTAKE REMAINING RING
 
@@ -48,53 +55,33 @@ public class OneRingAuton extends LinearOpMode {
         //  #4  SHOOT REMAINING RING
 
 
-        //  #5  DROP OFF FIRST WOBBLE GOAL
+        //  #5  GO TO DROP ZONE B
 
         Trajectory zeroRings2 = drive.trajectoryBuilder(zeroRings1.end())
-                .splineToConstantHeading(new Vector2d(30, -37), Math.to
+                .splineToConstantHeading(new Vector2d(30, -37), Math.toRadians(0))
 
-                    // Run shoot loop here!
-                    flick.setPosition (0);
-                    flick.setPosition (0.5);
-                    flick.setPosition (0);
-                    flick.setPosition (0.5);
-                    flick.setPosition (0);
-                    flick.setPosition (0.5);
+                .build();
+
+        //  #6  DROP WOBBLE GOAL
+
+
+        // #7  PICK UP SECOND WOBBLE GOAL
+
+        Trajectory zeroRings3 = drive.trajectoryBuilder(zeroRings2.end())
+                .lineToConstantHeading(new Vector2d(-50, -47))
+
+                .build();
+
+        //  #8  DROP OFF SECOND WOBBLE GOAL
+
+        Trajectory zeroRings4 = drive.trajectoryBuilder(zeroRings3.end())
+                .splineToConstantHeading(new Vector2d(30, -35)), Math.toRadians(0))
+
+                .build();
+
+        Trajectory zeroRings5 = drive.trajectoryBuilder(zeroRings4.end())
+                .lineToConstantHeading(new Vector2d(10, -35))
+
+                .build();
 
                 })
-
-                .build();
-
-        //  WOBBLE GOAL DROP ROUTINE OCCURS HERE, BUT IS CALLED BELOW
-
-        //  #3 MOVE TO PICK UP WOBBLE GOAL 2
-        Trajectory zeroRings3 = drive.trajectoryBuilder(zeroRings2.end())
-                .splineToConstantHeading(new Vector2d(-45,-33), Math.toRadians(0))
-                .build();
-
-        //  WOBBLE GOAL PICK UP ROUTINE OCCURS HERE, BUT IS CALLED BELOW
-
-        //  #4 MOVE TO BOX A TO DROP OFF WOBBLE GOAL 2, AND PARK ON WHITE LINE
-        Trajectory zeroRings4 = drive.trajectoryBuilder(zeroRings3.end())
-                .splineToConstantHeading(new Vector2d(15, -40), Math.toRadians(0))
-                .build();
-
-        //  WOBBLE GOAL DROP OFF ROUTINE OCCURS HERE, BUT IS CALLED BELOW
-
-
-        // This is where we call all the trajectories. For now I've added sleeps in between themCto simulate where actions go.
-
-        waitForStart();
-
-        if(isStopRequested()) return;
-
-        drive.followTrajectory(zeroRings1);  // MOVE TO SHOOTING LINE
-        drive.followTrajectory(zeroRings2);  // MOVE RIGHT WHILE SHOOTING
-        sleep (1000); // CALL WOBBLE GOAL DROP ROUTINE
-        drive.followTrajectory(zeroRings3);  // MOVE TO PICK UP WOBBLE 2
-        sleep (1000); // CALL WOBBLE GOAL PICK UP ROUTINE
-        drive.followTrajectory(zeroRings4);  // MOVE TO DROP OFF WOBBLE 2
-        // CALL WOBBLE GOAL DROP ROUTINE
-
-    }
-}
