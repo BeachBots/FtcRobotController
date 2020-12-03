@@ -1,5 +1,21 @@
 package org.firstinspires.ftc.teamcode.drive;
 
+
+package org.firstinspires.ftc.teamcode;
+
+import android.os.SystemClock;
+import android.provider.Settings;
+
+import  com.qualcomm.hardware.bosch.BNO055IMU;
+
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorController;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
+
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Pose2dKt;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
@@ -75,7 +91,7 @@ public class OneRingAuton extends LinearOpMode {
         //  #8  DROP OFF SECOND WOBBLE GOAL
 
         Trajectory zeroRings4 = drive.trajectoryBuilder(zeroRings3.end())
-                .splineToConstantHeading(new Vector2d(30, -35)), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(30, -35), Math.toRadians(0))
 
                 .build();
 
@@ -84,4 +100,5 @@ public class OneRingAuton extends LinearOpMode {
 
                 .build();
 
-                })
+
+    }}
