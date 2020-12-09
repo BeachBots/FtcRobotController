@@ -38,6 +38,20 @@ public class SampleAuton extends LinearOpMode {
 
     boolean isRunning = true;
 
+    public enum ZERO_RINGS_STATE{
+        INITIALIZING,
+        DRIVE_TO_LINE,
+        DRIVE_RIGHT,
+        DROP_WOBBLE_1,
+        DRIVE_TO_WOBBLE_2,
+        PICK_UP_WOBBLE_2,
+        MOVE_TO_DROP_WOBBLE_2,
+        DROP_WOBBLE_2,
+        DONE,
+    };
+
+    private ZERO_RINGS_STATE state;
+
     @Override
     public void runOpMode() {
 
@@ -165,17 +179,73 @@ public class SampleAuton extends LinearOpMode {
 
         // This is where we call all the trajectories. For now I've added sleeps in between themCto simulate where actions go.
 
+        /*
+        *   loop infinitely:
+        *       driving to shooting line:
+        *           follow trajectory
+        *       followTrajectory() <- blocks until completion
+        *      followTrajectoryAsync() <- you have to call update() but you can do stuff in between.
+        *
+        */
+
         waitForStart();
 
         if(isStopRequested()) return;
 
-        drive.followTrajectory(zeroRings1);  // MOVE TO SHOOTING LINE
-        drive.followTrajectory(zeroRings2);  // MOVE RIGHT WHILE SHOOTING
-        sleep (1000); // CALL WOBBLE GOAL DROP ROUTINE
-        drive.followTrajectory(zeroRings3);  // MOVE TO PICK UP WOBBLE 2
-        sleep (1000); // CALL WOBBLE GOAL PICK UP ROUTINE
-        drive.followTrajectory(zeroRings4);  // MOVE TO DROP OFF WOBBLE 2
-        // CALL WOBBLE GOAL DROP ROUTINE
+        state = ZERO_RINGS_STATE.INITIALIZING;
+        long lastSavedTimeMs = 0;
+
+        while(opModeIsActive()){
+            switch(state){
+                case INITIALIZING:
+                    drive.followTrajectoryAsync(zeroRings1);  // Kick off moving to SHOOTING LINE
+                    // pid.start(targetVelocity, targetPower);
+                    state = ZERO_RINGS_STATE.DRIVE_TO_LINE;
+                    break;
+                case DRIVE_TO_LINE:
+                    if(drive.isBusy()){ // Still moving to shooting line.
+                        drive.update();
+                        // pid.update();
+                    } else { // change to else if (pid.done()) when we can check it
+                        drive.followTrajectoryAsync(zeroRings2);  // MOVE RIGHT WHILE SHOOTING
+                        state = ZERO_RINGS_STATE.DRIVE_RIGHT;
+                    }
+                    break;
+                case DRIVE_RIGHT:
+                    if(drive.isBusy()){
+                        drive.update();
+                    } else {
+                        lastSavedTimeMs = System.currentTimeMillis(); // prepare for a sleep
+                        state = ZERO_RINGS_STATE.DROP_WOBBLE_1;
+                    }
+                    break;
+                case DROP_WOBBLE_1:
+                    if(System.currentTimeMillis() - lastSavedTimeMs > 1000) { // Move on if 1000 ms has passed
+                        state = ZERO_RINGS_STATE.DRIVE_TO_WOBBLE_2;
+                    }
+                    break;
+                case DRIVE_TO_WOBBLE_2:
+                    drive.followTrajectory(zeroRings3);  // MOVE TO PICK UP WOBBLE 2
+                    state = ZERO_RINGS_STATE.PICK_UP_WOBBLE_2;
+                    break;
+                case PICK_UP_WOBBLE_2:
+                    sleep (1000); // CALL WOBBLE GOAL PICK UP ROUTINE
+                    state = ZERO_RINGS_STATE.MOVE_TO_DROP_WOBBLE_2;
+                    break;
+                case MOVE_TO_DROP_WOBBLE_2:
+                    drive.followTrajectory(zeroRings4);  // MOVE TO DROP OFF WOBBLE 2
+                    state = ZERO_RINGS_STATE.DROP_WOBBLE_2;
+                    break;
+                case DROP_WOBBLE_2:
+                    // CALL WOBBLE GOAL DROP ROUTINE
+                    state = ZERO_RINGS_STATE.DONE;
+                    break;
+                case DONE:
+                    break;
+                default:
+            }
+
+        }
 
     }
 
