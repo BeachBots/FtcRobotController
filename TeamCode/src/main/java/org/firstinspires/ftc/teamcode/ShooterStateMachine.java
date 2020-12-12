@@ -78,9 +78,36 @@ public void init() {
 
     }
 
+    /*
+        pinchy/grabber thing ~= flick
+        arm that goes up and down ~= shooter
+
+        grabber
+            tell it to open/close just like flick goes from middle to side
+            bool open or closed right now
+        arm
+            get position out of it - know if it's at the maximum height, or at the ground
+
+        functions
+            setTargetHeight(float height);
+               set your arm's desired angle, and say run to position
+
+            open/close grabber
+                set grabber state directly cause it's instant
+
+            isDone()
+                return !arm.isBusy()
+
+            while (!arm.isDone()){} <- waits until we move into position;
+     */
+
+    public void shoot(int num_shots){
+        shooterState = ShooterState.SHOOTER_WAITING1;
+        // shotCounter = 0;
+        // shooter.num_shots = num_shots;
+    }
+
     public void loop() {
-
-
            // TURN SHOOTER ON
             if (gamepad1.y) {
                 shoot1.setPower(.66);
@@ -122,7 +149,7 @@ public void init() {
                     break;
                 case SHOOTER_RETRACTING:
                     flick.setPosition(flickRetract); //Retracts the flicker
-                    if (shotCounter == 3) { //This will return us to idle after the 3rd shot
+                    if (shotCounter == shooter.num_shots) { //This will return us to idle after the 3rd shot
                         stopper.setPosition(stopperClosed);  //Closes the stopper. Might be too fast-- test this.
                         shooterState = ShooterState.SHOOTER_IDLE;
                         break;  //I'm not sure why this is needed here, but it didn't work without it
