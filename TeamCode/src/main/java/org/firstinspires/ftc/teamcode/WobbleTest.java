@@ -51,7 +51,8 @@ public class WobbleTest extends LinearOpMode {
             i = 1;
         }
 
-
+        double wobbleOpen = .8;
+        double wobbleClosed = .6;
 
 
 
@@ -62,22 +63,35 @@ public class WobbleTest extends LinearOpMode {
 
         while (opModeIsActive()) {
 
+
+        //THIS IS CODE TO TEST MOTOR POSITIONS
+
             if (gamepad1.a) {
-                motortest(1, 100);
+                motortest(.5, 50);
             }
 
             if (gamepad1.y) {
                 motortest(1, 0);
             }
 
-
-            if (gamepad1.b){
-                wobbleClaw.setPosition(1);
+            if (gamepad1.b) {
+                motortest(.5, 100);
+            }
+            if (gamepad1.x) {
+                motortest(.5, -50);
             }
 
 
 
+        //THIS IS CODE TO TEST SERVO POSITIONS
 
+          /*  if (gamepad1.b) {
+                wobbleClaw.setPosition(wobbleOpen);
+            }
+            if (gamepad1.x){
+                wobbleClaw.setPosition(wobbleClosed);
+            }
+            */
 
 
         }

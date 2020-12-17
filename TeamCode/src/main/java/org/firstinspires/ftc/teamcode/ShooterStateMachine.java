@@ -14,6 +14,7 @@ import java.util.logging.SocketHandler;
 
 @TeleOp(name = "ShooterStateMachine")
 public class ShooterStateMachine extends OpMode {
+
     public enum ShooterState {
         SHOOTER_IDLE,
         SHOOTER_WAITING1,
@@ -38,10 +39,11 @@ public class ShooterStateMachine extends OpMode {
     public DcMotor motorBackRight;
     public DcMotor motorBackLeft;
 
-    public double flickExtend = 0;
-    public double flickRetract = .5;
-    public double stopperClosed = 1;  // Temp number
-    public double stopperOpen = 0;  // Temp number
+    public double flickExtend = .70;  // .70 is new number
+    public double flickRetract = .48;  // .48 is new number
+    public double stopperClosed = .85;  // .85 is new number
+    public double stopperOpen = 1;  // 1 is new number
+    public int shooter;
 
     private int shotCounter;        //This is how we'll keep track of the 3 rings we are firing
     private long shooterStartTime;         //This will set the timer
@@ -103,8 +105,8 @@ public void init() {
 
     public void shoot(int num_shots){
         shooterState = ShooterState.SHOOTER_WAITING1;
-        // shotCounter = 0;
-        // shooter.num_shots = num_shots;
+        //shotCounter = 0;
+        //shooter.num_shots = num_shots;
     }
 
     public void loop() {
@@ -149,9 +151,11 @@ public void init() {
                     break;
                 case SHOOTER_RETRACTING:
                     flick.setPosition(flickRetract); //Retracts the flicker
-                    if (shotCounter == shooter.num_shots) { //This will return us to idle after the 3rd shot
+                    //if (shotCounter == shooter.num_shots) { //This will return us to idle after the 3rd shot
+                    if (shotCounter == 3) { //TEMP CODE TO GET THIS TO COMPILE. CHECK LINE ABOVE
                         stopper.setPosition(stopperClosed);  //Closes the stopper. Might be too fast-- test this.
                         shooterState = ShooterState.SHOOTER_IDLE;
+
                         break;  //I'm not sure why this is needed here, but it didn't work without it
                     }
                     shooterStartTime = System.currentTimeMillis(); //Resets timer
@@ -164,6 +168,7 @@ public void init() {
                         shooterState = ShooterState.SHOOTER_INDEXING; //Returns our state to Indexing
                     }
                     break;
+
                 default:
                     shooterState = ShooterState.SHOOTER_IDLE;
                     break; //may not be necessary
