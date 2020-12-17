@@ -43,6 +43,14 @@ public class WobbleTest extends LinearOpMode {
 
         wobbleMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        int i = 0;
+
+        if (i==0) {
+            wobbleMotor.setMode(DcMotor.RunMode.RESET_ENCODERS);
+            i = 1;
+        }
+
+
 
 
 
