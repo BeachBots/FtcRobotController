@@ -15,6 +15,7 @@ public class WobbleTest extends LinearOpMode {
 
 
     public void motortest(double power, int distance) {
+        wobbleMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         wobbleMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -30,7 +31,7 @@ public class WobbleTest extends LinearOpMode {
 
         wobbleMotor.setPower(0);
 
-        wobbleMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
 
     }
 
