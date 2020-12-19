@@ -208,16 +208,18 @@ public class finalTeleOp extends LinearOpMode {
                 wobbleClaw.setPosition(/*close*/0);
             }
 
-
-            if (gamepad1.cross){
+            if (gamepad1.triangle){
                 start(1.5, 0.68);
                 update();
+            }
+
+            if (gamepad1.cross){
+
                 shooter.shoot(3);
                 shooter.loop();
             }
             if (gamepad1.circle){
-                start(1.4, 0.58);
-                update();
+
                 shooter.shoot(1);
                 shooter.loop();
             }
