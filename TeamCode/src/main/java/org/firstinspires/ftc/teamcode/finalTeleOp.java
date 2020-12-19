@@ -26,6 +26,7 @@ public class finalTeleOp extends LinearOpMode {
     private DcMotor wobbleMotor;
     private Servo wobbleClaw;
 
+    private ShooterStateMachine shooter;
 
     private final int NUM_PID_ADJUSTMENTS = 10;
     private final int MS_BTWN_VEL_READINGS = 12;
@@ -208,24 +209,25 @@ public class finalTeleOp extends LinearOpMode {
 
 
             if (gamepad1.cross){
-
-                shoot1.setPower(-power);
-                shoot2.setPower(-power);
+                shooter.shoot(3);
+                shooter.loop();
             }
             if (gamepad1.circle){
-
-                shoot1.setPower(0);
-                shoot2.setPower(0);
+                shooter.shoot(1);
+                shooter.loop();
             }
 
 
 
 
-            if (gamepad1.right_bumper){
+            if (gamepad1.dpad_down){
                 intake.setPower(1);
             }
-            if (gamepad1.left_bumper){
+            if (gamepad1.dpad_right){
                 intake.setPower((0));
+            }
+            if (gamepad1.dpad_up){
+                intake.setPower(-1);
             }
 
 /*
@@ -243,43 +245,6 @@ public class finalTeleOp extends LinearOpMode {
             }*/
 
 
-
-            if (gamepad1.y){
-                flick.setPosition(0);
-                sleep(100);
-                flick.setPosition(0.5);
-                sleep(100);
-            }
-
-
-
-            if (gamepad1.dpad_up){
-                power = power + 0.1;
-                telemetry.addData("power = ", power);
-                telemetry.update();
-                sleep(500);
-            }
-
-            if (gamepad1.dpad_down){
-                power = power - 0.1;
-                telemetry.addData("power = ", power);
-                telemetry.update();
-                sleep(500);
-            }
-
-            if (gamepad1.dpad_right){
-                power = power + 0.01;
-                telemetry.addData("power = ", power);
-                telemetry.update();
-                sleep(500);
-            }
-
-            if (gamepad1.dpad_left){
-                power = power - 0.01;
-                telemetry.addData("power = ", power);
-                telemetry.update();
-                sleep(500);
-            }
 
 
 
