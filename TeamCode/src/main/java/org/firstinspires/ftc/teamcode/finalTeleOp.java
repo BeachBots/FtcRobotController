@@ -12,7 +12,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.drive.SampleAuton;
 
 @TeleOp(name = "FinalTeleOP")
-public class finalTeleOP extends LinearOpMode {
+public class finalTeleOp extends LinearOpMode {
 
     private DcMotor shoot1;
     private DcMotor shoot2;
@@ -46,10 +46,10 @@ public class finalTeleOP extends LinearOpMode {
     }
 
     ;
-    private finalTeleOP.PID_STATE state1;
+    private finalTeleOp.PID_STATE state1;
 
     public void start(double inTargetVelocity, double inPower) {
-        state1 = finalTeleOP.PID_STATE.RUNNING;
+        state1 = finalTeleOp.PID_STATE.RUNNING;
         shoot1.setDirection(DcMotor.Direction.REVERSE);  // BETTER TO DO THIS HERE THAN SETTING
         shoot2.setDirection(DcMotor.Direction.REVERSE);  // MOTOR POWER TO A NEGATIVE NUMBER LATER
 
@@ -110,12 +110,12 @@ public class finalTeleOP extends LinearOpMode {
         async_motorPrev = currentMotor;
 
         if (pid_adjust_count++ >= NUM_PID_ADJUSTMENTS) {
-            state1 = finalTeleOP.PID_STATE.DONE;
+            state1 = finalTeleOp.PID_STATE.DONE;
         }
     }
 
     public boolean done() {
-        return state1 == finalTeleOP.PID_STATE.DONE;
+        return state1 == finalTeleOp.PID_STATE.DONE;
     }
 
 
@@ -156,6 +156,8 @@ public class finalTeleOP extends LinearOpMode {
 
         motorBackLeft.setDirection(DcMotor.Direction.REVERSE);
         motorFrontLeft.setDirection(DcMotor.Direction.REVERSE);
+
+        intake.setDirection(DcMotor.Direction.REVERSE);
 
         motorFrontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorFrontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
