@@ -53,6 +53,7 @@ public class finalTeleOp extends LinearOpMode {
         state1 = finalTeleOp.PID_STATE.RUNNING;
         shoot1.setDirection(DcMotor.Direction.REVERSE);  // BETTER TO DO THIS HERE THAN SETTING
         shoot2.setDirection(DcMotor.Direction.REVERSE);  // MOTOR POWER TO A NEGATIVE NUMBER LATER
+        shooter.init();
 
         targetVelocity = inTargetVelocity;
         targetPower = inPower;
