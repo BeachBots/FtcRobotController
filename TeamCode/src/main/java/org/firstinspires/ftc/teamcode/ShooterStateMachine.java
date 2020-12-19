@@ -27,7 +27,7 @@ public class ShooterStateMachine extends OpMode {
     // The shooterState variable is declared out here
     // so its value persists between loop() calls
 
-    ShooterState shooterState = ShooterState.SHOOTER_IDLE;
+    public ShooterState shooterState = ShooterState.SHOOTER_IDLE;
 
     public DcMotor shoot1;   // should this be private?
     public DcMotor shoot2;
@@ -48,6 +48,8 @@ public class ShooterStateMachine extends OpMode {
     private int shotCounter;        //This is how we'll keep track of the 3 rings we are firing
     private long shooterStartTime;         //This will set the timer
     private long shooterDeltaTime = System.currentTimeMillis();
+    private int num_shots = 0;
+
 
 public void init() {
 
@@ -151,8 +153,7 @@ public void init() {
                     break;
                 case SHOOTER_RETRACTING:
                     flick.setPosition(flickRetract); //Retracts the flicker
-                    //if (shotCounter == shooter.num_shots) { //This will return us to idle after the 3rd shot
-                    if (shotCounter == 3) { //TEMP CODE TO GET THIS TO COMPILE. CHECK LINE ABOVE
+                    if (shotCounter == num_shots) { //This will return us to idle after the 3rd shot
                         stopper.setPosition(stopperClosed);  //Closes the stopper. Might be too fast-- test this.
                         shooterState = ShooterState.SHOOTER_IDLE;
 
