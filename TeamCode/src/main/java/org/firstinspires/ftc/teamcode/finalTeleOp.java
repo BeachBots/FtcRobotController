@@ -210,10 +210,14 @@ public class finalTeleOp extends LinearOpMode {
 
 
             if (gamepad1.cross){
+                start(1.5, 0.68);
+                update();
                 shooter.shoot(3);
                 shooter.loop();
             }
             if (gamepad1.circle){
+                start(1.4, 0.58);
+                update();
                 shooter.shoot(1);
                 shooter.loop();
             }
