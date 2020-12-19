@@ -174,8 +174,8 @@ public class finalTeleOp extends LinearOpMode {
         double power = 1;
 
 
-        flick.setPosition(0.5);
-        stopper.setPosition(0.0);
+        flick.setPosition(0.48);
+        stopper.setPosition(0.85);
         waitForStart();
         waitForStart();
 
