@@ -171,6 +171,9 @@ public class finalTeleOp extends LinearOpMode {
         flick.setPosition(0.48);
         stopper.setPosition(0.85);
         boolean output = false;  // this is for the intake
+        double last_rb_press = 0.;
+        double last_lb_press = 0.;
+        final double PRESS_TIME_MS = 300;
 
         waitForStart();
 
@@ -225,17 +228,17 @@ public class finalTeleOp extends LinearOpMode {
             intake.setPower(-1);
         }*/
 
-
-            if (gamepad1.right_bumper) {
+            final double now = System.currentTimeMillis();
+            if (gamepad1.right_bumper && (now - last_rb_press >  PRESS_TIME_MS)) {
+                last_rb_press = now;
                 output = !output;
                 intake.setPower(output ? 1 : 0);
-                sleep(100);
             }
 
-            if (gamepad1.left_bumper) {
+            if (gamepad1.left_bumper && (now - last_lb_press > PRESS_TIME_MS)) {
+                last_lb_press = now;
                 output = !output;
                 intake.setPower(output ? -1 : 0);
-                sleep(100);
             }
 
             if (gamepad1.dpad_up) {
