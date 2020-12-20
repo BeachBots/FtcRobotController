@@ -34,10 +34,6 @@ public class ShooterStateMachine extends OpMode {
     public Servo flick;
     public Servo stopper;
     public DcMotor intake;
-    public DcMotor motorFrontRight;
-    public DcMotor motorFrontLeft;
-    public DcMotor motorBackRight;
-    public DcMotor motorBackLeft;
 
     public double flickExtend = 0.7;
     public double flickRetract = 0.48;
@@ -58,20 +54,8 @@ public void init() {
         flick = hardwareMap.servo.get("flick");
         stopper = hardwareMap.servo.get("stopper");
 
-        motorFrontRight = hardwareMap.dcMotor.get("motorFrontRight");
-        motorFrontLeft = hardwareMap.dcMotor.get("motorFrontLeft");
-        motorBackRight = hardwareMap.dcMotor.get("motorBackRight");
-        motorBackLeft = hardwareMap.dcMotor.get("motorBackLeft");
-
-        motorBackLeft.setDirection(DcMotor.Direction.REVERSE);
-        motorFrontLeft.setDirection(DcMotor.Direction.REVERSE);
         shoot1.setDirection(DcMotor.Direction.REVERSE);  // BETTER TO DO THIS HERE THAN SETTING
         shoot2.setDirection(DcMotor.Direction.REVERSE);  // MOTOR POWER TO A NEGATIVE NUMBER LATER
-
-        motorFrontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motorFrontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motorBackRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motorBackLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         shoot1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shoot2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -104,34 +88,23 @@ public void init() {
             while (!arm.isDone()){} <- waits until we move into position;
      */
 
-    public void shoot(int num_shots){
+    public void shoot(int num){
         shooterState = ShooterState.SHOOTER_WAITING1;
-        //shotCounter = 0;
-        //shooter.num_shots = num_shots;
+        num_shots = num;
+
     }
 
     public void loop() {
-           // TURN SHOOTER ON
-            if (gamepad1.y) {
-                shoot1.setPower(.66);
-                shoot2.setPower(.66);
-            }
-
-            // TURN SHOOTER OFF
-            if (gamepad1.b) {
-                shoot1.setPower(0);
-                shoot2.setPower(0);
-            }
 
             switch (shooterState) {
                 case SHOOTER_IDLE:
                     // Waiting for some input
-                    if (gamepad1.a) {
+                    /*if (gamepad1.a) {
                         shotCounter = 1;
                         stopper.setPosition(stopperOpen); //This opens the stopper
                         shooterStartTime = System.currentTimeMillis(); //Records current time
                         shooterState = ShooterState.SHOOTER_WAITING1; //Moves to first timer
-                    }
+                    }*/
                     break;
                 case SHOOTER_WAITING1: //This gives time for stopper to get out of the way
                     shooterDeltaTime = System.currentTimeMillis() - shooterStartTime; //How much time has elapsed

@@ -5,8 +5,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.DcMotorController;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.drive.SampleAuton;
@@ -26,7 +24,7 @@ public class finalTeleOp extends LinearOpMode {
     private DcMotor wobbleMotor;
     private Servo wobbleClaw;
 
-    private ShooterStateMachine shooter;
+    private ShooterStateMachine shooter = new ShooterStateMachine();
 
     private final int NUM_PID_ADJUSTMENTS = 10;
     private final int MS_BTWN_VEL_READINGS = 12;
@@ -51,9 +49,6 @@ public class finalTeleOp extends LinearOpMode {
 
     public void start(double inTargetVelocity, double inPower) {
         state1 = finalTeleOp.PID_STATE.RUNNING;
-        shoot1.setDirection(DcMotor.Direction.REVERSE);  // BETTER TO DO THIS HERE THAN SETTING
-        shoot2.setDirection(DcMotor.Direction.REVERSE);  // MOTOR POWER TO A NEGATIVE NUMBER LATER
-        shooter.init();
 
         targetVelocity = inTargetVelocity;
         targetPower = inPower;
@@ -149,11 +144,13 @@ public class finalTeleOp extends LinearOpMode {
         intake = hardwareMap.dcMotor.get("intake");
         flick = hardwareMap.servo.get("flick");
         stopper = hardwareMap.servo.get("stopper");
+        wobbleClaw = hardwareMap.servo.get("wobbleClaw");
 
         motorFrontRight = hardwareMap.dcMotor.get("motorFrontRight");
         motorFrontLeft = hardwareMap.dcMotor.get("motorFrontLeft");
         motorBackRight = hardwareMap.dcMotor.get("motorBackRight");
         motorBackLeft = hardwareMap.dcMotor.get("motorBackLeft");
+        wobbleMotor = hardwareMap.dcMotor.get("wobbleMotor");
 
         motorBackLeft.setDirection(DcMotor.Direction.REVERSE);
         motorFrontLeft.setDirection(DcMotor.Direction.REVERSE);
@@ -165,14 +162,19 @@ public class finalTeleOp extends LinearOpMode {
         motorBackRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorBackLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        shoot1.setDirection(DcMotor.Direction.REVERSE);
+        shoot2.setDirection(DcMotor.Direction.REVERSE);
+        shooter.init();
 
         double power = 1.5;
 
         flick.setPosition(0.48);
         stopper.setPosition(0.85);
         boolean output = false;  // this is for the intake
+        boolean shooterOn = false;
         double last_rb_press = 0.;
         double last_lb_press = 0.;
+        double last_a_press = 0.;
         final double PRESS_TIME_MS = 300;
 
         waitForStart();
@@ -202,8 +204,18 @@ public class finalTeleOp extends LinearOpMode {
             //      wobbleClaw.setPosition(*//*close*//*0);
             //   }
 
-            if (gamepad1.a) {
-                start(power, power / 2);
+            final double now = System.currentTimeMillis();
+            if (gamepad1.a &&(now - last_a_press > PRESS_TIME_MS)){
+                last_a_press = now;
+                shooterOn = !shooterOn;
+                if (shooterOn) {
+                    start(power, power / 2);
+                } else {
+                    shoot1.setPower(0);
+                    shoot2.setPower(0);
+                }
+            }
+            if (shooterOn) {
                 update();
             }
 
@@ -228,8 +240,8 @@ public class finalTeleOp extends LinearOpMode {
             intake.setPower(-1);
         }*/
 
-            final double now = System.currentTimeMillis();
-            if (gamepad1.right_bumper && (now - last_rb_press >  PRESS_TIME_MS)) {
+
+            if (gamepad1.right_bumper && (now - last_rb_press > PRESS_TIME_MS)) {
                 last_rb_press = now;
                 output = !output;
                 intake.setPower(output ? 1 : 0);
@@ -245,28 +257,28 @@ public class finalTeleOp extends LinearOpMode {
                 power = power + 0.1;
                 telemetry.addData("power = ", power);
                 telemetry.update();
-                //sleep(500);
+                sleep(500);
             }
 
             if (gamepad1.dpad_down) {
                 power = power - 0.1;
                 telemetry.addData("power = ", power);
                 telemetry.update();
-                //sleep(500);
+                sleep(500);
             }
 
             if (gamepad1.dpad_right) {
                 power = power + 0.01;
                 telemetry.addData("power = ", power);
                 telemetry.update();
-                //sleep(500);
+                sleep(500);
             }
 
             if (gamepad1.dpad_left) {
                 power = power - 0.01;
                 telemetry.addData("power = ", power);
                 telemetry.update();
-                //sleep(500);
+                sleep(500);
             }
 
 

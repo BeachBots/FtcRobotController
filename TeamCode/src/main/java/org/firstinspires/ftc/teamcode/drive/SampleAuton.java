@@ -31,7 +31,7 @@ public class SampleAuton extends LinearOpMode {
     private DcMotor shoot1;
     private DcMotor shoot2;
 
-    private ShooterStateMachine shooter;
+    private ShooterStateMachine shooter = new ShooterStateMachine();
 
     private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
     private static final String LABEL_FIRST_ELEMENT = "Quad";
