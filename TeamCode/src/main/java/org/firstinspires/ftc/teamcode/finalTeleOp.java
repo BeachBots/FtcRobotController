@@ -155,7 +155,6 @@ public class finalTeleOp extends LinearOpMode {
         motorBackRight = hardwareMap.dcMotor.get("motorBackRight");
         motorBackLeft = hardwareMap.dcMotor.get("motorBackLeft");
 
-
         motorBackLeft.setDirection(DcMotor.Direction.REVERSE);
         motorFrontLeft.setDirection(DcMotor.Direction.REVERSE);
 
@@ -166,23 +165,17 @@ public class finalTeleOp extends LinearOpMode {
         motorBackRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorBackLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        // motorBackLeft.setDirection(DcMotor.Direction.REVERSE);
-        //motorFrontLeft.setDirection(DcMotor.Direction.REVERSE);
 
-
-
-        double power = 1;
-
+        double power = 1.5;
 
         flick.setPosition(0.48);
         stopper.setPosition(0.85);
-        waitForStart();
-        waitForStart();
+        boolean output = false;  // this is for the intake
 
+        waitForStart();
 
 
         while (opModeIsActive()) {
-
 
             float deadZone = (float) 0.5;
             gamepad1.setJoystickDeadzone(deadZone);
@@ -192,76 +185,92 @@ public class finalTeleOp extends LinearOpMode {
             motorFrontLeft.setPower(-gamepad1.left_stick_y * 0.8 + gamepad1.right_stick_x * 0.8 + gamepad1.left_stick_x * 0.8);
             motorBackLeft.setPower(-gamepad1.left_stick_y * 0.8 + gamepad1.right_stick_x * 0.8 - gamepad1.left_stick_x * 0.8);
 
+            // if (gamepad1.square) {
+            //    wobbleClaw.setPosition(/*open*/0);
+            //     motortest(1, 0/*down*/);
+            //     wobbleClaw.setPosition(/*close*/0);
+            //     motortest(1, 0/*up*/);
+            //  }
 
+            // if (gamepad1.triangle){
+            //     motortest(1,0*//*down*//*);
+            //     wobbleClaw.setPosition(*//*open*//*0);
+            //     motortest(1,0*//*up*//*);
+            //      wobbleClaw.setPosition(*//*close*//*0);
+            //   }
 
-            if (gamepad1.square){
-                wobbleClaw.setPosition(/*open*/0);
-                motortest(1,0/*down*/);
-                wobbleClaw.setPosition(/*close*/0);
-                motortest(1,0/*up*/);
-            }
-
-            if (gamepad1.triangle){
-                motortest(1,0/*down*/);
-                wobbleClaw.setPosition(/*open*/0);
-                motortest(1,0/*up*/);
-                wobbleClaw.setPosition(/*close*/0);
-            }
-
-            if (gamepad1.triangle){
-                start(1.5, 0.68);
+            if (gamepad1.a) {
+                start(power, power / 2);
                 update();
             }
 
-            if (gamepad1.cross){
-
+            if (gamepad1.x) {
                 shooter.shoot(3);
                 shooter.loop();
             }
-            if (gamepad1.circle){
-
+            if (gamepad1.y) {
                 shooter.shoot(1);
                 shooter.loop();
             }
 
-
-
-
-            if (gamepad1.dpad_down){
-                intake.setPower(1);
-            }
-            if (gamepad1.dpad_right){
-                intake.setPower((0));
-            }
-            if (gamepad1.dpad_up){
-                intake.setPower(-1);
-            }
-
 /*
-            boolean output = false;
+        MOVE THESE FUNCTIONS TO DIFFERENT BUTTONS
+        if (gamepad1.dpad_down) {
+            intake.setPower(1);
+        }
+        if (gamepad1.dpad_right) {
+            intake.setPower((0));
+        }
+        if (gamepad1.dpad_up) {
+            intake.setPower(-1);
+        }*/
 
-            if (gamepad1.x && output == false){
-                output = true;
 
-                intake.setPower(-0.5);
+            if (gamepad1.right_bumper) {
+                output = !output;
+                intake.setPower(output ? 1 : 0);
                 sleep(100);
-            } else if (gamepad1.b && output == true){
-                output = false;
-                intake.setPower((0));
+            }
+
+            if (gamepad1.left_bumper) {
+                output = !output;
+                intake.setPower(output ? -1 : 0);
                 sleep(100);
-            }*/
+            }
 
+            if (gamepad1.dpad_up) {
+                power = power + 0.1;
+                telemetry.addData("power = ", power);
+                telemetry.update();
+                //sleep(500);
+            }
 
+            if (gamepad1.dpad_down) {
+                power = power - 0.1;
+                telemetry.addData("power = ", power);
+                telemetry.update();
+                //sleep(500);
+            }
 
+            if (gamepad1.dpad_right) {
+                power = power + 0.01;
+                telemetry.addData("power = ", power);
+                telemetry.update();
+                //sleep(500);
+            }
 
-
-
-
+            if (gamepad1.dpad_left) {
+                power = power - 0.01;
+                telemetry.addData("power = ", power);
+                telemetry.update();
+                //sleep(500);
+            }
 
 
         }
-        idle();
+
     }
+
 }
 
 

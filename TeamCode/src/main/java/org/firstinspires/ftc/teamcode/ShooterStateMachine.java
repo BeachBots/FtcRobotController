@@ -39,11 +39,10 @@ public class ShooterStateMachine extends OpMode {
     public DcMotor motorBackRight;
     public DcMotor motorBackLeft;
 
-    public double flickExtend = .70;  // .70 is new number
-    public double flickRetract = .48;  // .48 is new number
-    public double stopperClosed = .85;  // .85 is new number
-    public double stopperOpen = 1;  // 1 is new number
-    public int shooter;
+    public double flickExtend = 0.7;
+    public double flickRetract = 0.48;
+    public double stopperClosed = 0.85;
+    public double stopperOpen = 1;
 
     private int shotCounter;        //This is how we'll keep track of the 3 rings we are firing
     private long shooterStartTime;         //This will set the timer
