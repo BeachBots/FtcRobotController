@@ -209,15 +209,14 @@ public class finalTeleOp extends LinearOpMode {
                 last_a_press = now;
                 shooterOn = !shooterOn;
                 if (shooterOn) {
-                    start(power, power / 2);
+                    shoot1.setPower(.65);
+                    shoot2.setPower(.65);
                 } else {
                     shoot1.setPower(0);
                     shoot2.setPower(0);
                 }
             }
-            if (shooterOn) {
-                update();
-            }
+
 
             if (gamepad1.x) {
                 shooter.shoot(3);

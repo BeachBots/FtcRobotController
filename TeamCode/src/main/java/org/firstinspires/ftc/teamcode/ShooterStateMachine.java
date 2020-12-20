@@ -21,8 +21,10 @@ public class ShooterStateMachine extends OpMode {
         SHOOTER_INDEXING,
         SHOOTER_WAITING2,
         SHOOTER_RETRACTING,
-        SHOOTER_WAITING3
-    };
+        SHOOTER_WAITING3,
+    }
+
+    ;
 
     // The shooterState variable is declared out here
     // so its value persists between loop() calls
@@ -46,7 +48,9 @@ public class ShooterStateMachine extends OpMode {
     private int num_shots = 0;
 
 
-public void init() {
+    public void init() {
+
+        //ELAINE: IS THIS THE PROBLEM? WE ARE DECLARING THESE HERE AND IN FINAL TELE OP
 
         shoot1 = hardwareMap.dcMotor.get("shoot1");
         shoot2 = hardwareMap.dcMotor.get("shoot2");
@@ -88,7 +92,7 @@ public void init() {
             while (!arm.isDone()){} <- waits until we move into position;
      */
 
-    public void shoot(int num){
+    public void shoot(int num) {
         shooterState = ShooterState.SHOOTER_WAITING1;
         num_shots = num;
 
@@ -96,56 +100,55 @@ public void init() {
 
     public void loop() {
 
-            switch (shooterState) {
-                case SHOOTER_IDLE:
-                    // Waiting for some input
+        switch (shooterState) {
+            case SHOOTER_IDLE:
+                // Waiting for some input
                     /*if (gamepad1.a) {
                         shotCounter = 1;
                         stopper.setPosition(stopperOpen); //This opens the stopper
                         shooterStartTime = System.currentTimeMillis(); //Records current time
                         shooterState = ShooterState.SHOOTER_WAITING1; //Moves to first timer
                     }*/
-                    break;
-                case SHOOTER_WAITING1: //This gives time for stopper to get out of the way
-                    shooterDeltaTime = System.currentTimeMillis() - shooterStartTime; //How much time has elapsed
-                    if (shooterDeltaTime > 100) { //This is the timer. When time elapses, we move on...
-                        shooterState = ShooterState.SHOOTER_INDEXING; //Moves us to Indexing state
-                    }
-                    break;
-                case SHOOTER_INDEXING: //This fires the shot
-                    flick.setPosition(flickExtend); //INDEXING extends the flicker
-                    shooterStartTime = System.currentTimeMillis(); //Records current time
-                    shooterState = ShooterState.SHOOTER_WAITING2; //Moves to second timer
-                    break;
-                case SHOOTER_WAITING2:
-                    shooterDeltaTime = System.currentTimeMillis() - shooterStartTime;
-                    if (shooterDeltaTime > 100) {
-                        shooterState = ShooterState.SHOOTER_RETRACTING; //Moves us to Retracting state
-                    }
-                    break;
-                case SHOOTER_RETRACTING:
-                    flick.setPosition(flickRetract); //Retracts the flicker
-                    if (shotCounter == num_shots) { //This will return us to idle after the 3rd shot
-                        stopper.setPosition(stopperClosed);  //Closes the stopper. Might be too fast-- test this.
-                        shooterState = ShooterState.SHOOTER_IDLE;
-
-                        break;  //I'm not sure why this is needed here, but it didn't work without it
-                    }
-                    shooterStartTime = System.currentTimeMillis(); //Resets timer
-                    shotCounter++; //Increases the shot counter
-                    shooterState = ShooterState.SHOOTER_WAITING3; //Moves us to Waiting2 state
-                    break;
-                case SHOOTER_WAITING3:
-                    shooterDeltaTime = System.currentTimeMillis() - shooterStartTime; //How much time has elapsed
-                    if (shooterDeltaTime > 200) { //This is the timer between shots
-                        shooterState = ShooterState.SHOOTER_INDEXING; //Returns our state to Indexing
-                    }
-                    break;
-
-                default:
+                break;
+            case SHOOTER_WAITING1: //This gives time for stopper to get out of the way
+                stopper.setPosition(stopperOpen);
+                shooterDeltaTime = System.currentTimeMillis() - shooterStartTime; //How much time has elapsed
+                if (shooterDeltaTime > 100) { //This is the timer. When time elapses, we move on...
+                    shooterState = ShooterState.SHOOTER_INDEXING; //Moves us to Indexing state
+                }
+                break;
+            case SHOOTER_INDEXING: //This fires the shot
+                flick.setPosition(flickExtend); //INDEXING extends the flicker
+                shooterStartTime = System.currentTimeMillis(); //Records current time
+                shooterState = ShooterState.SHOOTER_WAITING2; //Moves to second timer
+                break;
+            case SHOOTER_WAITING2:
+                shooterDeltaTime = System.currentTimeMillis() - shooterStartTime;
+                if (shooterDeltaTime > 100) {
+                    shooterState = ShooterState.SHOOTER_RETRACTING; //Moves us to Retracting state
+                }
+                break;
+            case SHOOTER_RETRACTING:
+                flick.setPosition(flickRetract); //Retracts the flicker
+                if (shotCounter == num_shots) { //This will return us to idle after the 3rd shot
+                    stopper.setPosition(stopperClosed);  //Closes the stopper. Might be too fast-- test this.
                     shooterState = ShooterState.SHOOTER_IDLE;
-                    break; //may not be necessary
-            }
+                    break;  //I'm not sure why this is needed here, but it didn't work without it
+                }
+                shooterStartTime = System.currentTimeMillis(); //Resets timer
+                shotCounter++; //Increases the shot counter
+                shooterState = ShooterState.SHOOTER_WAITING3; //Moves us to Waiting2 state
+                break;
+            case SHOOTER_WAITING3:
+                shooterDeltaTime = System.currentTimeMillis() - shooterStartTime; //How much time has elapsed
+                if (shooterDeltaTime > 200) { //This is the timer between shots
+                    shooterState = ShooterState.SHOOTER_INDEXING; //Returns our state to Indexing
+                }
+                break;
+            default:
+                shooterState = ShooterState.SHOOTER_IDLE;
+                break; //may not be necessary
+        }
 
     }
 }
