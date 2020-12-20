@@ -21,6 +21,8 @@ public class finalTeleOp extends LinearOpMode {
     private DcMotor motorBackRight;
     private DcMotor motorBackLeft;
     private DcMotor wobbleMotor;
+    private DcMotor shoot1;
+    private DcMotor shoot2;
     private Servo wobbleClaw;
 
     private ShooterStateMachine shooter = new ShooterStateMachine();
@@ -58,6 +60,8 @@ public class finalTeleOp extends LinearOpMode {
         flick = hardwareMap.servo.get("flick");
         stopper = hardwareMap.servo.get("stopper");
         wobbleClaw = hardwareMap.servo.get("wobbleClaw");
+        shoot1 = hardwareMap.dcMotor.get("shoot1");
+        shoot2 = hardwareMap.dcMotor.get("shoot2");
 
         motorFrontRight = hardwareMap.dcMotor.get("motorFrontRight");
         motorFrontLeft = hardwareMap.dcMotor.get("motorFrontLeft");
