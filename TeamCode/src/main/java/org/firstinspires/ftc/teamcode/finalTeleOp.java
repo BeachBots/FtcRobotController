@@ -25,7 +25,7 @@ public class finalTeleOp extends LinearOpMode {
     private DcMotor shoot2;
     private Servo wobbleClaw;
 
-    private ShooterStateMachine shooter = new ShooterStateMachine();
+    //private ShooterStateMachine shooter = new ShooterStateMachine();
 
     private PID pid = new PID();
 
@@ -81,7 +81,7 @@ public class finalTeleOp extends LinearOpMode {
 
 
 
-        shooter.init();
+        //shooter.init();
 
         double power = 1.5;
 
@@ -144,7 +144,7 @@ public class finalTeleOp extends LinearOpMode {
                 pid.loop();
             }
 
-
+/*
             if (gamepad1.x) {
                 shooter.shoot(3);
                 shooter.loop();
@@ -153,7 +153,7 @@ public class finalTeleOp extends LinearOpMode {
                 shooter.shoot(1);
                 shooter.loop();
             }
-
+*/
 /*
         MOVE THESE FUNCTIONS TO DIFFERENT BUTTONS
         if (gamepad1.dpad_down) {
