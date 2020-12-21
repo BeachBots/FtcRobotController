@@ -130,13 +130,14 @@ public class ShooterStateMachine {
                 break;
             case SHOOTER_RETRACTING:
                 flick.setPosition(flickRetract); //Retracts the flicker
+                shotCounter++; //Increases the shot counter
                 if (shotCounter == num_shots) { //This will return us to idle after the 3rd shot
                     stopper.setPosition(stopperClosed);  //Closes the stopper. Might be too fast-- test this.
                     shooterState = ShooterState.SHOOTER_IDLE;
                     break;  //I'm not sure why this is needed here, but it didn't work without it
                 }
                 shooterStartTime = System.currentTimeMillis(); //Resets timer
-                shotCounter++; //Increases the shot counter
+
                 shooterState = ShooterState.SHOOTER_WAITING3; //Moves us to Waiting2 state
                 break;
             case SHOOTER_WAITING3:
