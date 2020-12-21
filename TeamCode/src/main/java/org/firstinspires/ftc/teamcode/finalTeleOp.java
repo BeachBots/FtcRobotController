@@ -82,6 +82,7 @@ public class finalTeleOp extends LinearOpMode {
 
 
         shooter.init(hardwareMap);
+        pid.init();
 
         double power = 1.5;
 
