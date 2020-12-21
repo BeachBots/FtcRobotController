@@ -96,7 +96,7 @@ public class finalTeleOp extends LinearOpMode {
         double last_rb_press = 0.;
         double last_lb_press = 0.;
         double last_a_press = 0.;
-        final double PRESS_TIME_MS = 300;
+        final double PRESS_TIME_MS = 400;
 
         waitForStart();
 
