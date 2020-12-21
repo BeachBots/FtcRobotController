@@ -144,7 +144,7 @@ public class finalTeleOp extends LinearOpMode {
                 pid.loop();
             }
 
-/*
+
             if (gamepad1.x) {
                 shooter.shoot(3);
                 shooter.loop();
@@ -153,7 +153,7 @@ public class finalTeleOp extends LinearOpMode {
                 shooter.shoot(1);
                 shooter.loop();
             }
-*/
+
 /*
         MOVE THESE FUNCTIONS TO DIFFERENT BUTTONS
         if (gamepad1.dpad_down) {
