@@ -95,7 +95,7 @@ public class ShooterStateMachine {
     public void shoot(int num) {
         shooterState = ShooterState.SHOOTER_WAITING1;
         num_shots = num;
-
+        shotCounter = 0;
     }
 
     public void loop() {
