@@ -33,6 +33,8 @@ public class SampleAuton extends LinearOpMode {
     private Servo stopper;
     private DcMotor intake;
     private Servo intakeServo;
+    private Servo wobbleClaw;
+    private DcMotor wobbleMotor;
 
     private ShooterStateMachine shooter = new ShooterStateMachine();
 
@@ -109,19 +111,19 @@ public class SampleAuton extends LinearOpMode {
        when you transition to the next one, that's where you call followTrajectoryAsync().
        INITIALIZING should just call the function and immediately move to the next state.
        Any other one should have a condition for moving forward.
-   6. In a state where we're supposed to be driving, we check if the trajectory is still being
-      followed. This is done by calling if (drive.isBusy()) {drive.update();}
-      If we've already completed it, we can enter the next state.
-  7. For cases where you just want to wait, instead of starting a trajectory, you save a time
-     marker when you enter the next state.
-     In the following state, you check "now" vs that saved timestamp until the desired amount
-     of time has passed.
-     8. If we want to spin up the PID controller or anything else that updates, call pid.update();
+    6. In a state where we're supposed to be driving, we check if the trajectory is still being
+       followed. This is done by calling if (drive.isBusy()) {drive.update();}
+       If we've already completed it, we can enter the next state.
+    7. For cases where you just want to wait, instead of starting a trajectory, you save a time
+       marker when you enter the next state.
+       In the following state, you check "now" vs that saved timestamp until the desired amount
+       of time has passed.
+    8. If we want to spin up the PID controller or anything else that updates, call pid.update();
        or whatever at the same time as stuff like drive.update() - this is being called continuously
        until a drive is complete.
        You can also check if pid.done() before ending a state if it's important the PID has reached
        the correct speed before moving on.
-     */;
+    */;
 
     private ZERO_RINGS_STATE state;
     private ONE_RINGS_STATE state2;
@@ -131,7 +133,7 @@ public class SampleAuton extends LinearOpMode {
     private final int MS_BTWN_VEL_READINGS = 12;
     private final int NUM_VELOCITY_READINGS = 25;
 
-    private double targetVelocity = 0.0;
+    private double targetVelocity = 0.50;  // THIS IS WHERE WE ENTER DESIRED NUMBER FOR SHOOTER VELOCITY
     private double targetPower = 0.0;
     private long async_prevTime = 0;
     private double async_motorPrev = 0.0;
@@ -151,15 +153,18 @@ public class SampleAuton extends LinearOpMode {
     public void start(double inTargetVelocity, double inPower) {
         state1 = SampleAuton.PID_STATE.RUNNING;
 
-        flick = hardwareMap.servo.get("flick");
-        stopper = hardwareMap.servo.get("stopper");
         shoot1 = hardwareMap.dcMotor.get("shoot1");
         shoot2 = hardwareMap.dcMotor.get("shoot2");
         intake = hardwareMap.dcMotor.get("intake");
+        wobbleMotor = hardwareMap.dcMotor.get("wobbleMotor");
+        wobbleClaw = hardwareMap.servo.get("wobbleClaw");
         intakeServo = hardwareMap.servo.get("intakeServo");
+        flick = hardwareMap.servo.get("flick");
+        stopper = hardwareMap.servo.get("stopper");
 
-        shoot1.setDirection(DcMotor.Direction.REVERSE);  // BETTER TO DO THIS HERE THAN SETTING
-        shoot2.setDirection(DcMotor.Direction.REVERSE);  // MOTOR POWER TO A NEGATIVE NUMBER LATER
+        shoot1.setDirection(DcMotor.Direction.REVERSE);
+        shoot2.setDirection(DcMotor.Direction.REVERSE);
+        intake.setDirection(DcMotor.Direction.REVERSE);
         shooter.init(hardwareMap);
 
         targetVelocity = inTargetVelocity;
