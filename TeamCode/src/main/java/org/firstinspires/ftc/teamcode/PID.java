@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -16,14 +17,14 @@ import java.util.logging.SocketHandler;
 
 
 @TeleOp(name = "PID")
-public class PID extends OpMode {
+public class PID{
 
     private DcMotor shoot1;
     private DcMotor shoot2;
 
-    public void init(){
-        shoot1 = hardwareMap.dcMotor.get("shoot1");
-        shoot2 = hardwareMap.dcMotor.get("shoot2");
+    public void init(HardwareMap hardwaremap){
+        shoot1 = hardwaremap.dcMotor.get("shoot1");
+        shoot2 = hardwaremap.dcMotor.get("shoot2");
 
     }
 
