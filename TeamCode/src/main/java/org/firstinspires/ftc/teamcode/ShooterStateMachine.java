@@ -31,8 +31,8 @@ public class ShooterStateMachine extends OpMode {
 
     public ShooterState shooterState = ShooterState.SHOOTER_IDLE;
 
-    public DcMotor shoot1;   // should this be private?
-    public DcMotor shoot2;
+    private DcMotor shoot1;   // should this be private?
+    private DcMotor shoot2;
     public Servo flick;
     public Servo stopper;
     public DcMotor intake;
