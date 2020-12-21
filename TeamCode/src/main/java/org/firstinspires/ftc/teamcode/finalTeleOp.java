@@ -24,12 +24,11 @@ public class finalTeleOp extends LinearOpMode {
     private DcMotor shoot1;
     private DcMotor shoot2;
     private Servo wobbleClaw;
+    private Servo intakeServo;
 
     private ShooterStateMachine shooter = new ShooterStateMachine();
 
     private PID pid = new PID();
-
-
 
 
     public void motortest(double power, int distance) {
@@ -55,13 +54,13 @@ public class finalTeleOp extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
-
         intake = hardwareMap.dcMotor.get("intake");
         flick = hardwareMap.servo.get("flick");
         stopper = hardwareMap.servo.get("stopper");
         wobbleClaw = hardwareMap.servo.get("wobbleClaw");
         shoot1 = hardwareMap.dcMotor.get("shoot1");
         shoot2 = hardwareMap.dcMotor.get("shoot2");
+        intakeServo = hardwareMap.servo.get("intakeServo");
 
         motorFrontRight = hardwareMap.dcMotor.get("motorFrontRight");
         motorFrontLeft = hardwareMap.dcMotor.get("motorFrontLeft");
@@ -74,7 +73,6 @@ public class finalTeleOp extends LinearOpMode {
         shoot1.setDirection(DcMotor.Direction.REVERSE);
         shoot2.setDirection(DcMotor.Direction.REVERSE);
 
-
         intake.setDirection(DcMotor.Direction.REVERSE);
 
         motorFrontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -82,12 +80,10 @@ public class finalTeleOp extends LinearOpMode {
         motorBackRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorBackLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-
-
         shooter.init(hardwareMap);
         pid.init(hardwareMap);
 
-        double power = 1.5;
+        double power = .5;
 
         flick.setPosition(0.48);
         stopper.setPosition(0.85);
@@ -96,7 +92,22 @@ public class finalTeleOp extends LinearOpMode {
         double last_rb_press = 0.;
         double last_lb_press = 0.;
         double last_a_press = 0.;
+        double last_x_press = 0;
+        double last_y_press = 0;
+        double last_start_press = 0;
+        double last_back_press = 0;
         final double PRESS_TIME_MS = 400;
+        double intakeServoOpen = .2;
+        double intakeServoClosed = 0;
+        int powerPreset = 0;
+
+        // INPUT SHOOTER POWER VALUES HERE
+
+        double whiteLineHighGoalPower = .50;
+        double starterStackHighGoalPower = .65;
+        double powerShotPower = .30;
+
+        //
 
         waitForStart();
 
@@ -126,45 +137,35 @@ public class finalTeleOp extends LinearOpMode {
             //   }
 
             final double now = System.currentTimeMillis();
-            if (gamepad1.a &&(now - last_a_press > PRESS_TIME_MS)){
+            if (gamepad1.a && (now - last_a_press > PRESS_TIME_MS)) {
                 last_a_press = now;
                 shooterOn = !shooterOn;
                 if (shooterOn) {
-                    pid.start(power, power/2);
+                    pid.start(power, power / 2);
                 } else {
                     shoot1.setPower(0);
                     shoot2.setPower(0);
                     sleep(5);
-                   pid.start(0,0);
+                    pid.start(0, 0);
                 }
             }
-            
+
             if (shooterOn) {
                 pid.loop();
             }
 
-            if (gamepad1.x) {
+            if (gamepad1.x && (now - last_x_press > PRESS_TIME_MS)) {
+                last_x_press = now;
                 shooter.shoot(3);
-
             }
-            if (gamepad1.y) {
+
+            if (gamepad1.y && (now - last_y_press > PRESS_TIME_MS)) {
+                last_y_press = now;
                 shooter.shoot(1);
 
             }
+
             shooter.loop();
-
-/*
-        MOVE THESE FUNCTIONS TO DIFFERENT BUTTONS
-        if (gamepad1.dpad_down) {
-            intake.setPower(1);
-        }
-        if (gamepad1.dpad_right) {
-            intake.setPower((0));
-        }
-        if (gamepad1.dpad_up) {
-            intake.setPower(-1);
-        }*/
-
 
             if (gamepad1.right_bumper && (now - last_rb_press > PRESS_TIME_MS)) {
                 last_rb_press = now;
@@ -180,37 +181,58 @@ public class finalTeleOp extends LinearOpMode {
 
             if (gamepad1.dpad_up) {
                 power = power + 0.1;
-                telemetry.addData("power = ", power);
+                telemetry.addData("power", (Math.round(100 * power)));
                 telemetry.update();
-                sleep(500);
+                sleep(200);
             }
 
             if (gamepad1.dpad_down) {
                 power = power - 0.1;
-                telemetry.addData("power = ", power);
+                telemetry.addData("power", (Math.round(100 * power)));
                 telemetry.update();
-                sleep(500);
+                sleep(200);
             }
 
             if (gamepad1.dpad_right) {
                 power = power + 0.01;
-                telemetry.addData("power = ", power);
+                telemetry.addData("power", (Math.round(100 * power)));
                 telemetry.update();
-                sleep(500);
+                sleep(200);
             }
 
             if (gamepad1.dpad_left) {
                 power = power - 0.01;
-                telemetry.addData("power = ", power);
+                telemetry.addData("power", (Math.round(100 * power)));
                 telemetry.update();
-                sleep(500);
+                sleep(200);
             }
 
+            if (gamepad1.back && (now - last_back_press > PRESS_TIME_MS)) {
+                last_back_press = now;
+                output = !output;
+                intakeServo.setPosition(output ? intakeServoOpen : intakeServoClosed);
+            }
 
+            if (gamepad1.start && (now - last_start_press > 300)) {
+                last_start_press = now;
+                powerPreset++;
+                if (powerPreset == 1) {
+                    power = whiteLineHighGoalPower;
+                    telemetry.addData("WHITE LINE HIGH GOAL : power", (Math.round(100 * power)));
+                    telemetry.update();
+                } else if (powerPreset == 2) {
+                    power = starterStackHighGoalPower;
+                    telemetry.addData("STARTER STACK HIGH GOAL : power", (Math.round(100 * power)));
+                    telemetry.update();
+                } else if (powerPreset == 3) {
+                    power = powerShotPower;
+                    powerPreset = 0;
+                    telemetry.addData("POWER SHOT : power", (Math.round(100 * power)));
+                    telemetry.update();
+                }
+            }
         }
-
     }
-
 }
 
 

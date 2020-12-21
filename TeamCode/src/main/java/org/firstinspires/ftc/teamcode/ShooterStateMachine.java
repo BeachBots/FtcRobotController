@@ -113,7 +113,7 @@ public class ShooterStateMachine {
             case SHOOTER_WAITING1: //This gives time for stopper to get out of the way
                 stopper.setPosition(stopperOpen);
                 shooterDeltaTime = System.currentTimeMillis() - shooterStartTime; //How much time has elapsed
-                if (shooterDeltaTime > 100) { //This is the timer. When time elapses, we move on...
+                if (shooterDeltaTime > 200) { //This is the timer. When time elapses, we move on...
                     shooterState = ShooterState.SHOOTER_INDEXING; //Moves us to Indexing state
                 }
                 break;
@@ -137,7 +137,6 @@ public class ShooterStateMachine {
                     break;  //I'm not sure why this is needed here, but it didn't work without it
                 }
                 shooterStartTime = System.currentTimeMillis(); //Resets timer
-
                 shooterState = ShooterState.SHOOTER_WAITING3; //Moves us to Waiting2 state
                 break;
             case SHOOTER_WAITING3:
