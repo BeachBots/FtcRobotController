@@ -25,7 +25,7 @@ public class finalTeleOp extends LinearOpMode {
     private DcMotor shoot2;
     private Servo wobbleClaw;
 
-    //private ShooterStateMachine shooter = new ShooterStateMachine();
+    private ShooterStateMachine shooter = new ShooterStateMachine();
 
     private PID pid = new PID();
 
@@ -81,7 +81,7 @@ public class finalTeleOp extends LinearOpMode {
 
 
 
-        //shooter.init();
+        shooter.init(hardwareMap);
 
         double power = 1.5;
 

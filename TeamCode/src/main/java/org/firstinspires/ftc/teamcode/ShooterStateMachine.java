@@ -7,14 +7,14 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.logging.SocketHandler;
 
 
 @TeleOp(name = "ShooterStateMachine")
-public class ShooterStateMachine extends OpMode {
-
+public class ShooterStateMachine {
     public enum ShooterState {
         SHOOTER_IDLE,
         SHOOTER_WAITING1,
@@ -48,15 +48,15 @@ public class ShooterStateMachine extends OpMode {
     private int num_shots = 0;
 
 
-    public void init() {
+    public void init(HardwareMap hardwaremap) {
 
         //ELAINE: IS THIS THE PROBLEM? WE ARE DECLARING THESE HERE AND IN FINAL TELE OP
 
-        shoot1 = hardwareMap.dcMotor.get("shoot1");
-        shoot2 = hardwareMap.dcMotor.get("shoot2");
-        intake = hardwareMap.dcMotor.get("intake");
-        flick = hardwareMap.servo.get("flick");
-        stopper = hardwareMap.servo.get("stopper");
+        shoot1 = hardwaremap.dcMotor.get("shoot1");
+        shoot2 = hardwaremap.dcMotor.get("shoot2");
+        intake = hardwaremap.dcMotor.get("intake");
+        flick = hardwaremap.servo.get("flick");
+        stopper = hardwaremap.servo.get("stopper");
 
         shoot1.setDirection(DcMotor.Direction.REVERSE);  // BETTER TO DO THIS HERE THAN SETTING
         shoot2.setDirection(DcMotor.Direction.REVERSE);  // MOTOR POWER TO A NEGATIVE NUMBER LATER
