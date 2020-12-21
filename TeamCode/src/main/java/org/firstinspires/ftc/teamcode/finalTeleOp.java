@@ -71,6 +71,9 @@ public class finalTeleOp extends LinearOpMode {
 
         motorBackLeft.setDirection(DcMotor.Direction.REVERSE);
         motorFrontLeft.setDirection(DcMotor.Direction.REVERSE);
+        shoot1.setDirection(DcMotor.Direction.REVERSE);
+        shoot2.setDirection(DcMotor.Direction.REVERSE);
+
 
         intake.setDirection(DcMotor.Direction.REVERSE);
 
@@ -129,6 +132,9 @@ public class finalTeleOp extends LinearOpMode {
                 if (shooterOn) {
                     pid.start(power, power/2);
                 } else {
+                    shoot1.setPower(0);
+                    shoot2.setPower(0);
+                    sleep(5);
                     pid.start(0,0);
                 }
             }
