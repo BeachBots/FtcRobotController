@@ -467,6 +467,7 @@ public class SampleAuton extends LinearOpMode {
                         state2 = ONE_RINGS_STATE.DRIVING_TO_RING_STACK;
                         break;
                     case DRIVING_TO_RING_STACK:
+                        start(targetVelocity, targetPower);
                         telemetry.addData("state = ", state2);
                         telemetry.update();
                         if (drive.isBusy()) { // Still moving to shooting line.
@@ -553,6 +554,7 @@ public class SampleAuton extends LinearOpMode {
                         state3 = FOUR_RINGS_STATE.DRIVING_TO_RING_STACK;
                         break;
                     case DRIVING_TO_RING_STACK:
+                        start(targetVelocity, targetPower);
                         telemetry.addData("state = ", state3);
                         telemetry.update();
                         if (drive.isBusy()) { // Still moving to shooting line.
