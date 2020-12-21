@@ -136,14 +136,14 @@ public class finalTeleOp extends LinearOpMode {
             
             if (gamepad1.left_stick_button){
                 pid.start(1.5, 0.6);
-                pid.loop();
+
             }
 
             if (gamepad1.right_stick_button){
                 pid.start(0, 0);
-                pid.loop();
-            }
 
+            }
+            pid.loop();
 
             if (gamepad1.x) {
                 shooter.shoot(3);
