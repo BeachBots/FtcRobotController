@@ -30,6 +30,8 @@ public class SampleAuton extends LinearOpMode {
     private Servo flick;
     private DcMotor shoot1;
     private DcMotor shoot2;
+    private Servo stopper;
+    private DcMotor intake;
 
     private ShooterStateMachine shooter = new ShooterStateMachine();
 
@@ -150,9 +152,17 @@ public class SampleAuton extends LinearOpMode {
 
     public void start(double inTargetVelocity, double inPower) {
         state1 = SampleAuton.PID_STATE.RUNNING;
+
+        flick = hardwareMap.servo.get("flick");
+        stopper = hardwareMap.servo.get("stopper");
+        shoot1 = hardwareMap.dcMotor.get("shoot1");
+        shoot2 = hardwareMap.dcMotor.get("shoot2");
+        intake = hardwareMap.dcMotor.get("intake");
+
+
         shoot1.setDirection(DcMotor.Direction.REVERSE);  // BETTER TO DO THIS HERE THAN SETTING
         shoot2.setDirection(DcMotor.Direction.REVERSE);  // MOTOR POWER TO A NEGATIVE NUMBER LATER
-        shooter.init();
+        shooter.init(hardwareMap);
 
         targetVelocity = inTargetVelocity;
         targetPower = inPower;
@@ -279,7 +289,7 @@ public class SampleAuton extends LinearOpMode {
 
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        flick = hardwareMap.servo.get("flick");
+
 
         double setFlickTime = .1;
         double setFlickBetween = 1.0;
