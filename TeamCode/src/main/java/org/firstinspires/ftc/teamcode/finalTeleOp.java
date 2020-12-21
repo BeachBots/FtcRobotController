@@ -135,12 +135,13 @@ public class finalTeleOp extends LinearOpMode {
                     shoot1.setPower(0);
                     shoot2.setPower(0);
                     sleep(5);
-                   // pid.start(0,0);
+                   pid.start(0,0);
                 }
             }
             
-
-            pid.loop();
+            if (shooterOn) {
+                pid.loop();
+            }
 
             if (gamepad1.x) {
                 shooter.shoot(3);
