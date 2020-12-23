@@ -92,13 +92,20 @@ public class finalTeleOp extends LinearOpMode {
         double last_rb_press = 0.;
         double last_lb_press = 0.;
         double last_a_press = 0.;
-        double last_x_press = 0;
-        double last_y_press = 0;
-        double last_start_press = 0;
-        double last_back_press = 0;
+        double last_b_press = 0.;
+        double last_x_press = 0.;
+        double last_y_press = 0.;
+        double last_start_press = 0.;
+        double last_back_press = 0.;
+        double last_dpad_up_press = 0.;
+        double last_dpad_down_press = 0.;
+        double last_dpad_left_press = 0.;
+        double last_dpad_right_press = 0.;
         final double PRESS_TIME_MS = 400;
         double intakeServoOpen = .2;
         double intakeServoClosed = 0;
+        double wobbleClawOpen = .8;
+        double wobbleClawClosed = .6;
         int powerPreset = 0;
 
         // INPUT SHOOTER POWER VALUES HERE
@@ -111,7 +118,6 @@ public class finalTeleOp extends LinearOpMode {
 
         waitForStart();
 
-
         while (opModeIsActive()) {
 
             float deadZone = (float) 0.5;
@@ -122,23 +128,10 @@ public class finalTeleOp extends LinearOpMode {
             motorFrontLeft.setPower(-gamepad1.left_stick_y * 0.8 + gamepad1.right_stick_x * 0.8 + gamepad1.left_stick_x * 0.8);
             motorBackLeft.setPower(-gamepad1.left_stick_y * 0.8 + gamepad1.right_stick_x * 0.8 - gamepad1.left_stick_x * 0.8);
 
-            // if (gamepad1.square) {
-            //    wobbleClaw.setPosition(/*open*/0);
-            //     motortest(1, 0/*down*/);
-            //     wobbleClaw.setPosition(/*close*/0);
-            //     motortest(1, 0/*up*/);
-            //  }
-
-            // if (gamepad1.triangle){
-            //     motortest(1,0*//*down*//*);
-            //     wobbleClaw.setPosition(*//*open*//*0);
-            //     motortest(1,0*//*up*//*);
-            //      wobbleClaw.setPosition(*//*close*//*0);
-            //   }
 
             final double now = System.currentTimeMillis();
-            if (gamepad1.a && (now - last_a_press > PRESS_TIME_MS)) {
-                last_a_press = now;
+            if (gamepad1.x && (now - last_x_press > PRESS_TIME_MS)) {
+                last_x_press = now;
                 shooterOn = !shooterOn;
                 if (shooterOn) {
                     pid.start(power, power / 2);
@@ -154,63 +147,83 @@ public class finalTeleOp extends LinearOpMode {
                 pid.loop();
             }
 
-            if (gamepad1.x && (now - last_x_press > PRESS_TIME_MS)) {
-                last_x_press = now;
-                shooter.shoot(3);
-            }
-
             if (gamepad1.y && (now - last_y_press > PRESS_TIME_MS)) {
                 last_y_press = now;
-                shooter.shoot(1);
-
+                //USE FOR WOBBLE GOAL
             }
 
+            if (gamepad1.b && (now - last_b_press > PRESS_TIME_MS)) {
+                last_b_press = now;
+                //USE FOR WOBBLE GOAL
+            }
+
+            if (gamepad1.a && (now - last_a_press > PRESS_TIME_MS)) {
+                last_a_press = now;
+                //USE FOR WOBBLE GOAL
+            }
+
+            // if (gamepad1.square) {
+            //    wobbleClaw.setPosition(/*open*/0);
+            //     motortest(1, 0/*down*/);
+            //     wobbleClaw.setPosition(/*close*/0);
+            //     motortest(1, 0/*up*/);
+            //  }
+
+            // if (gamepad1.triangle){
+            //     motortest(1,0*//*down*//*);
+            //     wobbleClaw.setPosition(*//*open*//*0);
+            //     motortest(1,0*//*up*//*);
+            //      wobbleClaw.setPosition(*//*close*//*0);
+            //   }
+
             shooter.loop();
+
+            double intake_power = gamepad1.right_trigger - gamepad1.left_trigger;
+            intake.setPower(intake_power);
 
             if (gamepad1.right_bumper && (now - last_rb_press > PRESS_TIME_MS)) {
                 last_rb_press = now;
                 output = !output;
-                intake.setPower(output ? 1 : 0);
+                shooter.shoot(3);
             }
 
             if (gamepad1.left_bumper && (now - last_lb_press > PRESS_TIME_MS)) {
                 last_lb_press = now;
                 output = !output;
-                intake.setPower(output ? -1 : 0);
+                shooter.shoot(1);
             }
 
-            if (gamepad1.dpad_up) {
+            if (gamepad1.dpad_up && (now - last_dpad_up_press > 200)) {
+                last_dpad_up_press = now;
+                output = !output;
                 power = power + 0.1;
                 telemetry.addData("power", (Math.round(100 * power)));
                 telemetry.update();
-                sleep(200);
             }
 
-            if (gamepad1.dpad_down) {
+            if (gamepad1.dpad_down && (now - last_dpad_down_press > 200)) {
+                last_dpad_down_press = now;
+                output = !output;
                 power = power - 0.1;
                 telemetry.addData("power", (Math.round(100 * power)));
                 telemetry.update();
-                sleep(200);
             }
 
-            if (gamepad1.dpad_right) {
+            if (gamepad1.dpad_right && (now - last_dpad_right_press > 200)) {
+                last_dpad_right_press = now;
+                output = !output;
                 power = power + 0.01;
                 telemetry.addData("power", (Math.round(100 * power)));
                 telemetry.update();
-                sleep(200);
             }
 
-            if (gamepad1.dpad_left) {
+            if (gamepad1.dpad_left && (now - last_dpad_left_press > 200)) {
+                last_dpad_left_press = now;
+                output = !output;
                 power = power - 0.01;
                 telemetry.addData("power", (Math.round(100 * power)));
                 telemetry.update();
                 sleep(200);
-            }
-
-            if (gamepad1.back && (now - last_back_press > PRESS_TIME_MS)) {
-                last_back_press = now;
-                output = !output;
-                intakeServo.setPosition(output ? intakeServoOpen : intakeServoClosed);
             }
 
             if (gamepad1.start && (now - last_start_press > 300)) {
@@ -230,6 +243,12 @@ public class finalTeleOp extends LinearOpMode {
                     telemetry.addData("POWER SHOT : power", (Math.round(100 * power)));
                     telemetry.update();
                 }
+            }
+
+            if (gamepad1.back && (now - last_back_press > PRESS_TIME_MS)) {
+                last_back_press = now;
+                output = !output;
+                intakeServo.setPosition(output ? intakeServoOpen : intakeServoClosed);
             }
         }
     }
