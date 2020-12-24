@@ -314,8 +314,8 @@ public class SampleAuton extends LinearOpMode {
                 .splineToConstantHeading(new Vector2d(-50, -37), Math.toRadians(0))  // Move to get Wobble #2
                 .build();
 
-        Trajectory zeroRings4 = drive.trajectoryBuilder(zeroRings3.end()) // Move to Box A
-                .splineToConstantHeading(new Vector2d(10, -37), Math.toRadians(0))
+        Trajectory zeroRings4 = drive.trajectoryBuilder(zeroRings3.end())
+                .splineToConstantHeading(new Vector2d(10, -37), Math.toRadians(0)) // Move to Box A
                 .build();
 
 
