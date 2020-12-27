@@ -17,12 +17,12 @@ import java.util.logging.SocketHandler;
 
 
 @TeleOp(name = "PID")
-public class PID{
+public class PID {
 
     private DcMotor shoot1;
     private DcMotor shoot2;
 
-    public void init(HardwareMap hardwaremap){
+    public void init(HardwareMap hardwaremap) {
         shoot1 = hardwaremap.dcMotor.get("shoot1");
         shoot2 = hardwaremap.dcMotor.get("shoot2");
 
@@ -32,14 +32,14 @@ public class PID{
     private final int MS_BTWN_VEL_READINGS = 12;
     private final int NUM_VELOCITY_READINGS = 25;
 
-        private double targetVelocity = 0.0;
-        private double targetPower = 0.0;
-        private long async_prevTime = 0;
-        private double async_motorPrev = 0.0;
-        private double async_prevError;
-        private double velocity_accumulator = 0.0;
-        private int velocity_reading_count = 0;
-        private int pid_adjust_count = 0;
+    private double targetVelocity = 0.0;
+    private double targetPower = 0.0;
+    private long async_prevTime = 0;
+    private double async_motorPrev = 0.0;
+    private double async_prevError;
+    private double velocity_accumulator = 0.0;
+    private int velocity_reading_count = 0;
+    private int pid_adjust_count = 0;
 
 
     private enum PID_STATE {
@@ -53,7 +53,6 @@ public class PID{
 
     public void start(double inTargetVelocity, double inPower) {
         state1 = PID.PID_STATE.RUNNING;
-
 
 
         targetVelocity = inTargetVelocity;

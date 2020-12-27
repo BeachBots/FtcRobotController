@@ -23,14 +23,16 @@ public class finalTeleOp extends LinearOpMode {
     private DcMotor wobbleMotor;
     private DcMotor shoot1;
     private DcMotor shoot2;
-    private Servo wobbleClaw;
     private Servo intakeServo;
+    private Servo wobbleClaw;
+   // private Servo wobbleArm;
 
     private ShooterStateMachine shooter = new ShooterStateMachine();
 
     private PID pid = new PID();
 
 
+/* THIS IS WOBBLE MOTOR TEST CODE. WILL BE REPLACED WITH SERVO CODE
     public void motortest(double power, int distance) {
 
         wobbleMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -49,7 +51,7 @@ public class finalTeleOp extends LinearOpMode {
 
         wobbleMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-    }
+    }*/
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -61,6 +63,7 @@ public class finalTeleOp extends LinearOpMode {
         shoot1 = hardwareMap.dcMotor.get("shoot1");
         shoot2 = hardwareMap.dcMotor.get("shoot2");
         intakeServo = hardwareMap.servo.get("intakeServo");
+       // wobbleArm = hardwareMap.servo.get("wobbleArm");
 
         motorFrontRight = hardwareMap.dcMotor.get("motorFrontRight");
         motorFrontLeft = hardwareMap.dcMotor.get("motorFrontLeft");
@@ -72,7 +75,6 @@ public class finalTeleOp extends LinearOpMode {
         motorFrontLeft.setDirection(DcMotor.Direction.REVERSE);
         shoot1.setDirection(DcMotor.Direction.REVERSE);
         shoot2.setDirection(DcMotor.Direction.REVERSE);
-
         intake.setDirection(DcMotor.Direction.REVERSE);
 
         motorFrontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -83,10 +85,11 @@ public class finalTeleOp extends LinearOpMode {
         shooter.init(hardwareMap);
         pid.init(hardwareMap);
 
-        double power = .5;
+        double power = .55; // this is the default starting speed
 
-        flick.setPosition(0.48);
-        stopper.setPosition(0.85);
+        flick.setPosition(0.48); // this is retracted
+        stopper.setPosition(0.85); // this is closed
+
         boolean output = false;  // this is for the intake
         boolean shooterOn = false;
         double last_rb_press = 0.;
@@ -106,11 +109,16 @@ public class finalTeleOp extends LinearOpMode {
         double intakeServoClosed = 0;
         double wobbleClawOpen = .8;
         double wobbleClawClosed = .6;
+        double wobbleArmStowed = 0; // TBD when wobble servo is in
+        double wobbleArmExtended = 0; // TBD when wobble servo is in
+        double wobbleArmUp = 0; // TBD when wobble servo is in
         int powerPreset = 0;
+        double stopperOpen = 1;
+        double stopperClosed = .85;
 
         // INPUT SHOOTER POWER VALUES HERE
 
-        double whiteLineHighGoalPower = .50;
+        double whiteLineHighGoalPower = .55;
         double starterStackHighGoalPower = .65;
         double powerShotPower = .30;
 
@@ -147,34 +155,26 @@ public class finalTeleOp extends LinearOpMode {
                 pid.loop();
             }
 
-            if (gamepad1.y && (now - last_y_press > PRESS_TIME_MS)) {
+           /* if (gamepad1.y && (now - last_y_press > PRESS_TIME_MS)) {
                 last_y_press = now;
-                //USE FOR WOBBLE GOAL
+                //USE FOR WOBBLE GOAL - toggle between stowed and extended
+                output = !output;
+                wobbleArm.setPosition(output ? wobbleArmStowed : wobbleArmExtended);
             }
 
             if (gamepad1.b && (now - last_b_press > PRESS_TIME_MS)) {
                 last_b_press = now;
-                //USE FOR WOBBLE GOAL
-            }
+                //USE FOR WOBBLE GOAL - toggle between extended and 90 degrees up
+                output = !output;
+                wobbleArm.setPosition(output ? wobbleArmUp : wobbleArmExtended);
+            }*/
 
             if (gamepad1.a && (now - last_a_press > PRESS_TIME_MS)) {
                 last_a_press = now;
-                //USE FOR WOBBLE GOAL
+                    output = !output;
+                    stopper.setPosition(output ? stopperOpen : stopperClosed);
+                // wobbleClaw.setPosition(output ? wobbleClawOpen : wobbleClawClosed);
             }
-
-            // if (gamepad1.square) {
-            //    wobbleClaw.setPosition(/*open*/0);
-            //     motortest(1, 0/*down*/);
-            //     wobbleClaw.setPosition(/*close*/0);
-            //     motortest(1, 0/*up*/);
-            //  }
-
-            // if (gamepad1.triangle){
-            //     motortest(1,0*//*down*//*);
-            //     wobbleClaw.setPosition(*//*open*//*0);
-            //     motortest(1,0*//*up*//*);
-            //      wobbleClaw.setPosition(*//*close*//*0);
-            //   }
 
             shooter.loop();
 

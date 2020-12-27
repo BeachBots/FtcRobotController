@@ -14,9 +14,10 @@ public class WobbleTest extends LinearOpMode {
 
 
     public void motortest(double power, int distance) {
-        wobbleMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        wobbleMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //THESE SHOULD COME IN OPMODE
+        /*wobbleMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        wobbleMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);*/
 
         wobbleMotor.setTargetPosition(-distance);
 
@@ -38,7 +39,7 @@ public class WobbleTest extends LinearOpMode {
         wobbleClaw = hardwareMap.servo.get("wobbleClaw");
 
         wobbleMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        wobbleMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE); //Jon
+        wobbleMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         int i = 0;
 
@@ -59,20 +60,21 @@ public class WobbleTest extends LinearOpMode {
             //THIS IS CODE TO TEST MOTOR POSITIONS
 
             if (gamepad1.a) {
-                motortest(.5, 50);
+                motortest(.2, 0);
             }
 
             if (gamepad1.y) {
-                motortest(1, 0);
+                motortest(.2, -10);
             }
 
             if (gamepad1.b) {
-                motortest(.5, 100);
+                motortest(.2, 10);
             }
 
             if (gamepad1.x) {
-                motortest(.5, -50);
+                motortest(.2, 20);
             }
+
 
             //THIS IS CODE TO TEST SERVO POSITIONS
 

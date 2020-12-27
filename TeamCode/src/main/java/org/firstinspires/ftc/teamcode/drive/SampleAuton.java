@@ -34,7 +34,8 @@ public class SampleAuton extends LinearOpMode {
     private DcMotor intake;
     private Servo intakeServo;
     private Servo wobbleClaw;
-    private DcMotor wobbleMotor;
+    private Servo wobbleArm;
+   // private DcMotor wobbleMotor;
 
     private ShooterStateMachine shooter = new ShooterStateMachine();
 
@@ -156,8 +157,9 @@ public class SampleAuton extends LinearOpMode {
         shoot1 = hardwareMap.dcMotor.get("shoot1");
         shoot2 = hardwareMap.dcMotor.get("shoot2");
         intake = hardwareMap.dcMotor.get("intake");
-        wobbleMotor = hardwareMap.dcMotor.get("wobbleMotor");
+        //wobbleMotor = hardwareMap.dcMotor.get("wobbleMotor");
         wobbleClaw = hardwareMap.servo.get("wobbleClaw");
+        //wobbleArm = hardwareMap.servo.get("wobbleArm");
         intakeServo = hardwareMap.servo.get("intakeServo");
         flick = hardwareMap.servo.get("flick");
         stopper = hardwareMap.servo.get("stopper");
@@ -291,6 +293,11 @@ public class SampleAuton extends LinearOpMode {
         double setFlickBetween = 1.0;
         double intakeServoOpen = .2;
         double intakeServoClosed = 0;
+        double wobbleArmStowed = 0;
+        double wobbleArmExtended = 0;
+        double wobbleArmUp = 0;
+        double wobbleClawOpen = .8;
+        double wobbleClawClosed = .6;
 
         //zero rings
 
@@ -435,7 +442,7 @@ public class SampleAuton extends LinearOpMode {
                     case PICK_UP_WOBBLE_2:
                         telemetry.addData("state = ", state);
                         telemetry.update();
-                        sleep(1000); // CALL WOBBLE GOAL PICK UP ROUTINE
+                        wobbleClaw.setPosition(wobbleClawClosed); // CLOSE CLAW
                         state = ZERO_RINGS_STATE.MOVE_TO_DROP_WOBBLE_2;
                         break;
                     case MOVE_TO_DROP_WOBBLE_2:

@@ -37,7 +37,7 @@ public class ShooterStateMachine {
     public Servo stopper;
     public DcMotor intake;
 
-    public double flickExtend = 0.7;
+    public double flickExtend = 0.75;
     public double flickRetract = 0.48;
     public double stopperClosed = 0.85;
     public double stopperOpen = 1;
