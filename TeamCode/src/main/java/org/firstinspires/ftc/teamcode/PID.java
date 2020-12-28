@@ -26,6 +26,10 @@ public class PID {
         shoot1 = hardwaremap.dcMotor.get("shoot1");
         shoot2 = hardwaremap.dcMotor.get("shoot2");
 
+     //DO THESE NEED TO BE ADDED?
+     //shoot1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+     //shoot2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
     }
 
     private final int NUM_PID_ADJUSTMENTS = 10;
@@ -58,7 +62,7 @@ public class PID {
         targetVelocity = inTargetVelocity;
         targetPower = inPower;
         async_prevTime = System.currentTimeMillis();
-        async_motorPrev = -shoot1.getCurrentPosition();
+        async_motorPrev = -shoot1.getCurrentPosition(); // should this be - ?
         async_prevError = 0;
         velocity_accumulator = 0.0;
         velocity_reading_count = 0;
@@ -93,12 +97,13 @@ public class PID {
         double error = targetVelocity - currentVelocity;
         final double p = kp * error;
         final double d = kd * ((error - async_prevError) / changeTime);
-        shoot1.setPower(p + d + targetPower);
-        shoot2.setPower(p + d + targetPower);
+        shoot1.setPower(p + d + targetPower);  // try with currentVelocity?
+        shoot2.setPower(p + d + targetPower);  // try with currentVelocity?
 
         // Update Telemetry
         FtcDashboard dashboard = FtcDashboard.getInstance();
         Telemetry dashboardTelemetry = dashboard.getTelemetry();
+        dashboardTelemetry.addData("target power", targetPower);
         dashboardTelemetry.addData("power", p + d + targetPower);
         dashboardTelemetry.addData("p", p);
         dashboardTelemetry.addData("d", d);

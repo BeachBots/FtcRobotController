@@ -20,38 +20,15 @@ public class finalTeleOp extends LinearOpMode {
     private DcMotor motorFrontLeft;
     private DcMotor motorBackRight;
     private DcMotor motorBackLeft;
-    private DcMotor wobbleMotor;
+    private DcMotor wobbleMotor;  // will be replaced with Servo wobbleArm
     private DcMotor shoot1;
     private DcMotor shoot2;
     private Servo intakeServo;
     private Servo wobbleClaw;
-   // private Servo wobbleArm;
 
     private ShooterStateMachine shooter = new ShooterStateMachine();
 
     private PID pid = new PID();
-
-
-/* THIS IS WOBBLE MOTOR TEST CODE. WILL BE REPLACED WITH SERVO CODE
-    public void motortest(double power, int distance) {
-
-        wobbleMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        wobbleMotor.setTargetPosition(-distance);
-
-        wobbleMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        wobbleMotor.setPower(power);
-
-        while (wobbleMotor.isBusy()) {
-
-        }
-
-        wobbleMotor.setPower(0);
-
-        wobbleMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-    }*/
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -112,9 +89,7 @@ public class finalTeleOp extends LinearOpMode {
         double wobbleArmStowed = 0; // TBD when wobble servo is in
         double wobbleArmExtended = 0; // TBD when wobble servo is in
         double wobbleArmUp = 0; // TBD when wobble servo is in
-        int powerPreset = 0;
-        double stopperOpen = 1;
-        double stopperClosed = .85;
+        int powerPreset = 0; // This is for the presets assigned to the START button
 
         // INPUT SHOOTER POWER VALUES HERE
 
@@ -155,7 +130,10 @@ public class finalTeleOp extends LinearOpMode {
                 pid.loop();
             }
 
-           /* if (gamepad1.y && (now - last_y_press > PRESS_TIME_MS)) {
+        // A, B, Y WILL BE FOR THE WOBBLE GOAL MECHANISM
+
+           /*
+           if (gamepad1.y && (now - last_y_press > PRESS_TIME_MS)) {
                 last_y_press = now;
                 //USE FOR WOBBLE GOAL - toggle between stowed and extended
                 output = !output;
@@ -167,14 +145,14 @@ public class finalTeleOp extends LinearOpMode {
                 //USE FOR WOBBLE GOAL - toggle between extended and 90 degrees up
                 output = !output;
                 wobbleArm.setPosition(output ? wobbleArmUp : wobbleArmExtended);
-            }*/
+            }
 
             if (gamepad1.a && (now - last_a_press > PRESS_TIME_MS)) {
                 last_a_press = now;
-                    output = !output;
-                    stopper.setPosition(output ? stopperOpen : stopperClosed);
+                output = !output;
                 // wobbleClaw.setPosition(output ? wobbleClawOpen : wobbleClawClosed);
             }
+            */
 
             shooter.loop();
 
