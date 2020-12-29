@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -40,7 +41,7 @@ public class finalTeleOp extends LinearOpMode {
         shoot1 = hardwareMap.dcMotor.get("shoot1");
         shoot2 = hardwareMap.dcMotor.get("shoot2");
         intakeServo = hardwareMap.servo.get("intakeServo");
-       // wobbleArm = hardwareMap.servo.get("wobbleArm");
+        // wobbleArm = hardwareMap.servo.get("wobbleArm");
 
         motorFrontRight = hardwareMap.dcMotor.get("motorFrontRight");
         motorFrontLeft = hardwareMap.dcMotor.get("motorFrontLeft");
@@ -50,8 +51,6 @@ public class finalTeleOp extends LinearOpMode {
 
         motorBackLeft.setDirection(DcMotor.Direction.REVERSE);
         motorFrontLeft.setDirection(DcMotor.Direction.REVERSE);
-        shoot1.setDirection(DcMotor.Direction.REVERSE);
-        shoot2.setDirection(DcMotor.Direction.REVERSE);
         intake.setDirection(DcMotor.Direction.REVERSE);
 
         motorFrontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -62,7 +61,7 @@ public class finalTeleOp extends LinearOpMode {
         shooter.init(hardwareMap);
         pid.init(hardwareMap);
 
-        double power = .55; // this is the default starting speed
+        double targetVelocity = .55; // this is the default starting speed
 
         flick.setPosition(0.48); // this is retracted
         stopper.setPosition(0.85); // this is closed
@@ -93,9 +92,9 @@ public class finalTeleOp extends LinearOpMode {
 
         // INPUT SHOOTER POWER VALUES HERE
 
-        double whiteLineHighGoalPower = .55;
-        double starterStackHighGoalPower = .65;
-        double powerShotPower = .30;
+        double whiteLineHighGoalVelocity = .55;
+        double starterStackHighGoalVelocity = .65;
+        double powerShotVelocity = .30;
 
         //
 
@@ -117,20 +116,21 @@ public class finalTeleOp extends LinearOpMode {
                 last_x_press = now;
                 shooterOn = !shooterOn;
                 if (shooterOn) {
-                    pid.start(power, power / 2);
+                    pid.start(targetVelocity);
                 } else {
                     shoot1.setPower(0);
                     shoot2.setPower(0);
                     sleep(5);
-                    pid.start(0, 0);
+                    pid.start(0);
                 }
             }
 
             if (shooterOn) {
                 pid.loop();
+                telemetry.addData("shooterVelocity", pid.currentVelocity);
             }
 
-        // A, B, Y WILL BE FOR THE WOBBLE GOAL MECHANISM
+            // A, B, Y WILL BE FOR THE WOBBLE GOAL MECHANISM
 
            /*
            if (gamepad1.y && (now - last_y_press > PRESS_TIME_MS)) {
@@ -174,55 +174,55 @@ public class finalTeleOp extends LinearOpMode {
             if (gamepad1.dpad_up && (now - last_dpad_up_press > 200)) {
                 last_dpad_up_press = now;
                 output = !output;
-                power = power + 0.1;
-                telemetry.addData("power", (Math.round(100 * power)));
+                targetVelocity = targetVelocity + 0.1;
+                telemetry.addData("targetVelocity", (Math.round(100 * targetVelocity)));
                 telemetry.update();
             }
 
             if (gamepad1.dpad_down && (now - last_dpad_down_press > 200)) {
                 last_dpad_down_press = now;
                 output = !output;
-                power = power - 0.1;
-                telemetry.addData("power", (Math.round(100 * power)));
+                targetVelocity = targetVelocity - 0.1;
+                telemetry.addData("targetVelocity", (Math.round(100 * targetVelocity)));
                 telemetry.update();
             }
 
             if (gamepad1.dpad_right && (now - last_dpad_right_press > 200)) {
                 last_dpad_right_press = now;
                 output = !output;
-                power = power + 0.01;
-                telemetry.addData("power", (Math.round(100 * power)));
+                targetVelocity = targetVelocity + 0.01;
+                telemetry.addData("targetVelocity", (Math.round(100 * targetVelocity)));
                 telemetry.update();
             }
 
             if (gamepad1.dpad_left && (now - last_dpad_left_press > 200)) {
                 last_dpad_left_press = now;
                 output = !output;
-                power = power - 0.01;
-                telemetry.addData("power", (Math.round(100 * power)));
+                targetVelocity = targetVelocity - 0.01;
+                telemetry.addData("targetVelocity", (Math.round(100 * targetVelocity)));
                 telemetry.update();
-                sleep(200);
             }
 
             if (gamepad1.start && (now - last_start_press > 300)) {
                 last_start_press = now;
                 powerPreset++;
                 if (powerPreset == 1) {
-                    power = whiteLineHighGoalPower;
-                    telemetry.addData("WHITE LINE HIGH GOAL : power", (Math.round(100 * power)));
+                    targetVelocity = whiteLineHighGoalVelocity;
+                    telemetry.addData("WHITE LINE HIGH GOAL : targetVelocity", (Math.round(100 * targetVelocity)));
                     telemetry.update();
                 } else if (powerPreset == 2) {
-                    power = starterStackHighGoalPower;
-                    telemetry.addData("STARTER STACK HIGH GOAL : power", (Math.round(100 * power)));
+                    targetVelocity = starterStackHighGoalVelocity;
+                    telemetry.addData("STARTER STACK HIGH GOAL : targetVelocity", (Math.round(100 * targetVelocity)));
                     telemetry.update();
                 } else if (powerPreset == 3) {
-                    power = powerShotPower;
+                    targetVelocity = powerShotVelocity;
                     powerPreset = 0;
-                    telemetry.addData("POWER SHOT : power", (Math.round(100 * power)));
+                    telemetry.addData("POWER SHOT : targetVelocity", (Math.round(100 * targetVelocity)));
                     telemetry.update();
                 }
             }
 
+            //THIS IS A FAILSAFE: if the intake fails to drop during Autonomous, this lets us manually drop it
             if (gamepad1.back && (now - last_back_press > PRESS_TIME_MS)) {
                 last_back_press = now;
                 output = !output;
