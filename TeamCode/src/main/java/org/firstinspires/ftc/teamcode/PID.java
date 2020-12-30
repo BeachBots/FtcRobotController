@@ -16,7 +16,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import java.util.logging.SocketHandler;
 
 
-// @TeleOp(name = "PID")
+//@TeleOp(name = "PID")
 public class PID {
     private DcMotor shoot1;
     private DcMotor shoot2;
@@ -24,9 +24,6 @@ public class PID {
     public void init(HardwareMap hardwaremap) {
         shoot1 = hardwaremap.dcMotor.get("shoot1");
         shoot2 = hardwaremap.dcMotor.get("shoot2");
-
-        // shoot1.setDirection(DcMotor.Direction.REVERSE);
-        // shoot2.setDirection(DcMotor.Direction.REVERSE);
 
         shoot1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         shoot2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -60,7 +57,7 @@ public class PID {
     public void start(double inTargetVelocity) {
         state1 = PID.PID_STATE.RUNNING;
 
-        targetVelocity = -inTargetVelocity;
+        targetVelocity = inTargetVelocity;
         currentPower = targetVelocity / 10;
         shoot1.setPower(currentPower);
         shoot2.setPower(currentPower);
@@ -99,8 +96,8 @@ public class PID {
         velocity_reading_count = 0;
         velocity_accumulator = 0.0;
 
-        final double kp = 0.10;
-        final double kd = 0.25;
+        final double kp = 0.10;  // .10
+        final double kd = 0.30;  // .30
 
         final double error = targetVelocity - currentVelocity;
         final double p = kp * error;
@@ -114,11 +111,11 @@ public class PID {
         // Update Telemetry
         FtcDashboard dashboard = FtcDashboard.getInstance();
         Telemetry dashboardTelemetry = dashboard.getTelemetry();
-        dashboardTelemetry.addData("power", -currentPower);
+        dashboardTelemetry.addData("power", currentPower);
         dashboardTelemetry.addData("kp", kp);
         dashboardTelemetry.addData("kd", kd);
-        dashboardTelemetry.addData("velocity", -currentVelocity);
-        dashboardTelemetry.addData("target velocity", -targetVelocity);
+        dashboardTelemetry.addData("velocity", currentVelocity);
+        dashboardTelemetry.addData("target velocity", targetVelocity);
         dashboardTelemetry.update();
 
         // Update state

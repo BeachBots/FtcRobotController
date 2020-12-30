@@ -12,8 +12,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.logging.SocketHandler;
 
-
-@TeleOp(name = "ShooterStateMachine")
+//@TeleOp(name = "ShooterStateMachine")
 public class ShooterStateMachine {
     public enum ShooterState {
         SHOOTER_IDLE,
@@ -58,11 +57,8 @@ public class ShooterStateMachine {
         flick = hardwaremap.servo.get("flick");
         stopper = hardwaremap.servo.get("stopper");
 
-        shoot1.setDirection(DcMotor.Direction.REVERSE);  // BETTER TO DO THIS HERE THAN SETTING
-        shoot2.setDirection(DcMotor.Direction.REVERSE);  // MOTOR POWER TO A NEGATIVE NUMBER LATER
-
-        shoot1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shoot2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        shoot1.setMode(DcMotor.RunMode.RUN_USING_ENCODER); //MIGHT NOT NEED
+        shoot2.setMode(DcMotor.RunMode.RUN_USING_ENCODER); //MIGHT NOT NEED
 
         flick.setPosition(flickRetract);
         stopper.setPosition(stopperClosed);

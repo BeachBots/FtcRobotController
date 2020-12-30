@@ -61,7 +61,7 @@ public class finalTeleOp extends LinearOpMode {
         shooter.init(hardwareMap);
         pid.init(hardwareMap);
 
-        double targetVelocity = .55; // this is the default starting speed
+        double targetVelocity = .55; // this is the default starting velocity
 
         flick.setPosition(0.48); // this is retracted
         stopper.setPosition(0.85); // this is closed
@@ -80,7 +80,7 @@ public class finalTeleOp extends LinearOpMode {
         double last_dpad_down_press = 0.;
         double last_dpad_left_press = 0.;
         double last_dpad_right_press = 0.;
-        final double PRESS_TIME_MS = 400;
+        final double PRESS_TIME_MS = 200;
         double intakeServoOpen = .2;
         double intakeServoClosed = 0;
         double wobbleClawOpen = .8;
@@ -171,7 +171,7 @@ public class finalTeleOp extends LinearOpMode {
                 shooter.shoot(1);
             }
 
-            if (gamepad1.dpad_up && (now - last_dpad_up_press > 200)) {
+            if (gamepad1.dpad_up && (now - last_dpad_up_press > PRESS_TIME_MS)) {
                 last_dpad_up_press = now;
                 output = !output;
                 targetVelocity = targetVelocity + 0.1;
@@ -179,7 +179,7 @@ public class finalTeleOp extends LinearOpMode {
                 telemetry.update();
             }
 
-            if (gamepad1.dpad_down && (now - last_dpad_down_press > 200)) {
+            if (gamepad1.dpad_down && (now - last_dpad_down_press > PRESS_TIME_MS)) {
                 last_dpad_down_press = now;
                 output = !output;
                 targetVelocity = targetVelocity - 0.1;
@@ -187,7 +187,7 @@ public class finalTeleOp extends LinearOpMode {
                 telemetry.update();
             }
 
-            if (gamepad1.dpad_right && (now - last_dpad_right_press > 200)) {
+            if (gamepad1.dpad_right && (now - last_dpad_right_press > PRESS_TIME_MS)) {
                 last_dpad_right_press = now;
                 output = !output;
                 targetVelocity = targetVelocity + 0.01;
@@ -195,7 +195,7 @@ public class finalTeleOp extends LinearOpMode {
                 telemetry.update();
             }
 
-            if (gamepad1.dpad_left && (now - last_dpad_left_press > 200)) {
+            if (gamepad1.dpad_left && (now - last_dpad_left_press > PRESS_TIME_MS)) {
                 last_dpad_left_press = now;
                 output = !output;
                 targetVelocity = targetVelocity - 0.01;
