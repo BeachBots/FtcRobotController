@@ -58,7 +58,7 @@ public class PID {
         state1 = PID.PID_STATE.RUNNING;
 
         targetVelocity = inTargetVelocity;
-        currentPower = targetVelocity / 10;
+        currentPower = targetVelocity / 3.36;
         shoot1.setPower(currentPower);
         shoot2.setPower(currentPower);
 

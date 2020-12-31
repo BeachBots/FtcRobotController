@@ -35,18 +35,15 @@ public class SampleAuton extends LinearOpMode {
     private Servo intakeServo;
     private Servo wobbleClaw;
     private Servo wobbleArm;
-   // private DcMotor wobbleMotor;
+    // private DcMotor wobbleMotor;
 
     private ShooterStateMachine shooter = new ShooterStateMachine();
 
     private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
     private static final String LABEL_FIRST_ELEMENT = "Quad";
     private static final String LABEL_SECOND_ELEMENT = "Single";
-
     private static final String VUFORIA_KEY =
             "ATOQy0T/////AAABmQ/SASRSuUzAugTNY1JUz6NSX/K0IyvPgOTMGlPcjAUyxoQlqULPX1jcW4C4fMzALWwznPmVdS4QFyFERfGevgAJPX1U8c6c1wfPTrhaqwhhoG0SBo/8b6iGaeweb65NN1Xu7PG+LHieN8rr339wsfsGROM9TW3oRp6uYdDFq30aM9tAIadifcbtQq9XUSdUyzF7Owgr8QjIbAw57OYIb6Bwl+7tenxUVSM+pYEkZyVdbCWAWEHAeu10tX7qGXmPEENNiKfnTT/TvGCsjTVK0Xa536mx70V74J/wBadTw32md6QMKjQmWWtCqyYnYZenYws42NGZzXsD/cLU+IbXOIJBaohDU8SaPr7mienrXGgc";
-
-
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
 
@@ -130,11 +127,13 @@ public class SampleAuton extends LinearOpMode {
     private ONE_RINGS_STATE state2;
     private FOUR_RINGS_STATE state3;
 
+                    //THIS IS PID STUFF WHICH WE WON'T NEED
+
     private final int NUM_PID_ADJUSTMENTS = 10;
     private final int MS_BTWN_VEL_READINGS = 12;
     private final int NUM_VELOCITY_READINGS = 25;
 
-    private double targetVelocity = 0.50;  // THIS IS WHERE WE ENTER DESIRED NUMBER FOR SHOOTER VELOCITY
+    private double targetVelocity = 0.50;
     private double targetPower = 0.0;
     private long async_prevTime = 0;
     private double async_motorPrev = 0.0;
@@ -154,15 +153,18 @@ public class SampleAuton extends LinearOpMode {
     public void start(double inTargetVelocity, double inPower) {
         state1 = SampleAuton.PID_STATE.RUNNING;
 
+        // WE HAVE TO MAKE SURE WE STILL INITIALIZE EVERYTHING -- SOME GETS INITIALIZED IN SHOOTER
+        // STATE MACHINE, SO WE SHOULD MAKE SURE TO ONLY CALL IT ONCE
+
         shoot1 = hardwareMap.dcMotor.get("shoot1");
         shoot2 = hardwareMap.dcMotor.get("shoot2");
         intake = hardwareMap.dcMotor.get("intake");
-        //wobbleMotor = hardwareMap.dcMotor.get("wobbleMotor");
-        wobbleClaw = hardwareMap.servo.get("wobbleClaw");
-        //wobbleArm = hardwareMap.servo.get("wobbleArm");
         intakeServo = hardwareMap.servo.get("intakeServo");
         flick = hardwareMap.servo.get("flick");
         stopper = hardwareMap.servo.get("stopper");
+        //wobbleMotor = hardwareMap.dcMotor.get("wobbleMotor");
+        wobbleClaw = hardwareMap.servo.get("wobbleClaw");
+        //wobbleArm = hardwareMap.servo.get("wobbleArm");
 
         shoot1.setDirection(DcMotor.Direction.REVERSE);
         shoot2.setDirection(DcMotor.Direction.REVERSE);
@@ -234,6 +236,8 @@ public class SampleAuton extends LinearOpMode {
         return state1 == SampleAuton.PID_STATE.DONE;
     }
 
+                    // THIS IS WHERE PID ENDS
+
     @Override
     public void runOpMode() {
 
@@ -242,7 +246,6 @@ public class SampleAuton extends LinearOpMode {
 
         if (tfod != null) {
             tfod.activate();
-
             tfod.setZoom(1.5, 1.78);
         }
 
@@ -277,7 +280,6 @@ public class SampleAuton extends LinearOpMode {
                             rings = 4;
                             isRunning = false;
                         }
-
                     }
                     telemetry.addData("rings = ", rings);
                     telemetry.update();
@@ -289,8 +291,6 @@ public class SampleAuton extends LinearOpMode {
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-        double setFlickTime = .1;
-        double setFlickBetween = 1.0;
         double intakeServoOpen = .2;
         double intakeServoClosed = 0;
         double wobbleArmStowed = 0;
@@ -309,20 +309,20 @@ public class SampleAuton extends LinearOpMode {
         // This is where we build all the trajectories. We won't call them until the bottom.
 
         Trajectory zeroRings1 = drive.trajectoryBuilder(startPose)
-                .splineToConstantHeading(new Vector2d(-35, -37), Math.toRadians(0))  // Move to shooting line
+                .splineToConstantHeading(new Vector2d(0, -37), Math.toRadians(0))  // Move to shooting line
                 .build();
 
         Trajectory zeroRings2 = drive.trajectoryBuilder(zeroRings1.end())
-                //.splineToConstantHeading(new Vector2d(7.0,-40.0), Math.toRadians(0))
-                .strafeTo(new Vector2d(10, -37))  // Move to Box A
+                .lineToLinearHeading(new Vector2d(7.0, -37.0), Math.toRadians(90)) // Move to Box A
+                //.strafeTo(new Vector2d(18, -37))
                 .build();
 
         Trajectory zeroRings3 = drive.trajectoryBuilder(zeroRings2.end())
-                .splineToConstantHeading(new Vector2d(-50, -37), Math.toRadians(0))  // Move to get Wobble #2
+                .lineToLinearHeading(new Vector2d(-25, -45), Math.toRadians(0))  // Move to get Wobble #2
                 .build();
 
         Trajectory zeroRings4 = drive.trajectoryBuilder(zeroRings3.end())
-                .splineToConstantHeading(new Vector2d(10, -37), Math.toRadians(0)) // Move to Box A
+                .lineToLinearHeading(new Vector2d(10, -37), Math.toRadians(90)) // Move to Box A
                 .build();
 
 
@@ -375,8 +375,6 @@ public class SampleAuton extends LinearOpMode {
                 .splineToConstantHeading(new Vector2d(12, -37), Math.toRadians(0))
                 .build();
 
-
-        // This is where we call all the trajectories. For now I've added sleeps in between themCto simulate where actions go.
 
         /*
          *   loop infinitely:
