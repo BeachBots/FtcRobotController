@@ -19,6 +19,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.AutonTest;
+import org.firstinspires.ftc.teamcode.PID;
 import org.firstinspires.ftc.teamcode.ShooterStateMachine;
 
 import java.util.List;
@@ -38,6 +39,7 @@ public class SampleAuton extends LinearOpMode {
     // private DcMotor wobbleMotor;
 
     private ShooterStateMachine shooter = new ShooterStateMachine();
+    private PID pid = new PID();
 
     private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
     private static final String LABEL_FIRST_ELEMENT = "Quad";
@@ -142,99 +144,6 @@ public class SampleAuton extends LinearOpMode {
     private int velocity_reading_count = 0;
     private int pid_adjust_count = 0;
 
-    private enum PID_STATE {
-        RUNNING,
-        DONE,
-    }
-
-    ;
-    private SampleAuton.PID_STATE state1;
-
-    public void start(double inTargetVelocity, double inPower) {
-        state1 = SampleAuton.PID_STATE.RUNNING;
-
-        // WE HAVE TO MAKE SURE WE STILL INITIALIZE EVERYTHING -- SOME GETS INITIALIZED IN SHOOTER
-        // STATE MACHINE, SO WE SHOULD MAKE SURE TO ONLY CALL IT ONCE
-
-        shoot1 = hardwareMap.dcMotor.get("shoot1");
-        shoot2 = hardwareMap.dcMotor.get("shoot2");
-        intake = hardwareMap.dcMotor.get("intake");
-        intakeServo = hardwareMap.servo.get("intakeServo");
-        flick = hardwareMap.servo.get("flick");
-        stopper = hardwareMap.servo.get("stopper");
-        //wobbleMotor = hardwareMap.dcMotor.get("wobbleMotor");
-        wobbleClaw = hardwareMap.servo.get("wobbleClaw");
-        //wobbleArm = hardwareMap.servo.get("wobbleArm");
-
-        shoot1.setDirection(DcMotor.Direction.REVERSE);
-        shoot2.setDirection(DcMotor.Direction.REVERSE);
-        intake.setDirection(DcMotor.Direction.REVERSE);
-        shooter.init(hardwareMap);
-
-        targetVelocity = inTargetVelocity;
-        targetPower = inPower;
-        async_prevTime = System.currentTimeMillis();
-        async_motorPrev = -shoot1.getCurrentPosition();
-        async_prevError = 0;
-        velocity_accumulator = 0.0;
-        velocity_reading_count = 0;
-        pid_adjust_count = 0;
-    }
-
-    public void update() {
-        // Read velocity and calculate error; set motors
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - async_prevTime < MS_BTWN_VEL_READINGS) {
-            return;
-        }
-
-        // calculate velocity
-        final int currentMotor = shoot1.getCurrentPosition();
-        final double changeMotor = currentMotor - async_motorPrev;
-        final long changeTime = currentTime - async_prevTime;
-        final double new_velocity = changeMotor / changeTime;
-        velocity_reading_count++;
-        velocity_accumulator += new_velocity;
-
-        if (velocity_reading_count < NUM_VELOCITY_READINGS) {
-            return;
-        }
-
-        final double currentVelocity = velocity_accumulator / velocity_reading_count;
-        velocity_reading_count = 0;
-        velocity_accumulator = 0.0;
-
-        final double kp = 0.15;
-        final double kd = 0.00;
-        double error = targetVelocity - currentVelocity;
-        final double p = kp * error;
-        final double d = kd * ((error - async_prevError) / changeTime);
-        shoot1.setPower(p + d + targetPower);
-        shoot2.setPower(p + d + targetPower);
-
-        // Update Telemetry
-        FtcDashboard dashboard = FtcDashboard.getInstance();
-        Telemetry dashboardTelemetry = dashboard.getTelemetry();
-        dashboardTelemetry.addData("power", p + d + targetPower);
-        dashboardTelemetry.addData("p", p);
-        dashboardTelemetry.addData("d", d);
-        dashboardTelemetry.addData("velocity", currentVelocity);
-        dashboardTelemetry.update();
-
-        // Update state
-        targetPower = p + d + targetPower;
-        async_prevError = error;
-        async_prevTime = currentTime;
-        async_motorPrev = currentMotor;
-
-        if (pid_adjust_count++ >= NUM_PID_ADJUSTMENTS) {
-            state1 = SampleAuton.PID_STATE.DONE;
-        }
-    }
-
-    public boolean done() {
-        return state1 == SampleAuton.PID_STATE.DONE;
-    }
 
                     // THIS IS WHERE PID ENDS
 
@@ -400,7 +309,7 @@ public class SampleAuton extends LinearOpMode {
                         telemetry.update();
                         intakeServo.setPosition(intakeServoOpen);
                         drive.followTrajectoryAsync(zeroRings1);  // Kick off moving to SHOOTING LINE
-                        start(targetVelocity, targetPower);
+                        pid.start(targetVelocity);
                         state = ZERO_RINGS_STATE.DRIVE_TO_LINE;
                         break;
                     case DRIVE_TO_LINE:
@@ -408,8 +317,8 @@ public class SampleAuton extends LinearOpMode {
                         telemetry.update();
                         if (drive.isBusy()) { // Still moving to shooting line.
                             drive.update();
-                            update();
-                        } else if (done()) { // change to else if (pid.done()) when we can check it
+                            pid.loop();
+                        } else if (pid.done()) { // change to else if (pid.done()) when we can check it
                             shooter.shoot(3);
                             state = ZERO_RINGS_STATE.DRIVE_RIGHT;
                         }
@@ -473,17 +382,17 @@ public class SampleAuton extends LinearOpMode {
                         telemetry.update();
                         intakeServo.setPosition(intakeServoOpen);
                         drive.followTrajectoryAsync(oneRing1);
-                        update();
+                        pid.loop();
                         state2 = ONE_RINGS_STATE.DRIVING_TO_RING_STACK;
                         break;
                     case DRIVING_TO_RING_STACK:
-                        start(targetVelocity, targetPower);
+                        pid.start(targetVelocity);
                         telemetry.addData("state = ", state2);
                         telemetry.update();
                         if (drive.isBusy()) { // Still moving to shooting line.
                             drive.update();
-                            update();
-                        } else if (done()) { // change to else if (pid.done()) when we can check it
+                            pid.loop();
+                        } else if (pid.done()) { // change to else if (pid.done()) when we can check it
                             shooter.shoot(3);
                             state2 = ONE_RINGS_STATE.SHOOTING_HIGH_GOALS;
                         }
@@ -560,17 +469,17 @@ public class SampleAuton extends LinearOpMode {
                         telemetry.update();
                         intakeServo.setPosition(intakeServoOpen);
                         drive.followTrajectoryAsync(fourRing1);
-                        update();
+                        pid.loop();
                         state3 = FOUR_RINGS_STATE.DRIVING_TO_RING_STACK;
                         break;
                     case DRIVING_TO_RING_STACK:
-                        start(targetVelocity, targetPower);
+                        pid.start(targetVelocity);
                         telemetry.addData("state = ", state3);
                         telemetry.update();
                         if (drive.isBusy()) { // Still moving to shooting line.
                             drive.update();
-                            update();
-                        } else if (done()) { // change to else if (pid.done()) when we can check it
+                            pid.loop();
+                        } else if (pid.done()) { // change to else if (pid.done()) when we can check it
                             shooter.shoot(3);
                             state3 = FOUR_RINGS_STATE.SHOOTING_HIGH_GOALS;
                         }
