@@ -36,7 +36,6 @@ public class SampleAuton extends LinearOpMode {
     private Servo intakeServo;
     private Servo wobbleClaw;
     private Servo wobbleArm;
-    // private DcMotor wobbleMotor;
 
     private ShooterStateMachine shooter = new ShooterStateMachine();
     private PID pid = new PID();
@@ -50,6 +49,12 @@ public class SampleAuton extends LinearOpMode {
     private TFObjectDetector tfod;
 
     boolean isRunning = true;
+
+    private ZERO_RINGS_STATE state;
+    private ONE_RINGS_STATE state2;
+    private FOUR_RINGS_STATE state3;
+
+    private double targetVelocity = 0.50;
 
     public enum ZERO_RINGS_STATE {
         INITIALIZING,  // drop intake, start shooter, start moving to line
@@ -125,27 +130,6 @@ public class SampleAuton extends LinearOpMode {
        the correct speed before moving on.
     */;
 
-    private ZERO_RINGS_STATE state;
-    private ONE_RINGS_STATE state2;
-    private FOUR_RINGS_STATE state3;
-
-                    //THIS IS PID STUFF WHICH WE WON'T NEED
-
-    private final int NUM_PID_ADJUSTMENTS = 10;
-    private final int MS_BTWN_VEL_READINGS = 12;
-    private final int NUM_VELOCITY_READINGS = 25;
-
-    private double targetVelocity = 0.50;
-    private double targetPower = 0.0;
-    private long async_prevTime = 0;
-    private double async_motorPrev = 0.0;
-    private double async_prevError;
-    private double velocity_accumulator = 0.0;
-    private int velocity_reading_count = 0;
-    private int pid_adjust_count = 0;
-
-
-                    // THIS IS WHERE PID ENDS
 
     @Override
     public void runOpMode() {
@@ -200,6 +184,14 @@ public class SampleAuton extends LinearOpMode {
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
+        //This is for all hardware not identified in PID or SHOOTERSTATEMACHINE
+        intake = hardwareMap.dcMotor.get("intake");
+        intakeServo = hardwareMap.servo.get("intakeServo");
+        wobbleClaw = hardwareMap.servo.get("wobbleClaw");
+        // wobbleArm = hardwareMap.servo.get("wobbleArm");
+
+        intake.setDirection(DcMotor.Direction.REVERSE);
+
         double intakeServoOpen = .2;
         double intakeServoClosed = 0;
         double wobbleArmStowed = 0;
@@ -208,7 +200,6 @@ public class SampleAuton extends LinearOpMode {
         double wobbleClawOpen = .8;
         double wobbleClawClosed = .6;
 
-        //zero rings
 
         // This identifies the starting position of our robot -- otherwise it default to (0,0) which is the center of the field.
         // We should tune this number, which I'm estimating to be (-63, -30).
@@ -217,21 +208,23 @@ public class SampleAuton extends LinearOpMode {
 
         // This is where we build all the trajectories. We won't call them until the bottom.
 
+        //zero rings
+
         Trajectory zeroRings1 = drive.trajectoryBuilder(startPose)
                 .splineToConstantHeading(new Vector2d(0, -37), Math.toRadians(0))  // Move to shooting line
                 .build();
 
         Trajectory zeroRings2 = drive.trajectoryBuilder(zeroRings1.end())
-                .lineToLinearHeading(new Vector2d(7.0, -37.0), Math.toRadians(90)) // Move to Box A
-                //.strafeTo(new Vector2d(18, -37))
+                //.lineToLinearHeading(new Vector2d(7.0, -37.0), Math.toRadians(90)) // Move to Box A
+                .strafeTo(new Vector2d(18, -37))
                 .build();
 
         Trajectory zeroRings3 = drive.trajectoryBuilder(zeroRings2.end())
-                .lineToLinearHeading(new Vector2d(-25, -45), Math.toRadians(0))  // Move to get Wobble #2
+                //.lineToLinearHeading(new Vector2d(-25, -45), Math.toRadians(0))  // Move to get Wobble #2
                 .build();
 
         Trajectory zeroRings4 = drive.trajectoryBuilder(zeroRings3.end())
-                .lineToLinearHeading(new Vector2d(10, -37), Math.toRadians(90)) // Move to Box A
+                //.lineToLinearHeading(new Vector2d(10, -37), Math.toRadians(90)) // Move to Box A
                 .build();
 
 

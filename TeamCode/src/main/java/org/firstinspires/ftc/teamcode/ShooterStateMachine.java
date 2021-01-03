@@ -30,16 +30,16 @@ public class ShooterStateMachine {
 
     public ShooterState shooterState = ShooterState.SHOOTER_IDLE;
 
-    private DcMotor shoot1;   // should this be private?
+    private DcMotor shoot1;
     private DcMotor shoot2;
     public Servo flick;
     public Servo stopper;
     public DcMotor intake;
 
-    public double flickExtend = 0.75;
+    public double flickExtend = 0.70;
     public double flickRetract = 0.48;
-    public double stopperClosed = 0.85;
-    public double stopperOpen = 1;
+    public double stopperClosed = 0.20;
+    public double stopperOpen = 0.35;
 
     private int shotCounter;        //This is how we'll keep track of the 3 rings we are firing
     private long shooterStartTime;         //This will set the timer
@@ -49,16 +49,14 @@ public class ShooterStateMachine {
 
     public void init(HardwareMap hardwaremap) {
 
-        //ELAINE: IS THIS THE PROBLEM? WE ARE DECLARING THESE HERE AND IN FINAL TELE OP
-
         shoot1 = hardwaremap.dcMotor.get("shoot1");
         shoot2 = hardwaremap.dcMotor.get("shoot2");
         intake = hardwaremap.dcMotor.get("intake");
         flick = hardwaremap.servo.get("flick");
         stopper = hardwaremap.servo.get("stopper");
 
-        shoot1.setMode(DcMotor.RunMode.RUN_USING_ENCODER); //MIGHT NOT NEED
-        shoot2.setMode(DcMotor.RunMode.RUN_USING_ENCODER); //MIGHT NOT NEED
+        shoot1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        shoot2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         flick.setPosition(flickRetract);
         stopper.setPosition(stopperClosed);
@@ -98,13 +96,6 @@ public class ShooterStateMachine {
 
         switch (shooterState) {
             case SHOOTER_IDLE:
-                // Waiting for some input
-                    /*if (gamepad1.a) {
-                        shotCounter = 1;
-                        stopper.setPosition(stopperOpen); //This opens the stopper
-                        shooterStartTime = System.currentTimeMillis(); //Records current time
-                        shooterState = ShooterState.SHOOTER_WAITING1; //Moves to first timer
-                    }*/
                 break;
             case SHOOTER_WAITING1: //This gives time for stopper to get out of the way
                 stopper.setPosition(stopperOpen);

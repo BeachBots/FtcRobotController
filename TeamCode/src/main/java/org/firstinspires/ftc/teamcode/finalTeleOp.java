@@ -13,7 +13,6 @@ import org.firstinspires.ftc.teamcode.drive.SampleAuton;
 @TeleOp(name = "FinalTeleOP")
 public class finalTeleOp extends LinearOpMode {
 
-
     private Servo flick;
     private Servo stopper;
     private DcMotor intake;
@@ -34,13 +33,15 @@ public class finalTeleOp extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
+        // TO TEST: may not need flick, stopper, shoot1, shoot2 here
+
         intake = hardwareMap.dcMotor.get("intake");
         flick = hardwareMap.servo.get("flick");
         stopper = hardwareMap.servo.get("stopper");
-        wobbleClaw = hardwareMap.servo.get("wobbleClaw");
         shoot1 = hardwareMap.dcMotor.get("shoot1");
         shoot2 = hardwareMap.dcMotor.get("shoot2");
         intakeServo = hardwareMap.servo.get("intakeServo");
+        wobbleClaw = hardwareMap.servo.get("wobbleClaw");
         // wobbleArm = hardwareMap.servo.get("wobbleArm");
 
         motorFrontRight = hardwareMap.dcMotor.get("motorFrontRight");
@@ -61,10 +62,7 @@ public class finalTeleOp extends LinearOpMode {
         shooter.init(hardwareMap);
         pid.init(hardwareMap);
 
-        double targetVelocity = .55; // this is the default starting velocity
-
-        flick.setPosition(0.48); // this is retracted
-        stopper.setPosition(0.85); // this is closed
+        double targetVelocity = .60; // this is the default starting velocity
 
         boolean output = false;  // this is for the intake
         boolean shooterOn = false;
@@ -89,6 +87,12 @@ public class finalTeleOp extends LinearOpMode {
         double wobbleArmExtended = 0; // TBD when wobble servo is in
         double wobbleArmUp = 0; // TBD when wobble servo is in
         int powerPreset = 0; // This is for the presets assigned to the START button
+
+        // CHECK WITH ELAINE ON BEST WAY TO DO TELEMETRY
+
+        telemetry.addData("Target Velocity:", targetVelocity);
+        telemetry.addData("Actual Velocity:", pid.currentVelocity);
+       
 
         // INPUT SHOOTER POWER VALUES HERE
 
@@ -165,7 +169,7 @@ public class finalTeleOp extends LinearOpMode {
                 shooter.shoot(3);
             }
 
-            if (gamepad1.left_bumper && (now - last_lb_press > PRESS_TIME_MS)) {
+            if (gamepad1.left_bumper && (now - last_lb_press > 300)) {
                 last_lb_press = now;
                 output = !output;
                 shooter.shoot(1);
@@ -222,7 +226,8 @@ public class finalTeleOp extends LinearOpMode {
                 }
             }
 
-            //THIS IS A FAILSAFE: if the intake fails to drop during Autonomous, this lets us manually drop it
+            // THIS IS A FAILSAFE: if the intake fails to drop during Autonomous,
+            // this lets us manually drop it
             if (gamepad1.back && (now - last_back_press > PRESS_TIME_MS)) {
                 last_back_press = now;
                 output = !output;
