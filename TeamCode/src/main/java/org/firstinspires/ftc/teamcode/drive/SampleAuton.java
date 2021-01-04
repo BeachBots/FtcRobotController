@@ -316,21 +316,28 @@ public class SampleAuton extends LinearOpMode {
                             state = ZERO_RINGS_STATE.DRIVE_RIGHT;
                         }
                         break;
+
+                    // SOMEWHERE IN HERE WE NEED TO...
+                    // drive.followTrajectoryAsync(zeroRings2); //TO MOVE TO BOX A
+                    // shoot1.setPower(0);
+                    // shoot2.setPower(0);
+                    // lower wobble arm 
+
                     case DRIVE_RIGHT:
                         telemetry.addData("state = ", state);
                         telemetry.update();
                         if (shooter.shooterState != ShooterStateMachine.ShooterState.SHOOTER_IDLE) {
                             shooter.loop();
                         } else {
-                            lastSavedTimeMs = System.currentTimeMillis(); // prepare for a sleep
                             state = ZERO_RINGS_STATE.DROP_WOBBLE_1;
                         }
                         break;
                     case DROP_WOBBLE_1:
                         telemetry.addData("state = ", state);
                         telemetry.update();
-                        if (System.currentTimeMillis() - lastSavedTimeMs > 1000) { // Move on if 1000 ms has passed
-                            state = ZERO_RINGS_STATE.DRIVE_TO_WOBBLE_2;
+                        wobbleClaw.setPosition(wobbleClawOpen);
+
+                        state = ZERO_RINGS_STATE.DRIVE_TO_WOBBLE_2;
                         }
                         break;
                     case DRIVE_TO_WOBBLE_2:
@@ -348,13 +355,13 @@ public class SampleAuton extends LinearOpMode {
                     case MOVE_TO_DROP_WOBBLE_2:
                         telemetry.addData("state = ", state);
                         telemetry.update();
-                        drive.followTrajectory(zeroRings4);  // MOVE TO DROP OFF WOBBLE 2
+                        drive.followTrajectory(zeroRings4);  // MOVE TO BOX A TO DROP OFF WOBBLE 2
                         state = ZERO_RINGS_STATE.DROP_WOBBLE_2;
                         break;
                     case DROP_WOBBLE_2:
                         telemetry.addData("state = ", state);
                         telemetry.update();
-                        // CALL WOBBLE GOAL DROP ROUTINE
+                        wobbleClaw.setPosition(wobbleClawOpen); // OPEN CLAW
                         state = ZERO_RINGS_STATE.DONE;
                         break;
                     case DONE:
