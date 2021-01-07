@@ -90,9 +90,10 @@ public class finalTeleOp extends LinearOpMode {
 
         // CHECK WITH ELAINE ON BEST WAY TO DO TELEMETRY
 
-        telemetry.addData("Target Velocity:", targetVelocity);
-        telemetry.addData("Actual Velocity:", pid.currentVelocity);
-       
+        telemetry.setAutoClear(false);
+        Telemetry.Item TeleTargetVelocty = telemetry.addData("Target Velocity:", targetVelocity);
+        Telemetry.Item TeleCurrentVelocity = telemetry.addData("Actual Velocity:", pid.currentVelocity);
+
 
         // INPUT SHOOTER POWER VALUES HERE
 
@@ -131,7 +132,8 @@ public class finalTeleOp extends LinearOpMode {
 
             if (shooterOn) {
                 pid.loop();
-                telemetry.addData("shooterVelocity", pid.currentVelocity);
+                TeleCurrentVelocity.setValue(pid.currentVelocity);
+
             }
 
             // A, B, Y WILL BE FOR THE WOBBLE GOAL MECHANISM
@@ -181,11 +183,10 @@ public class finalTeleOp extends LinearOpMode {
                 output = !output;
                 targetVelocity = targetVelocity + 0.1;
                 if (shooterOn){
-                    pid.start();
+                    pid.start(targetVelocity);
                 }
 
-                telemetry.addData("targetVelocity", (Math.round(100 * targetVelocity)));
-                telemetry.update();
+
             }
 
             if (gamepad1.dpad_down && (now - last_dpad_down_press > PRESS_TIME_MS)) {
@@ -193,11 +194,10 @@ public class finalTeleOp extends LinearOpMode {
                 output = !output;
                 targetVelocity = targetVelocity - 0.1;
                 if (shooterOn){
-                    pid.start();
+                    pid.start(targetVelocity);
                 }
 
-                telemetry.addData("targetVelocity", (Math.round(100 * targetVelocity)));
-                telemetry.update();
+
             }
 
             if (gamepad1.dpad_right && (now - last_dpad_right_press > PRESS_TIME_MS)) {
@@ -205,11 +205,10 @@ public class finalTeleOp extends LinearOpMode {
                 output = !output;
                 targetVelocity = targetVelocity + 0.01;
                 if (shooterOn){
-                    pid.start();
+                    pid.start(targetVelocity);
                 }
 
-                telemetry.addData("targetVelocity", (Math.round(100 * targetVelocity)));
-                telemetry.update();
+
             }
 
             if (gamepad1.dpad_left && (now - last_dpad_left_press > PRESS_TIME_MS)) {
@@ -217,29 +216,27 @@ public class finalTeleOp extends LinearOpMode {
                 output = !output;
                 targetVelocity = targetVelocity - 0.01;
                 if (shooterOn){
-                    pid.start();
+                    pid.start(targetVelocity);
                 }
 
-                telemetry.addData("targetVelocity", (Math.round(100 * targetVelocity)));
-                telemetry.update();
+
             }
+
+            TeleTargetVelocty.setValue((Math.round(100 * targetVelocity)));
 
             if (gamepad1.start && (now - last_start_press > 300)) {
                 last_start_press = now;
                 powerPreset++;
                 if (powerPreset == 1) {
                     targetVelocity = whiteLineHighGoalVelocity;
-                    telemetry.addData("WHITE LINE HIGH GOAL : targetVelocity", (Math.round(100 * targetVelocity)));
-                    telemetry.update();
+                   TeleTargetVelocty.setValue((Math.round(100 * targetVelocity)) + "WHITE LINE HIGH GOAL");
                 } else if (powerPreset == 2) {
                     targetVelocity = starterStackHighGoalVelocity;
-                    telemetry.addData("STARTER STACK HIGH GOAL : targetVelocity", (Math.round(100 * targetVelocity)));
-                    telemetry.update();
+                    TeleTargetVelocty.setValue((Math.round(100 * targetVelocity)) + "STARTER STACK HIGH GOAL");
                 } else if (powerPreset == 3) {
                     targetVelocity = powerShotVelocity;
                     powerPreset = 0;
-                    telemetry.addData("POWER SHOT : targetVelocity", (Math.round(100 * targetVelocity)));
-                    telemetry.update();
+                    TeleTargetVelocty.setValue((Math.round(100 * targetVelocity)) + "POWER SHOT");
                 }
             }
 
@@ -250,6 +247,7 @@ public class finalTeleOp extends LinearOpMode {
                 output = !output;
                 intakeServo.setPosition(output ? intakeServoOpen : intakeServoClosed);
             }
+            telemetry.update();
         }
     }
 }
