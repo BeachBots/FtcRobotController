@@ -175,10 +175,15 @@ public class finalTeleOp extends LinearOpMode {
                 shooter.shoot(1);
             }
 
+
             if (gamepad1.dpad_up && (now - last_dpad_up_press > PRESS_TIME_MS)) {
                 last_dpad_up_press = now;
                 output = !output;
                 targetVelocity = targetVelocity + 0.1;
+                if (shooterOn){
+                    pid.start();
+                }
+
                 telemetry.addData("targetVelocity", (Math.round(100 * targetVelocity)));
                 telemetry.update();
             }
@@ -187,6 +192,10 @@ public class finalTeleOp extends LinearOpMode {
                 last_dpad_down_press = now;
                 output = !output;
                 targetVelocity = targetVelocity - 0.1;
+                if (shooterOn){
+                    pid.start();
+                }
+
                 telemetry.addData("targetVelocity", (Math.round(100 * targetVelocity)));
                 telemetry.update();
             }
@@ -195,6 +204,10 @@ public class finalTeleOp extends LinearOpMode {
                 last_dpad_right_press = now;
                 output = !output;
                 targetVelocity = targetVelocity + 0.01;
+                if (shooterOn){
+                    pid.start();
+                }
+
                 telemetry.addData("targetVelocity", (Math.round(100 * targetVelocity)));
                 telemetry.update();
             }
@@ -203,6 +216,10 @@ public class finalTeleOp extends LinearOpMode {
                 last_dpad_left_press = now;
                 output = !output;
                 targetVelocity = targetVelocity - 0.01;
+                if (shooterOn){
+                    pid.start();
+                }
+
                 telemetry.addData("targetVelocity", (Math.round(100 * targetVelocity)));
                 telemetry.update();
             }
