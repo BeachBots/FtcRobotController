@@ -215,12 +215,12 @@ public class SampleAuton extends LinearOpMode {
                 .build();
 
         Trajectory zeroRings2 = drive.trajectoryBuilder(zeroRings1.end())
-                //.lineToLinearHeading(new Vector2d(7.0, -37.0), Math.toRadians(90)) // Move to Box A
-                .strafeTo(new Vector2d(18, -37))
+                .splineToConstantHeading(new Vector2d(7.0, -37.0), Math.toRadians(90)) // Move to Box A
+                //.strafeTo(new Vector2d(18, -37))
                 .build();
 
         Trajectory zeroRings3 = drive.trajectoryBuilder(zeroRings2.end())
-                //.lineToLinearHeading(new Vector2d(-25, -45), Math.toRadians(0))  // Move to get Wobble #2
+                .splineToConstantHeading(new Vector2d(-25, -45), Math.toRadians(0))  // Move to get Wobble #2
                 .build();
 
         Trajectory zeroRings4 = drive.trajectoryBuilder(zeroRings3.end())
@@ -308,7 +308,7 @@ public class SampleAuton extends LinearOpMode {
                     case DRIVE_TO_LINE:
                         telemetry.addData("state = ", state);
                         telemetry.update();
-                        if (drive.isBusy()) { // Still moving to shooting line.
+                        if (drive.isBusy() || !pid.done()) { // Still moving to shooting line.
                             drive.update();
                             pid.loop();
                         } else if (pid.done()) { // change to else if (pid.done()) when we can check it
@@ -316,27 +316,28 @@ public class SampleAuton extends LinearOpMode {
                             state = ZERO_RINGS_STATE.DRIVE_RIGHT;
                         }
                         break;
-
-                    // SOMEWHERE IN HERE WE NEED TO...
-                    // drive.followTrajectoryAsync(zeroRings2); //TO MOVE TO BOX A
-                    // shoot1.setPower(0);
-                    // shoot2.setPower(0);
-                    // lower wobble arm 
-
                     case DRIVE_RIGHT:
                         telemetry.addData("state = ", state);
                         telemetry.update();
                         if (shooter.shooterState != ShooterStateMachine.ShooterState.SHOOTER_IDLE) {
                             shooter.loop();
                         } else {
+                            shoot1.setPower(0);
+                            shoot2.setPower(0);
+                            sleep (5)
+                            pid.start(0)
+                            drive.followTrajectoryAsync(zeroRings2);
+                            //lower wobble claw servos
                             state = ZERO_RINGS_STATE.DROP_WOBBLE_1;
                         }
                         break;
                     case DROP_WOBBLE_1:
                         telemetry.addData("state = ", state);
                         telemetry.update();
+                        if (drive.isBusy()) { // Still moving to Box A
+                        drive.update();
+                        } else{
                         wobbleClaw.setPosition(wobbleClawOpen);
-
                         state = ZERO_RINGS_STATE.DRIVE_TO_WOBBLE_2;
                         }
                         break;
