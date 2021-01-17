@@ -33,7 +33,7 @@ public class DriveConstants {
      * from DriveVelocityPIDTuner.
      */
     public static final boolean RUN_USING_ENCODER = true;
-    public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(6, 0, 4, 12.6);
+    public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(4, 0, 2, 13.173);
 
     /*
      * These are physical constants that can be determined from your robot (including the track
@@ -69,7 +69,7 @@ public class DriveConstants {
      * Note from LearnRoadRunner.com:
      * The velocity and acceleration constraints were calculated based on the following equation:
      * ((MAX_RPM / 60) * GEAR_RATIO * WHEEL_RADIUS * 2 * Math.PI) * 0.85
-     * Resulting in 57.254093545423935 in/s. JON: Try changing to 67.708366 or lower
+     * Resulting in 57.254093545423935 in/s.
      * This is only 85% of the theoretical maximum velocity of the bot, following the recommendation above.
      * This is capped at 85% because there are a number of variables that will prevent your bot from actually
      * reaching this maximum velocity: voltage dropping over the game, bot weight, general mechanical inefficiences, etc.
@@ -87,7 +87,7 @@ public class DriveConstants {
      */
 
     public static DriveConstraints BASE_CONSTRAINTS = new DriveConstraints(
-            57.254093545423935, 57.254093545423935, 0.0,
+            57.358, 57.254093545423935, 0.0,
             Math.toRadians(360.0), Math.toRadians(360.0), 0.0
     );
 

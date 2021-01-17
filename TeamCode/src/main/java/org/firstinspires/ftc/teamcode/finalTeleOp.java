@@ -20,11 +20,12 @@ public class finalTeleOp extends LinearOpMode {
     private DcMotor motorFrontLeft;
     private DcMotor motorBackRight;
     private DcMotor motorBackLeft;
-    private DcMotor wobbleMotor;  // will be replaced with Servo wobbleArm
     private DcMotor shoot1;
     private DcMotor shoot2;
     private Servo intakeServo;
     private Servo wobbleClaw;
+    private Servo wobbleArm1;
+    private Servo wobbleArm2;
 
     private ShooterStateMachine shooter = new ShooterStateMachine();
 
@@ -42,13 +43,13 @@ public class finalTeleOp extends LinearOpMode {
         shoot2 = hardwareMap.dcMotor.get("shoot2");
         intakeServo = hardwareMap.servo.get("intakeServo");
         wobbleClaw = hardwareMap.servo.get("wobbleClaw");
-        // wobbleArm = hardwareMap.servo.get("wobbleArm");
+        wobbleArm1 = hardwareMap.servo.get("wobbleArm1");
+        wobbleArm2 = hardwareMap.servo.get("wobbleArm2");
 
         motorFrontRight = hardwareMap.dcMotor.get("motorFrontRight");
         motorFrontLeft = hardwareMap.dcMotor.get("motorFrontLeft");
         motorBackRight = hardwareMap.dcMotor.get("motorBackRight");
         motorBackLeft = hardwareMap.dcMotor.get("motorBackLeft");
-        wobbleMotor = hardwareMap.dcMotor.get("wobbleMotor");
 
         motorBackLeft.setDirection(DcMotor.Direction.REVERSE);
         motorFrontLeft.setDirection(DcMotor.Direction.REVERSE);
@@ -79,16 +80,17 @@ public class finalTeleOp extends LinearOpMode {
         double last_dpad_left_press = 0.;
         double last_dpad_right_press = 0.;
         final double PRESS_TIME_MS = 200;
+        final double WOBBLE_PRESS_TIME_MS = 300;
+        final double THREE_SHOT_PRESS_TIME_MS = 400;
         double intakeServoOpen = .2;
         double intakeServoClosed = 0;
-        double wobbleClawOpen = .8;
-        double wobbleClawClosed = .6;
-        double wobbleArmStowed = 0; // TBD when wobble servo is in
-        double wobbleArmExtended = 0; // TBD when wobble servo is in
-        double wobbleArmUp = 0; // TBD when wobble servo is in
+        double wobbleClawOpen = .50;
+        double wobbleClawClosed = .15;
+        double wobbleArmStowed = .10;
+        double wobbleArmExtended = .64;
+        double wobbleArmUp = .29;
         int powerPreset = 0; // This is for the presets assigned to the START button
 
-        // CHECK WITH ELAINE ON BEST WAY TO DO TELEMETRY
 
         telemetry.setAutoClear(false);
         Telemetry.Item TeleTargetVelocty = telemetry.addData("Target Velocity:", targetVelocity);
@@ -115,6 +117,10 @@ public class finalTeleOp extends LinearOpMode {
             motorFrontLeft.setPower(-gamepad1.left_stick_y * 0.8 + gamepad1.right_stick_x * 0.8 + gamepad1.left_stick_x * 0.8);
             motorBackLeft.setPower(-gamepad1.left_stick_y * 0.8 + gamepad1.right_stick_x * 0.8 - gamepad1.left_stick_x * 0.8);
 
+            shooter.loop();
+
+            double intake_power = gamepad1.right_trigger - gamepad1.left_trigger;
+            intake.setPower(intake_power);
 
             final double now = System.currentTimeMillis();
             if (gamepad1.x && (now - last_x_press > PRESS_TIME_MS)) {
@@ -136,56 +142,47 @@ public class finalTeleOp extends LinearOpMode {
 
             }
 
-            // A, B, Y WILL BE FOR THE WOBBLE GOAL MECHANISM
-
-           /*
-           if (gamepad1.y && (now - last_y_press > PRESS_TIME_MS)) {
+            if (gamepad1.y && (now - last_y_press > WOBBLE_PRESS_TIME_MS)) {
                 last_y_press = now;
                 //USE FOR WOBBLE GOAL - toggle between stowed and extended
                 output = !output;
-                wobbleArm.setPosition(output ? wobbleArmStowed : wobbleArmExtended);
+                wobbleArm1.setPosition(output ? wobbleArmStowed : wobbleArmExtended);
+                wobbleArm2.setPosition(output ? wobbleArmStowed : wobbleArmExtended);
             }
 
-            if (gamepad1.b && (now - last_b_press > PRESS_TIME_MS)) {
+            if (gamepad1.b && (now - last_b_press > WOBBLE_PRESS_TIME_MS)) {
                 last_b_press = now;
                 //USE FOR WOBBLE GOAL - toggle between extended and 90 degrees up
                 output = !output;
-                wobbleArm.setPosition(output ? wobbleArmUp : wobbleArmExtended);
+                wobbleArm1.setPosition(output ? wobbleArmUp : wobbleArmExtended);
+                wobbleArm2.setPosition(output ? wobbleArmUp : wobbleArmExtended);
             }
 
-            if (gamepad1.a && (now - last_a_press > PRESS_TIME_MS)) {
+            if (gamepad1.a && (now - last_a_press > WOBBLE_PRESS_TIME_MS)) {
                 last_a_press = now;
                 output = !output;
-                // wobbleClaw.setPosition(output ? wobbleClawOpen : wobbleClawClosed);
+                wobbleClaw.setPosition(output ? wobbleClawOpen : wobbleClawClosed);
             }
-            */
 
-            shooter.loop();
-
-            double intake_power = gamepad1.right_trigger - gamepad1.left_trigger;
-            intake.setPower(intake_power);
-
-            if (gamepad1.right_bumper && (now - last_rb_press > PRESS_TIME_MS)) {
+            if (gamepad1.right_bumper && (now - last_rb_press > THREE_SHOT_PRESS_TIME_MS)) {
                 last_rb_press = now;
                 output = !output;
                 shooter.shoot(3);
             }
 
-            if (gamepad1.left_bumper && (now - last_lb_press > 300)) {
+            if (gamepad1.left_bumper && (now - last_lb_press > PRESS_TIME_MS)) {
                 last_lb_press = now;
                 output = !output;
                 shooter.shoot(1);
             }
 
-
             if (gamepad1.dpad_up && (now - last_dpad_up_press > PRESS_TIME_MS)) {
                 last_dpad_up_press = now;
                 output = !output;
                 targetVelocity = targetVelocity + 0.1;
-                if (shooterOn){
+                if (shooterOn) {
                     pid.start(targetVelocity);
                 }
-
 
             }
 
@@ -193,10 +190,9 @@ public class finalTeleOp extends LinearOpMode {
                 last_dpad_down_press = now;
                 output = !output;
                 targetVelocity = targetVelocity - 0.1;
-                if (shooterOn){
+                if (shooterOn) {
                     pid.start(targetVelocity);
                 }
-
 
             }
 
@@ -204,10 +200,9 @@ public class finalTeleOp extends LinearOpMode {
                 last_dpad_right_press = now;
                 output = !output;
                 targetVelocity = targetVelocity + 0.01;
-                if (shooterOn){
-                    pid.start(targetVelocity);
+                if (shooterOn) {
+                   pid.start(targetVelocity);
                 }
-
 
             }
 
@@ -215,21 +210,20 @@ public class finalTeleOp extends LinearOpMode {
                 last_dpad_left_press = now;
                 output = !output;
                 targetVelocity = targetVelocity - 0.01;
-                if (shooterOn){
+                if (shooterOn) {
                     pid.start(targetVelocity);
                 }
-
 
             }
 
             TeleTargetVelocty.setValue((Math.round(100 * targetVelocity)));
 
-            if (gamepad1.start && (now - last_start_press > 300)) {
+            if (gamepad1.start && (now - last_start_press > PRESS_TIME_MS)) {
                 last_start_press = now;
                 powerPreset++;
                 if (powerPreset == 1) {
                     targetVelocity = whiteLineHighGoalVelocity;
-                   TeleTargetVelocty.setValue((Math.round(100 * targetVelocity)) + "WHITE LINE HIGH GOAL");
+                    TeleTargetVelocty.setValue((Math.round(100 * targetVelocity)) + "WHITE LINE HIGH GOAL");
                 } else if (powerPreset == 2) {
                     targetVelocity = starterStackHighGoalVelocity;
                     TeleTargetVelocty.setValue((Math.round(100 * targetVelocity)) + "STARTER STACK HIGH GOAL");

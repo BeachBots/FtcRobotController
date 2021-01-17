@@ -9,83 +9,58 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @TeleOp(name = "WobbleTest")
 public class WobbleTest extends LinearOpMode {
-    private DcMotor wobbleMotor;
+    private Servo wobbleArm1;
+    private Servo wobbleArm2;
     private Servo wobbleClaw;
 
 
-    public void motortest(double power, int distance) {
-
-        //THESE SHOULD COME IN OPMODE
-        /*wobbleMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        wobbleMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);*/
-
-        wobbleMotor.setTargetPosition(-distance);
-
-        wobbleMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        wobbleMotor.setPower(power);
-
-        while (wobbleMotor.isBusy()) {
-
-        }
-
-        wobbleMotor.setPower(0);
-
-    }
-
     @Override
     public void runOpMode() throws InterruptedException {
-        wobbleMotor = hardwareMap.dcMotor.get("wobbleMotor");
+        wobbleArm1 = hardwareMap.servo.get("wobbleArm1");
+        wobbleArm2 = hardwareMap.servo.get("wobbleArm2");
         wobbleClaw = hardwareMap.servo.get("wobbleClaw");
 
-        wobbleMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        wobbleMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        int i = 0;
-
-        if (i == 0) {
-            wobbleMotor.setMode(DcMotor.RunMode.RESET_ENCODERS);
-            i = 1;
-        }
-
-        double wobbleOpen = .8;
-        double wobbleClosed = .6;
-
+        double wobbleClawOpen = .50;
+        double wobbleClawClosed = .15;
+        double wobbleArmStowed = .14;
+        double wobbleArmExtended = .68;
+        double wobbleArmUp = .32;
+        boolean output = false;
 
         waitForStart();
 
 
         while (opModeIsActive()) {
 
-            //THIS IS CODE TO TEST MOTOR POSITIONS
-
-            if (gamepad1.a) {
-                motortest(.2, 0);
-            }
+            /*if (gamepad1.a) {
+                wobbleArm1.setPosition(0);
+                wobbleArm2.setPosition(0);
+            }*/
 
             if (gamepad1.y) {
-                motortest(.2, -10);
+                wobbleArm1.setPosition(wobbleArmStowed);
+                wobbleArm2.setPosition(wobbleArmStowed);
             }
 
             if (gamepad1.b) {
-                motortest(.2, 10);
+                wobbleArm1.setPosition(wobbleArmExtended);
+                wobbleArm2.setPosition(wobbleArmExtended);
             }
 
             if (gamepad1.x) {
-                motortest(.2, 20);
+                wobbleArm1.setPosition(wobbleArmUp);
+                wobbleArm2.setPosition(wobbleArmUp);
             }
 
-
-            //THIS IS CODE TO TEST SERVO POSITIONS
-
-          /*  if (gamepad1.b) {
-                wobbleClaw.setPosition(wobbleOpen);
+            if (gamepad1.back) {
+                //output = !output;
+                //wobbleClaw.setPosition(output ? wobbleClawClosed : wobbleClawOpen);
+                wobbleClaw.setPosition(wobbleClawClosed);
             }
-            if (gamepad1.x){
-                wobbleClaw.setPosition(wobbleClosed);
-            }
-            */
 
+            if (gamepad1.start) {
+                wobbleClaw.setPosition(wobbleClawOpen);
+            }
         }
         idle();
     }
