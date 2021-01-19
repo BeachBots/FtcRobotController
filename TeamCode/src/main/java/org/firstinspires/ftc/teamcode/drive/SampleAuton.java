@@ -183,7 +183,7 @@ public class SampleAuton extends LinearOpMode {
 
         }
 
-        waitForStart();
+
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
@@ -296,6 +296,14 @@ public class SampleAuton extends LinearOpMode {
          *      followTrajectoryAsync() <- you have to call update() but you can do stuff in between.
          *
          */
+
+        shooter.init(hardwareMap);
+        pid.init(hardwareMap);
+
+        intakeServo.setPosition(intakeServoClosed);
+        wobbleClaw.setPosition(wobbleClawClosed);
+        wobbleArm1.setPosition(wobbleArmStowed);
+        wobbleArm2.setPosition(wobbleArmStowed);
 
         waitForStart();
 
