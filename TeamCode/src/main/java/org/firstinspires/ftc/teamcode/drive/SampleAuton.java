@@ -136,6 +136,35 @@ public class SampleAuton extends LinearOpMode {
     @Override
     public void runOpMode() {
 
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+
+        //This is for all hardware not identified in PID or SHOOTERSTATEMACHINE
+        intake = hardwareMap.dcMotor.get("intake");
+        intakeServo = hardwareMap.servo.get("intakeServo");
+        wobbleClaw = hardwareMap.servo.get("wobbleClaw");
+        wobbleArm1 = hardwareMap.servo.get("wobbleArm1");
+        wobbleArm2 = hardwareMap.servo.get("wobbleArm2");
+        shoot1 = hardwareMap.dcMotor.get("shoot1");
+        shoot2 = hardwareMap.dcMotor.get("shoot2");
+
+        intake.setDirection(DcMotor.Direction.REVERSE);
+
+        double intakeServoOpen = .20;
+        double intakeServoClosed = 0;
+        double wobbleClawOpen = .50;
+        double wobbleClawClosed = .15;
+        double wobbleArmStowed = .10;
+        double wobbleArmExtended = .64;
+        double wobbleArmUp = .29;
+
+        wobbleClaw.setPosition(wobbleClawClosed);
+        wobbleArm1.setPosition(wobbleArmStowed);
+        wobbleArm2.setPosition(wobbleArmStowed);
+        intakeServo.setPosition(intakeServoClosed);
+
+        telemetry.addData("test = ", 5);
+        telemetry.update();
+
         initVuforia();
         initTfod();
 
@@ -187,32 +216,6 @@ public class SampleAuton extends LinearOpMode {
         pid.init(hardwareMap);
 
         waitForStart();
-
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-
-        //This is for all hardware not identified in PID or SHOOTERSTATEMACHINE
-        intake = hardwareMap.dcMotor.get("intake");
-        intakeServo = hardwareMap.servo.get("intakeServo");
-        wobbleClaw = hardwareMap.servo.get("wobbleClaw");
-        wobbleArm1 = hardwareMap.servo.get("wobbleArm1");
-        wobbleArm2 = hardwareMap.servo.get("wobbleArm2");
-
-        intake.setDirection(DcMotor.Direction.REVERSE);
-
-        double intakeServoOpen = .20;
-        double intakeServoClosed = 0;
-        double wobbleClawOpen = .50;
-        double wobbleClawClosed = .15;
-        double wobbleArmStowed = .10;
-        double wobbleArmExtended = .64;
-        double wobbleArmUp = .29;
-
-        // See if this is the right place for these init positions:
-        intakeServo.setPosition(intakeServoClosed);
-        wobbleClaw.setPosition(wobbleClawClosed);
-        wobbleArm1.setPosition(wobbleArmStowed);
-        wobbleArm2.setPosition(wobbleArmStowed);
-
 
         // This identifies the starting position of our robot -- otherwise it default to (0,0) which is the center of the field.
         // We should tune this number, which I'm estimating to be (-63, -33).
