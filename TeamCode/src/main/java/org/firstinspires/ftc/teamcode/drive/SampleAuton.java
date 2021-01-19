@@ -183,7 +183,10 @@ public class SampleAuton extends LinearOpMode {
 
         }
 
+        shooter.init(hardwareMap);
+        pid.init(hardwareMap);
 
+        waitForStart();
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
@@ -297,15 +300,7 @@ public class SampleAuton extends LinearOpMode {
          *
          */
 
-        shooter.init(hardwareMap);
-        pid.init(hardwareMap);
 
-        intakeServo.setPosition(intakeServoClosed);
-        wobbleClaw.setPosition(wobbleClawClosed);
-        wobbleArm1.setPosition(wobbleArmStowed);
-        wobbleArm2.setPosition(wobbleArmStowed);
-
-        waitForStart();
 
         if (isStopRequested()) return;
 

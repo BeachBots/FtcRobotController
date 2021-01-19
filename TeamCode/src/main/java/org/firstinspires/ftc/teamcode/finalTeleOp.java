@@ -103,7 +103,13 @@ public class finalTeleOp extends LinearOpMode {
         double starterStackHighGoalVelocity = .65;
         double powerShotVelocity = .30;
 
+        shooter.init(hardwareMap);
+        pid.init(hardwareMap);
 
+        intakeServo.setPosition(intakeServoClosed);
+        wobbleClaw.setPosition(wobbleClawClosed);
+        wobbleArm1.setPosition(wobbleArmStowed);
+        wobbleArm2.setPosition(wobbleArmStowed);
 
         //
 
