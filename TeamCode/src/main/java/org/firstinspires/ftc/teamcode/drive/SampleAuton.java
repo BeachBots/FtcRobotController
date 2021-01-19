@@ -146,6 +146,11 @@ public class SampleAuton extends LinearOpMode {
 
         int rings = 0;
 
+        intakeServo.setPosition(intakeServoClosed);
+        wobbleClaw.setPosition(wobbleClawClosed);
+        wobbleArm1.setPosition(wobbleArmStowed);
+        wobbleArm2.setPosition(wobbleArmStowed);
+
         //detect using camera
         boolean ison = true;
 
