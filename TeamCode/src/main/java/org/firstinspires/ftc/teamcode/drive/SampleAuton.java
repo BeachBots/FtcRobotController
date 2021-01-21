@@ -215,8 +215,8 @@ public class SampleAuton extends LinearOpMode {
         // waitForStart(); // THIS WAS HERE BUT WE SHOULD MOVE TO LINE 304
 
         // This identifies the starting position of our robot -- otherwise it default to (0,0) which is the center of the field.
-        // We should tune this number, which I'm estimating to be (-63, -33).
-        Pose2d startPose = new Pose2d(-63, -33, Math.toRadians(0));
+        // We should tune this number, which I'm estimating to be (-63, -34.5).
+        Pose2d startPose = new Pose2d(-63, -34.5, Math.toRadians(0));
         drive.setPoseEstimate(startPose);
 
         // This is where we build all the trajectories. We won't call them until the bottom.
@@ -228,15 +228,15 @@ public class SampleAuton extends LinearOpMode {
                 .build();
 
         Trajectory zeroRings2 = drive.trajectoryBuilder(zeroRings1.end())
-                .splineToLinearHeading(new Pose2d(7.0, -37, Math.toRadians(0)), Math.toRadians(90)) // Move to Box A
+                .lineToLinearHeading(new Pose2d(7, -37, Math.toRadians(90)))  // Move to Box A
                 .build();
 
         Trajectory zeroRings3 = drive.trajectoryBuilder(zeroRings2.end())
-                .splineToLinearHeading(new Pose2d(-29, -45, Math.toRadians(90)), Math.toRadians(0)) // Move to get Wobble #2
+                .lineToLinearHeading(new Pose2d(-29, -45, Math.toRadians(0))) // Move to get Wobble #2
                 .build();
 
         Trajectory zeroRings4 = drive.trajectoryBuilder(zeroRings3.end())
-                .splineToLinearHeading(new Pose2d(10, -37, Math.toRadians(0)), Math.toRadians(90)) // Move to Box A
+                .lineToLinearHeading(new Pose2d(10, -37, Math.toRadians(90))) // Move to Box A
                 .build();
 
 
