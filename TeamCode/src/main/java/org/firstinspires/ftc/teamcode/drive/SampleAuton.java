@@ -55,7 +55,7 @@ public class SampleAuton extends LinearOpMode {
     private ONE_RINGS_STATE state2;
     private FOUR_RINGS_STATE state3;
 
-    private double targetVelocity = 150;
+    private double targetVelocity = .75;
 
     public enum ZERO_RINGS_STATE {
         INITIALIZING,  // drop intake, start shooter, start moving to line
@@ -162,9 +162,6 @@ public class SampleAuton extends LinearOpMode {
         wobbleArm2.setPosition(wobbleArmStowed);
         intakeServo.setPosition(intakeServoClosed);
 
-        telemetry.addData("test = ", 5);
-        telemetry.update();
-
         initVuforia();
         initTfod();
 
@@ -174,11 +171,6 @@ public class SampleAuton extends LinearOpMode {
         }
 
         int rings = 0;
-
-        intakeServo.setPosition(intakeServoClosed);
-        wobbleClaw.setPosition(wobbleClawClosed);
-        wobbleArm1.setPosition(wobbleArmStowed);
-        wobbleArm2.setPosition(wobbleArmStowed);
 
         //detect using camera
         boolean ison = true;
@@ -220,7 +212,7 @@ public class SampleAuton extends LinearOpMode {
         shooter.init(hardwareMap);
         pid.init(hardwareMap);
 
-        waitForStart();
+        // waitForStart(); // THIS WAS HERE BUT WE SHOULD MOVE TO LINE 304
 
         // This identifies the starting position of our robot -- otherwise it default to (0,0) which is the center of the field.
         // We should tune this number, which I'm estimating to be (-63, -33).
@@ -236,15 +228,15 @@ public class SampleAuton extends LinearOpMode {
                 .build();
 
         Trajectory zeroRings2 = drive.trajectoryBuilder(zeroRings1.end())
-                .splineToLinearHeading(new Pose2d(7.0, -37), Math.toRadians(90)) // Move to Box A
+                .splineToLinearHeading(new Pose2d(7.0, -37, Math.toRadians(0)), Math.toRadians(90)) // Move to Box A
                 .build();
 
         Trajectory zeroRings3 = drive.trajectoryBuilder(zeroRings2.end())
-                .splineToLinearHeading(new Pose2d(-29, -45), Math.toRadians(0))  // Move to get Wobble #2
+                .splineToLinearHeading(new Pose2d(-29, -45, Math.toRadians(90)), Math.toRadians(0)) // Move to get Wobble #2
                 .build();
 
         Trajectory zeroRings4 = drive.trajectoryBuilder(zeroRings3.end())
-                .splineToLinearHeading(new Pose2d(10, -37), Math.toRadians(90)) // Move to Box A
+                .splineToLinearHeading(new Pose2d(10, -37, Math.toRadians(0)), Math.toRadians(90)) // Move to Box A
                 .build();
 
 
@@ -309,7 +301,7 @@ public class SampleAuton extends LinearOpMode {
          */
 
 
-
+        waitForStart();
         if (isStopRequested()) return;
 
         state = ZERO_RINGS_STATE.INITIALIZING;
