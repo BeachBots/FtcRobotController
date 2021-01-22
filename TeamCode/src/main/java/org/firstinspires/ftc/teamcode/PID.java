@@ -35,7 +35,7 @@ public class PID {
 
     private final int NUM_PID_ADJUSTMENTS = 10;
     private final int MS_BTWN_VEL_READINGS = 12;
-    private final int NUM_VELOCITY_READINGS = 25;
+    private final int NUM_VELOCITY_READINGS = 25;  // TEST THIS NUMBER -- keep halving it
 
     private double targetVelocity = 0.0;
     public double currentVelocity = 0.0;
@@ -49,7 +49,7 @@ public class PID {
 
     private enum PID_STATE {
         RUNNING,
-        DONE,
+        READY,
     }
 
     private PID.PID_STATE state1;
@@ -120,12 +120,12 @@ public class PID {
 
         // Update state
         if (++pid_adjust_count >= NUM_PID_ADJUSTMENTS) {
-            state1 = PID.PID_STATE.DONE;
+            state1 = PID.PID_STATE.READY;
         }
     }
 
-    public boolean done() {
-        return state1 == PID.PID_STATE.DONE;
+    public boolean ready() {
+        return state1 == PID.PID_STATE.READY;
     }
 
 }
