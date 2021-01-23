@@ -54,21 +54,19 @@ public class SampleAuton extends LinearOpMode {
     private ZERO_RINGS_STATE state;
     private ONE_RINGS_STATE state2;
     private FOUR_RINGS_STATE state3;
-    //ALT versions to grab starter stack rings
-    private ONE_RINGS_STATE_ALT state4;
 
     private double targetVelocity = 175;
 
     public enum ZERO_RINGS_STATE {
         INITIALIZING,  // drop intake, start shooter, start moving to line
         DRIVE_TO_LINE, // reach line and fire three shots
-        DRIVE_TO_SQUARE_A,
+        DRIVE_RIGHT, // drive to Box A
         DROP_WOBBLE_1,
         DRIVE_TO_WOBBLE_2,
         PICK_UP_WOBBLE_2,
-        RETURN_TO_SQUARE_A,
+        MOVE_TO_DROP_WOBBLE_2,
         DROP_WOBBLE_2,
-        PARK,
+        TURN_TO_PARK,
         DONE,
     }
 
@@ -98,21 +96,6 @@ public class SampleAuton extends LinearOpMode {
         DONE,
     }
 
-    public enum ONE_RINGS_STATE_ALT {
-        INITIALIZING,
-        DRIVE_TO_STARTER_STACK,
-        SCOOP_STARTER_STACK,
-        SHOOT_STARTER_STACK,
-        DRIVE_TO_SQUARE_B,
-        DROP_WOBBLE_1,
-        DRIVE_TO_WOBBLE_2,
-        PICK_UP_WOBBLE_2,
-        RETURN_TO_SQUARE_B,
-        DROP_WOBBLE_2,
-        PARK,
-        DONE,
-
-    }
 
     ;
 
@@ -348,7 +331,6 @@ public class SampleAuton extends LinearOpMode {
 
         if (rings == 0) {
             while (opModeIsActive()) {
-                pid.loop();
                 switch (state) {
                     case INITIALIZING:
                         telemetry.addData("state = ", state);
@@ -364,12 +346,12 @@ public class SampleAuton extends LinearOpMode {
                         if (drive.isBusy() || !pid.ready()) { // Still moving to shooting line.
                             drive.update();
                             pid.loop();
-                        } else if (pid.ready()) {
+                        } else if (pid.ready()) { // change to else if (pid.ready()) when we can check it
                             shooter.shoot(3);
-                            state = ZERO_RINGS_STATE.DRIVE_TO_SQUARE_A;
+                            state = ZERO_RINGS_STATE.DRIVE_RIGHT;
                         }
                         break;
-                    case DRIVE_TO_SQUARE_A:
+                    case DRIVE_RIGHT:
                         telemetry.addData("state = ", state);
                         telemetry.update();
                         if (shooter.shooterState != ShooterStateMachine.ShooterState.SHOOTER_IDLE) {
@@ -380,21 +362,19 @@ public class SampleAuton extends LinearOpMode {
                             sleep (5);
                             pid.start(0);
                             drive.followTrajectoryAsync(zeroRings2);
-                            wobbleArm1.setPosition(wobbleArmExtended);
-                            wobbleArm2.setPosition(wobbleArmExtended);
                             state = ZERO_RINGS_STATE.DROP_WOBBLE_1;
                         }
                         break;
                     case DROP_WOBBLE_1:
                         telemetry.addData("state = ", state);
                         telemetry.update();
-                        if (drive.isBusy()) { // Still moving to Box A
-                        drive.update();
+                        wobbleArm1.setPosition(wobbleArmExtended);
+                        wobbleArm2.setPosition(wobbleArmExtended);
+                        if (drive.isBusy()) {
+                            drive.update();
                         } else{
-                        wobbleClaw.setPosition(wobbleClawOpen);
-                        wobbleArm1.setPosition(wobbleArmUp); // MOVE ARM SO IT DOESN'T KNOCK OVER WOBBLE GOAL
-                        wobbleArm2.setPosition(wobbleArmUp);
-                        state = ZERO_RINGS_STATE.DRIVE_TO_WOBBLE_2;
+                            wobbleClaw.setPosition(wobbleClawOpen);
+                            state = ZERO_RINGS_STATE.DRIVE_TO_WOBBLE_2;
                         }
                         break;
                     case DRIVE_TO_WOBBLE_2:
@@ -403,36 +383,36 @@ public class SampleAuton extends LinearOpMode {
                         drive.followTrajectoryAsync(zeroRings3);  // MOVE TO PICK UP WOBBLE 2
                         wobbleArm1.setPosition(wobbleArmExtended);
                         wobbleArm2.setPosition(wobbleArmExtended);
-                        if (drive.isBusy()) {
-                            drive.update();
-                        } else {
-                            state = ZERO_RINGS_STATE.PICK_UP_WOBBLE_2;
-                        }
+                        state = ZERO_RINGS_STATE.PICK_UP_WOBBLE_2;
                         break;
                     case PICK_UP_WOBBLE_2:
                         telemetry.addData("state = ", state);
                         telemetry.update();
-                        wobbleClaw.setPosition(wobbleClawClosed); // CLOSE CLAW
-                        state = ZERO_RINGS_STATE.RETURN_TO_SQUARE_A;
+                        if (drive.isBusy()) {
+                            drive.update();
+                        } else {
+                            wobbleClaw.setPosition(wobbleClawClosed); // CLOSE CLAW
+                            state = ZERO_RINGS_STATE.MOVE_TO_DROP_WOBBLE_2;
+                        }
                         break;
-                    case RETURN_TO_SQUARE_A:
+                    case MOVE_TO_DROP_WOBBLE_2:
                         telemetry.addData("state = ", state);
                         telemetry.update();
-                        drive.followTrajectory(zeroRings4);
+                        drive.followTrajectory(zeroRings4);  // MOVE TO BOX A TO DROP OFF WOBBLE 2
                         state = ZERO_RINGS_STATE.DROP_WOBBLE_2;
                         break;
                     case DROP_WOBBLE_2:
                         telemetry.addData("state = ", state);
                         telemetry.update();
                         wobbleClaw.setPosition(wobbleClawOpen); // OPEN CLAW
-                        wobbleArm1.setPosition(wobbleArmStowed); // MOVE ARM SO IT DOESN'T KNOCK OVER WOBBLE GOAL
-                        wobbleArm2.setPosition(wobbleArmStowed);
-                        state = ZERO_RINGS_STATE.PARK;
+                        state = ZERO_RINGS_STATE.TURN_TO_PARK;
                         break;
-                    case PARK:
+                    case TURN_TO_PARK:
                         telemetry.addData("state = ", state);
                         telemetry.update();
                         drive.turn(Math.toRadians(-90));
+                        wobbleArm1.setPosition(wobbleArmStowed);
+                        wobbleArm2.setPosition(wobbleArmStowed);
                         state = ZERO_RINGS_STATE.DONE;
                         break;
                     case DONE:
@@ -441,9 +421,7 @@ public class SampleAuton extends LinearOpMode {
                         break;
                     default:
                 }
-
             }
-
         }
 
         if (rings == 1) {
@@ -625,126 +603,6 @@ public class SampleAuton extends LinearOpMode {
                         break;
                     case DONE:
                         telemetry.addData("state = ", state3);
-                        telemetry.update();
-                        break;
-                    default:
-                }
-
-            }
-
-        }
-
-        // alt version that tries to shoot starter stack ring
-
-        if (rings == 5) { // this would be 1 if we are running this
-            while (opModeIsActive()) {
-                pid.loop();
-                switch (state4) {
-                    case INITIALIZING:
-                        telemetry.addData("state = ", state4);
-                        telemetry.update();
-                        intakeServo.setPosition(intakeServoOpen);
-                        drive.followTrajectoryAsync(oneRingAlt1);
-                        pid.start(targetVelocity); // set to higher number
-                        state4 = ONE_RINGS_STATE_ALT.DRIVE_TO_STARTER_STACK;
-                        break;
-                    case DRIVE_TO_STARTER_STACK:
-                        telemetry.addData("state = ", state4);
-                        telemetry.update();
-                        if (drive.isBusy() || !pid.ready()) {
-                            drive.update();
-                            pid.loop();
-                        } else if (pid.ready()) {
-                            shooter.shoot(3);
-                            state4 = ONE_RINGS_STATE_ALT.SCOOP_STARTER_STACK;
-                        }
-                        break;
-                    case SCOOP_STARTER_STACK:
-                        telemetry.addData("state = ", state4);
-                        telemetry.update();
-                        if (shooter.shooterState != ShooterStateMachine.ShooterState.SHOOTER_IDLE) {
-                            shooter.loop();
-                        } else {
-                            drive.followTrajectoryAsync(oneRingAlt2);
-                            intake.setPower(1);
-                            pid.start(targetVelocity);
-                            state4 = ONE_RINGS_STATE_ALT.SHOOT_STARTER_STACK;
-                        }
-                        break;
-                    case SHOOT_STARTER_STACK:
-                        telemetry.addData("state = ", state4);
-                        telemetry.update();
-                        if (drive.isBusy() || !pid.ready()) {
-                            drive.update();
-                            pid.loop();
-                        } else if (pid.ready()) {
-                        shooter.shoot(1);
-                        state4 = ONE_RINGS_STATE_ALT.DRIVE_TO_SQUARE_B;
-                        }
-                        break;
-                    case DRIVE_TO_SQUARE_B:
-                        telemetry.addData("state = ", state4);
-                        telemetry.update();
-                        if (shooter.shooterState != ShooterStateMachine.ShooterState.SHOOTER_IDLE) {
-                            shooter.loop();
-                        } else {
-                            intake.setPower(0);
-                            shoot1.setPower(0);
-                            shoot2.setPower(0);
-                            sleep (5);
-                            pid.start(0);
-                            drive.followTrajectoryAsync(oneRingAlt3);
-                            wobbleArm1.setPosition(wobbleArmExtended);
-                            wobbleArm2.setPosition(wobbleArmExtended);
-                            state4 = ONE_RINGS_STATE_ALT.DROP_WOBBLE_1;
-                        }
-                        break;
-                    case DROP_WOBBLE_1:
-                        telemetry.addData("state = ", state4);
-                        telemetry.update();
-                        if (drive.isBusy()) { // Still moving to Square B
-                            drive.update();
-                        } else {
-                            wobbleClaw.setPosition(wobbleClawOpen);
-                            wobbleArm1.setPosition(wobbleArmUp); // MOVE ARM SO IT DOESN'T KNOCK OVER WOBBLE GOAL
-                            wobbleArm2.setPosition(wobbleArmUp);
-                            state4 = ONE_RINGS_STATE_ALT.DRIVE_TO_WOBBLE_2;
-                        }
-                        break;
-                    case DRIVE_TO_WOBBLE_2:
-                        telemetry.addData("state = ", state4);
-                        telemetry.update();
-                        drive.followTrajectory(oneRingAlt4);
-                        state4 = ONE_RINGS_STATE_ALT.PICK_UP_WOBBLE_2;
-                        break;
-                    case PICK_UP_WOBBLE_2:
-                        telemetry.addData("state = ", state4);
-                        telemetry.update();
-                        wobbleClaw.setPosition(wobbleClawClosed); // CLOSE CLAW
-                        state4 = ONE_RINGS_STATE_ALT.RETURN_TO_SQUARE_B;
-                        break;
-                    case RETURN_TO_SQUARE_B:
-                        telemetry.addData("state = ", state4);
-                        telemetry.update();
-                        drive.followTrajectory(oneRingAlt5);
-                        state4 = ONE_RINGS_STATE_ALT.DROP_WOBBLE_2;
-                        break;
-                    case DROP_WOBBLE_2:
-                        telemetry.addData("state = ", state4);
-                        telemetry.update();
-                        wobbleClaw.setPosition(wobbleClawOpen); // OPEN CLAW
-                        wobbleArm1.setPosition(wobbleArmStowed); // MOVE ARM SO IT DOESN'T KNOCK OVER WOBBLE GOAL
-                        wobbleArm2.setPosition(wobbleArmStowed);
-                        state4 = ONE_RINGS_STATE_ALT.PARK;
-                        break;
-                    case PARK:
-                        telemetry.addData("state = ", state4);
-                        telemetry.update();
-                        drive.followTrajectory(oneRingAlt6);
-                        state4 = ONE_RINGS_STATE_ALT.DONE;
-                        break;
-                    case DONE:
-                        telemetry.addData("state = ", state4);
                         telemetry.update();
                         break;
                     default:
