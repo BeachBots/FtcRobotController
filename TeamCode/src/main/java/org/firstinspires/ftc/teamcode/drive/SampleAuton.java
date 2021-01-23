@@ -55,6 +55,10 @@ public class SampleAuton extends LinearOpMode {
     private ONE_RINGS_STATE state2;
     private FOUR_RINGS_STATE state3;
 
+    private long autonDeltaTime = System.currentTimeMillis();
+    private long autonStartTime;
+
+
     private double targetVelocity = 175;
 
     public enum ZERO_RINGS_STATE {
@@ -62,6 +66,7 @@ public class SampleAuton extends LinearOpMode {
         DRIVE_TO_LINE, // reach line and fire three shots
         DRIVE_RIGHT, // drive to Box A
         DROP_WOBBLE_1,
+        WAIT,
         DRIVE_TO_WOBBLE_2,
         PICK_UP_WOBBLE_2,
         MOVE_TO_DROP_WOBBLE_2,
@@ -75,6 +80,7 @@ public class SampleAuton extends LinearOpMode {
         DRIVE_TO_LINE,
         DRIVE_TO_SQUARE_B,
         DROP_WOBBLE_1,
+        WAIT,
         DRIVE_TO_WOBBLE_2,
         PICK_UP_WOBBLE_2,
         RETURN_TO_SQUARE_B,
@@ -88,6 +94,7 @@ public class SampleAuton extends LinearOpMode {
         DRIVE_TO_LINE,
         DRIVE_TO_SQUARE_C,
         DROP_WOBBLE_1,
+        WAIT,
         DRIVE_TO_WOBBLE_2,
         PICK_UP_WOBBLE_2,
         RETURN_TO_SQUARE_C,
@@ -148,8 +155,8 @@ public class SampleAuton extends LinearOpMode {
 
         intake.setDirection(DcMotor.Direction.REVERSE);
 
-        double intakeServoOpen = .20;
-        double intakeServoClosed = 0;
+        double intakeServoOpen = 0;
+        double intakeServoClosed = .20;
         double wobbleClawOpen = .50;
         double wobbleClawClosed = .15;
         double wobbleArmStowed = .10;
@@ -170,7 +177,7 @@ public class SampleAuton extends LinearOpMode {
         }
 
         int rings = 0;
-        
+
         //detect using camera
         boolean ison = true;
 
@@ -223,27 +230,26 @@ public class SampleAuton extends LinearOpMode {
         //zero rings
 
         Trajectory zeroRings1 = drive.trajectoryBuilder(startPose)
-                .splineToConstantHeading(new Vector2d(-5, -45), Math.toRadians(0))  // Move to shooting line
+                .splineToConstantHeading(new Vector2d(-3, -45), Math.toRadians(0))  // Move to shooting line
                 .build();
 
         Trajectory zeroRings2 = drive.trajectoryBuilder(zeroRings1.end())
-                .lineToLinearHeading(new Pose2d(7, -52, Math.toRadians(90)))  // Move to Square A
+                .lineToLinearHeading(new Pose2d(4, -52, Math.toRadians(90)))  // Move to Square A
                 .build();
 
         Trajectory zeroRings3 = drive.trajectoryBuilder(zeroRings2.end())
-                .lineToLinearHeading(new Pose2d(-35, -45, Math.toRadians(0))) // Move to get Wobble #2
+                .lineToLinearHeading(new Pose2d(-38, -45, Math.toRadians(0))) // Move to get Wobble #2
                 .build();
 
         Trajectory zeroRings4 = drive.trajectoryBuilder(zeroRings3.end())
-                .lineToLinearHeading(new Pose2d(10, -45, Math.toRadians(90))) // Move to Square A
+                .lineToLinearHeading(new Pose2d(7, -45, Math.toRadians(90))) // Move to Square A
                 .build();
-
 
 
         //one ring
 
         Trajectory oneRing1 = drive.trajectoryBuilder(startPose)  // Move to shooting line
-                .splineToConstantHeading(new Vector2d(-5, -45), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(-3, -45), Math.toRadians(0))
                 .build();
 
         Trajectory oneRing2 = drive.trajectoryBuilder(oneRing1.end()) // Move to Square B
@@ -251,65 +257,38 @@ public class SampleAuton extends LinearOpMode {
                 .build();
 
         Trajectory oneRing3 = drive.trajectoryBuilder(oneRing2.end())  // Move to Wobble 2
-                .lineToLinearHeading(new Pose2d(-35, -45, Math.toRadians(0)))
+                .lineToLinearHeading(new Pose2d(-38, -45, Math.toRadians(0)))
                 .build();
 
         Trajectory oneRing4 = drive.trajectoryBuilder(oneRing3.end()) // Move to Square B
-                .splineToConstantHeading(new Vector2d(32, -18), Math.toRadians(0))
+                .lineToLinearHeading(new Pose2d(32, -18, Math.toRadians(90)))
                 .build();
 
         Trajectory oneRing5 = drive.trajectoryBuilder(oneRing4.end()) // Move to white line
-                .splineToConstantHeading(new Vector2d(9, -18), Math.toRadians(0))
+                .lineToLinearHeading(new Pose2d(9, -18, Math.toRadians(0)))
                 .build();
-
 
 
         //four rings
 
         Trajectory fourRing1 = drive.trajectoryBuilder(startPose) // Move to shooting line
-                .splineToConstantHeading(new Vector2d(-5, -45), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(-3, -45), Math.toRadians(0))
                 .build();
 
         Trajectory fourRing2 = drive.trajectoryBuilder(fourRing1.end())  // Move to Square C
-                .splineToConstantHeading(new Vector2d(60, -52), Math.toRadians(0))
+                .lineToLinearHeading(new Pose2d(60, -52, Math.toRadians(90)))
                 .build();
 
         Trajectory fourRing3 = drive.trajectoryBuilder(fourRing2.end())  // Move to Wobble 2
-                .splineToConstantHeading(new Vector2d(-35, -45), Math.toRadians(0))
+                .lineToLinearHeading(new Pose2d(-38, -45, Math.toRadians(0)))
                 .build();
 
         Trajectory fourRing4 = drive.trajectoryBuilder(fourRing3.end())  // Return to Square C
-                .splineToConstantHeading(new Vector2d(60, -45), Math.toRadians(0))
+                .lineToLinearHeading(new Pose2d(60, -45, Math.toRadians(90)))
                 .build();
 
         Trajectory fourRing5 = drive.trajectoryBuilder(fourRing4.end()) // Move to white line
-                .splineToConstantHeading(new Vector2d(9, -18), Math.toRadians(0))
-                .build();
-
-
-        //one ring alt
-        Trajectory oneRingAlt1 = drive.trajectoryBuilder(startPose)  // Move to starter stack
-                .splineToConstantHeading(new Vector2d(-37, -37), Math.toRadians(0))
-                .build();
-
-        Trajectory oneRingAlt2 = drive.trajectoryBuilder(startPose)  // Move to shooting line
-                .splineToConstantHeading(new Vector2d(-5, -45), Math.toRadians(0))
-                .build();
-
-        Trajectory oneRingAlt3 = drive.trajectoryBuilder(oneRingAlt2.end()) // Move to Square B
-                .lineToLinearHeading(new Pose2d(35, -25, Math.toRadians(90)))
-                .build();
-
-        Trajectory oneRingAlt4 = drive.trajectoryBuilder(oneRingAlt3.end())  // Move to Wobble 2
-                .lineToLinearHeading(new Pose2d(-35, -45, Math.toRadians(0)))
-                .build();
-
-        Trajectory oneRingAlt5 = drive.trajectoryBuilder(oneRingAlt4.end()) // Move to Square B
-                .splineToConstantHeading(new Vector2d(32, -18), Math.toRadians(0))
-                .build();
-
-        Trajectory oneRingAlt6 = drive.trajectoryBuilder(oneRingAlt5.end()) // Move to white line
-                .splineToConstantHeading(new Vector2d(9, -18), Math.toRadians(0))
+                .lineToLinearHeading(new Pose2d(9, -18, Math.toRadians(0)))
                 .build();
 
 
@@ -327,7 +306,6 @@ public class SampleAuton extends LinearOpMode {
         if (isStopRequested()) return;
 
         state = ZERO_RINGS_STATE.INITIALIZING;
-        long lastSavedTimeMs = 0;
 
         if (rings == 0) {
             while (opModeIsActive()) {
@@ -346,7 +324,7 @@ public class SampleAuton extends LinearOpMode {
                         if (drive.isBusy() || !pid.ready()) { // Still moving to shooting line.
                             drive.update();
                             pid.loop();
-                        } else if (pid.ready()) { // change to else if (pid.ready()) when we can check it
+                        } else if (pid.ready()) {
                             shooter.shoot(3);
                             state = ZERO_RINGS_STATE.DRIVE_RIGHT;
                         }
@@ -359,21 +337,32 @@ public class SampleAuton extends LinearOpMode {
                         } else {
                             shoot1.setPower(0);
                             shoot2.setPower(0);
-                            sleep (5);
+                            sleep(5);
                             pid.start(0);
                             drive.followTrajectoryAsync(zeroRings2);
+                            wobbleArm1.setPosition(wobbleArmExtended);
+                            wobbleArm2.setPosition(wobbleArmExtended);
                             state = ZERO_RINGS_STATE.DROP_WOBBLE_1;
                         }
                         break;
                     case DROP_WOBBLE_1:
                         telemetry.addData("state = ", state);
                         telemetry.update();
-                        wobbleArm1.setPosition(wobbleArmExtended);
-                        wobbleArm2.setPosition(wobbleArmExtended);
                         if (drive.isBusy()) {
                             drive.update();
-                        } else{
+                        } else {
                             wobbleClaw.setPosition(wobbleClawOpen);
+                            wobbleArm1.setPosition(wobbleArmUp);
+                            wobbleArm2.setPosition(wobbleArmUp);
+                            autonStartTime = System.currentTimeMillis();
+                            state = ZERO_RINGS_STATE.WAIT;
+                        }
+                        break;
+                    case WAIT:
+                        telemetry.addData("state = ", state);
+                        telemetry.update();
+                        autonDeltaTime = System.currentTimeMillis() - autonStartTime;
+                        if (autonDeltaTime > 300) {
                             state = ZERO_RINGS_STATE.DRIVE_TO_WOBBLE_2;
                         }
                         break;
@@ -404,15 +393,15 @@ public class SampleAuton extends LinearOpMode {
                     case DROP_WOBBLE_2:
                         telemetry.addData("state = ", state);
                         telemetry.update();
-                        wobbleClaw.setPosition(wobbleClawOpen); // OPEN CLAW
+                        wobbleClaw.setPosition(wobbleClawOpen);
+                        wobbleArm1.setPosition(wobbleArmStowed);
+                        wobbleArm2.setPosition(wobbleArmStowed);
                         state = ZERO_RINGS_STATE.TURN_TO_PARK;
                         break;
                     case TURN_TO_PARK:
                         telemetry.addData("state = ", state);
                         telemetry.update();
                         drive.turn(Math.toRadians(-90));
-                        wobbleArm1.setPosition(wobbleArmStowed);
-                        wobbleArm2.setPosition(wobbleArmStowed);
                         state = ZERO_RINGS_STATE.DONE;
                         break;
                     case DONE:
@@ -455,7 +444,7 @@ public class SampleAuton extends LinearOpMode {
                         } else {
                             shoot1.setPower(0);
                             shoot2.setPower(0);
-                            sleep (5);
+                            sleep(5);
                             pid.start(0);
                             drive.followTrajectoryAsync(oneRing2);
                             wobbleArm1.setPosition(wobbleArmExtended);
@@ -472,20 +461,34 @@ public class SampleAuton extends LinearOpMode {
                             wobbleClaw.setPosition(wobbleClawOpen);
                             wobbleArm1.setPosition(wobbleArmUp); // MOVE ARM SO IT DOESN'T KNOCK OVER WOBBLE GOAL
                             wobbleArm2.setPosition(wobbleArmUp);
+                            state2 = ONE_RINGS_STATE.WAIT;
+                        }
+                        break;
+                    case WAIT:
+                        telemetry.addData("state = ", state2);
+                        telemetry.update();
+                        autonDeltaTime = System.currentTimeMillis() - autonStartTime;
+                        if (autonDeltaTime > 300) {
                             state2 = ONE_RINGS_STATE.DRIVE_TO_WOBBLE_2;
                         }
                         break;
                     case DRIVE_TO_WOBBLE_2:
                         telemetry.addData("state = ", state2);
                         telemetry.update();
-                        drive.followTrajectory(oneRing3);
+                        drive.followTrajectoryAsync(oneRing3);
+                        wobbleArm1.setPosition(wobbleArmExtended);
+                        wobbleArm2.setPosition(wobbleArmExtended);
                         state2 = ONE_RINGS_STATE.PICK_UP_WOBBLE_2;
                         break;
                     case PICK_UP_WOBBLE_2:
                         telemetry.addData("state = ", state2);
                         telemetry.update();
-                        wobbleClaw.setPosition(wobbleClawClosed); // CLOSE CLAW
-                        state2 = ONE_RINGS_STATE.RETURN_TO_SQUARE_B;
+                        if (drive.isBusy()) {
+                            drive.update();
+                        } else {
+                            wobbleClaw.setPosition(wobbleClawClosed);
+                            state2 = ONE_RINGS_STATE.RETURN_TO_SQUARE_B;
+                        }
                         break;
                     case RETURN_TO_SQUARE_B:
                         telemetry.addData("state = ", state2);
@@ -496,8 +499,8 @@ public class SampleAuton extends LinearOpMode {
                     case DROP_WOBBLE_2:
                         telemetry.addData("state = ", state2);
                         telemetry.update();
-                        wobbleClaw.setPosition(wobbleClawOpen); // OPEN CLAW
-                        wobbleArm1.setPosition(wobbleArmStowed); // MOVE ARM SO IT DOESN'T KNOCK OVER WOBBLE GOAL
+                        wobbleClaw.setPosition(wobbleClawOpen);
+                        wobbleArm1.setPosition(wobbleArmStowed);
                         wobbleArm2.setPosition(wobbleArmStowed);
                         state2 = ONE_RINGS_STATE.PARK;
                         break;
@@ -549,7 +552,7 @@ public class SampleAuton extends LinearOpMode {
                         } else {
                             shoot1.setPower(0);
                             shoot2.setPower(0);
-                            sleep (5);
+                            sleep(5);
                             pid.start(0);
                             drive.followTrajectoryAsync(fourRing2);
                             wobbleArm1.setPosition(wobbleArmExtended);
@@ -560,26 +563,40 @@ public class SampleAuton extends LinearOpMode {
                     case DROP_WOBBLE_1:
                         telemetry.addData("state = ", state3);
                         telemetry.update();
-                        if (drive.isBusy()) { // Still moving to Square B
+                        if (drive.isBusy()) { // Still moving to Square C
                             drive.update();
                         } else {
                             wobbleClaw.setPosition(wobbleClawOpen);
-                            wobbleArm1.setPosition(wobbleArmUp); // MOVE ARM SO IT DOESN'T KNOCK OVER WOBBLE GOAL
+                            wobbleArm1.setPosition(wobbleArmUp);
                             wobbleArm2.setPosition(wobbleArmUp);
+                            state3 = FOUR_RINGS_STATE.WAIT;
+                        }
+                        break;
+                    case WAIT:
+                        telemetry.addData("state = ", state3);
+                        telemetry.update();
+                        autonDeltaTime = System.currentTimeMillis() - autonStartTime;
+                        if (autonDeltaTime > 300) {
                             state3 = FOUR_RINGS_STATE.DRIVE_TO_WOBBLE_2;
                         }
                         break;
                     case DRIVE_TO_WOBBLE_2:
                         telemetry.addData("state = ", state3);
                         telemetry.update();
-                        drive.followTrajectory(fourRing3);
+                        drive.followTrajectoryAsync(fourRing3);
+                        wobbleArm1.setPosition(wobbleArmExtended);
+                        wobbleArm2.setPosition(wobbleArmExtended);
                         state3 = FOUR_RINGS_STATE.PICK_UP_WOBBLE_2;
                         break;
                     case PICK_UP_WOBBLE_2:
                         telemetry.addData("state = ", state3);
                         telemetry.update();
-                        wobbleClaw.setPosition(wobbleClawClosed); // CLOSE CLAW
-                        state3 = FOUR_RINGS_STATE.RETURN_TO_SQUARE_C;
+                        if (drive.isBusy()) {
+                            drive.update();
+                        } else {
+                            wobbleClaw.setPosition(wobbleClawClosed);
+                            state3 = FOUR_RINGS_STATE.RETURN_TO_SQUARE_C;
+                        }
                         break;
                     case RETURN_TO_SQUARE_C:
                         telemetry.addData("state = ", state3);
@@ -590,8 +607,8 @@ public class SampleAuton extends LinearOpMode {
                     case DROP_WOBBLE_2:
                         telemetry.addData("state = ", state3);
                         telemetry.update();
-                        wobbleClaw.setPosition(wobbleClawOpen); // OPEN CLAW
-                        wobbleArm1.setPosition(wobbleArmStowed); // MOVE ARM SO IT DOESN'T KNOCK OVER WOBBLE GOAL
+                        wobbleClaw.setPosition(wobbleClawOpen);
+                        wobbleArm1.setPosition(wobbleArmStowed);
                         wobbleArm2.setPosition(wobbleArmStowed);
                         state3 = FOUR_RINGS_STATE.PARK;
                         break;
