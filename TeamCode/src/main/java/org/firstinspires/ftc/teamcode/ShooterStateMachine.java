@@ -97,6 +97,7 @@ public class ShooterStateMachine {
 
         switch (shooterState) {
             case SHOOTER_IDLE:
+                shooterStartTime = System.currentTimeMillis();  // Added on 1/23
                 break;
             case SHOOTER_WAITING1: //This gives time for stopper to get out of the way
                 stopper.setPosition(stopperOpen);

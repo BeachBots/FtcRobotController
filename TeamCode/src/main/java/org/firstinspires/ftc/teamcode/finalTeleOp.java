@@ -166,7 +166,7 @@ public class finalTeleOp extends LinearOpMode {
                 wobbleArm2.setPosition(output ? wobbleArmUp : wobbleArmExtended);
             }*/
 
-            if (gamepad1.b && (now - last_b_press > PRESS_TIME_MS)) {
+            if (gamepad1.b && (now - last_b_press > WOBBLE_PRESS_TIME_MS)) {
                 last_b_press = now;
                 wobblePreset++;
                 if (wobblePreset == 1) {
