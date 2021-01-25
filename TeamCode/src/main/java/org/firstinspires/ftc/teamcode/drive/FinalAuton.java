@@ -57,7 +57,8 @@ public class FinalAuton extends LinearOpMode {
     private long autonDeltaTime;
     private long autonStartTime;
 
-    private double targetVelocity = 175;
+    private double shooterLineVelocity = 175;
+    private double starterStackVelocity = 200;
 
     public enum ZERO_RINGS_STATE {
         INITIALIZING,  // drop intake, start shooter, start moving to line
@@ -263,7 +264,7 @@ public class FinalAuton extends LinearOpMode {
                         telemetry.update();
                         intakeServo.setPosition(intakeServoOpen);
                         drive.followTrajectoryAsync(zeroRings1);  // Kick off moving to SHOOTING LINE
-                        pid.start(targetVelocity);
+                        pid.start(shooterLineVelocity);
                         state = ZERO_RINGS_STATE.DRIVE_TO_LINE;
                         break;
                     case DRIVE_TO_LINE:
@@ -310,7 +311,7 @@ public class FinalAuton extends LinearOpMode {
                         telemetry.addData("state = ", state);
                         telemetry.update();
                         autonDeltaTime = System.currentTimeMillis() - autonStartTime;
-                        if (autonDeltaTime > 300) {
+                        if (autonDeltaTime > 1000) {
                             state = ZERO_RINGS_STATE.DRIVE_TO_WOBBLE_2;
                         }
                         break;
@@ -371,7 +372,7 @@ public class FinalAuton extends LinearOpMode {
                         telemetry.update();
                         intakeServo.setPosition(intakeServoOpen);
                         drive.followTrajectoryAsync(oneRing1);
-                        pid.start(targetVelocity);
+                        pid.start(shooterLineVelocity);
                         state2 = ONE_RINGS_STATE.DRIVE_TO_LINE;
                         break;
                     case DRIVE_TO_LINE:
@@ -416,7 +417,7 @@ public class FinalAuton extends LinearOpMode {
                         telemetry.addData("state = ", state2);
                         telemetry.update();
                         autonDeltaTime = System.currentTimeMillis() - autonStartTime;
-                        if (autonDeltaTime > 300) {
+                        if (autonDeltaTime > 1000) {
                             wobbleArm1.setPosition(wobbleArmUp); // MOVE ARM SO IT DOESN'T KNOCK OVER WOBBLE GOAL
                             wobbleArm2.setPosition(wobbleArmUp);
                             state2 = ONE_RINGS_STATE.DRIVE_TO_WOBBLE_2;
@@ -481,7 +482,7 @@ public class FinalAuton extends LinearOpMode {
                         telemetry.update();
                         intakeServo.setPosition(intakeServoOpen);
                         drive.followTrajectoryAsync(fourRing1);
-                        pid.start(targetVelocity);
+                        pid.start(shooterLineVelocity);
                         state3 = FOUR_RINGS_STATE.DRIVE_TO_LINE;
                         break;
                     case DRIVE_TO_LINE:

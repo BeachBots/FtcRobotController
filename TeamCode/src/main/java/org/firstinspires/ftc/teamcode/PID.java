@@ -35,7 +35,7 @@ public class PID {
 
     private final int NUM_PID_ADJUSTMENTS = 10;
     private final int MS_BTWN_VEL_READINGS = 12;
-    private final int NUM_VELOCITY_READINGS = 25;  // TEST THIS NUMBER -- keep halving it
+    private final int NUM_VELOCITY_READINGS = 25;  // was 25 TEST THIS NUMBER -- keep halving it
 
     private double targetVelocity = 0.0;
     public double currentVelocity = 0.0;
@@ -96,8 +96,8 @@ public class PID {
         velocity_reading_count = 0;
         velocity_accumulator = 0.0;
 
-        final double kp = 0.10;  // .10
-        final double kd = 0.30;  // .30
+        final double kp = .3;
+        final double kd = .0;
 
         final double error = targetVelocity - currentVelocity;
         final double p = kp * error;

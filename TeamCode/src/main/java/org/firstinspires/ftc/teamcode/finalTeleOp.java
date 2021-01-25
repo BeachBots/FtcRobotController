@@ -63,7 +63,7 @@ public class finalTeleOp extends LinearOpMode {
         shooter.init(hardwareMap);
         pid.init(hardwareMap);
 
-        double targetVelocity = .60; // this is the default starting velocity
+        double targetVelocity = 1.90; // this is the default starting velocity
 
         boolean output = false;  // this is for the intake
         boolean shooterOn = false;
