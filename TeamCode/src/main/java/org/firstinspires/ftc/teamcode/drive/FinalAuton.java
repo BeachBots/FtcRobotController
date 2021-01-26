@@ -54,11 +54,11 @@ public class FinalAuton extends LinearOpMode {
     private ONE_RINGS_STATE state2;
     private FOUR_RINGS_STATE state3;
 
-    private long autonDeltaTime;
+    private long autonDeltaTime = System.currentTimeMillis();
     private long autonStartTime;
 
-    private double shooterLineVelocity = 175;
-    private double starterStackVelocity = 200;
+    private double shooterLineVelocity = 1.80;
+    private double starterStackVelocity = 2.00;
 
     public enum ZERO_RINGS_STATE {
         INITIALIZING,  // drop intake, start shooter, start moving to line
@@ -146,7 +146,7 @@ public class FinalAuton extends LinearOpMode {
         wobbleArm2.setPosition(wobbleArmStowed);
         intakeServo.setPosition(intakeServoClosed);
 
-        // ====== INSERT OPENCV HERE ======
+        // ======  OPENCV  ======
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam"), cameraMonitorViewId);
@@ -168,7 +168,6 @@ public class FinalAuton extends LinearOpMode {
             telemetry.addData("bottom Avg", bottomAvg);
             telemetry.addData("Stack of:", stack);
             telemetry.update();
-
 
         }
         webcam.stopStreaming();
@@ -311,7 +310,7 @@ public class FinalAuton extends LinearOpMode {
                         telemetry.addData("state = ", state);
                         telemetry.update();
                         autonDeltaTime = System.currentTimeMillis() - autonStartTime;
-                        if (autonDeltaTime > 1000) {
+                        if (autonDeltaTime > 200) {
                             state = ZERO_RINGS_STATE.DRIVE_TO_WOBBLE_2;
                         }
                         break;
