@@ -24,6 +24,8 @@ public class PID {
     private DcMotor shoot2;
 
 
+    final double default_kp = .1;
+    final double default_kd = .15;
 
 
     public void init(HardwareMap hardwaremap) {
@@ -90,7 +92,11 @@ public class PID {
         lastAdjustTime = System.currentTimeMillis();
     }
 
-    public void loop() {
+    public void loop(){
+        loop(default_kp, default_kd));
+    }
+
+    public void loop(double kp, double kd) {
         // Read velocity and calculate error; set motors
         final long currentTime = System.currentTimeMillis();
         if (currentTime - lastLoopTime < MS_BTWN_VEL_READINGS) {
@@ -118,8 +124,6 @@ public class PID {
 
 
 
-        final double kp = .1;
-        final double kd = .15;
 
         final double error = targetVelocity - currentVelocity;
         final double p = kp * error;

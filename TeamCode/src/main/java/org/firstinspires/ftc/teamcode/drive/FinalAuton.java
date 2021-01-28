@@ -37,6 +37,9 @@ import static org.opencv.core.Core.inRange;
 
 public class FinalAuton extends LinearOpMode {
 
+    public static double KP = 0.03;
+    public static double KD = 0.4;
+
     private Servo flick;
     private DcMotor shoot1;
     private DcMotor shoot2;
@@ -271,7 +274,7 @@ public class FinalAuton extends LinearOpMode {
                         telemetry.update();
                         if (drive.isBusy() || !pid.ready()) { // Still moving to shooting line.
                             drive.update();
-                            pid.loop();
+                            pid.loop(KP, KD);
                         } else if (pid.ready()) {
                             shooter.shoot(3);
                             state = ZERO_RINGS_STATE.DRIVE_RIGHT;
@@ -364,7 +367,7 @@ public class FinalAuton extends LinearOpMode {
         if (stack == 1) {
             state2 = ONE_RINGS_STATE.INITIALIZING;
             while (opModeIsActive()) {
-                pid.loop();
+                pid.loop(KP, KD);
                 switch (state2) {
                     case INITIALIZING:
                         telemetry.addData("state = ", state2);
@@ -379,7 +382,7 @@ public class FinalAuton extends LinearOpMode {
                         telemetry.update();
                         if (drive.isBusy() || !pid.ready()) { // Still moving to shooting line.
                             drive.update();
-                            pid.loop();
+                            pid.loop(KP, KD);
                         } else if (pid.ready()) {
                             shooter.shoot(3);
                             state2 = ONE_RINGS_STATE.DRIVE_TO_SQUARE_B;
@@ -474,7 +477,7 @@ public class FinalAuton extends LinearOpMode {
         if (stack == 4) {
             state3 = FOUR_RINGS_STATE.INITIALIZING;
             while (opModeIsActive()) {
-                pid.loop();
+                pid.loop(KP, KD);
                 switch (state3) {
                     case INITIALIZING:
                         telemetry.addData("state = ", state3);
@@ -489,7 +492,7 @@ public class FinalAuton extends LinearOpMode {
                         telemetry.update();
                         if (drive.isBusy() || !pid.ready()) { // Still moving to shooting line.
                             drive.update();
-                            pid.loop();
+                            pid.loop(KP, KD);
                         } else if (pid.ready()) {
                             shooter.shoot(3);
                             state3 = FOUR_RINGS_STATE.DRIVE_TO_SQUARE_C;
