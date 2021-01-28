@@ -13,6 +13,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.logging.SocketHandler;
 
 
@@ -20,6 +22,9 @@ import java.util.logging.SocketHandler;
 public class PID {
     private DcMotor shoot1;
     private DcMotor shoot2;
+
+
+
 
     public void init(HardwareMap hardwaremap) {
         shoot1 = hardwaremap.dcMotor.get("shoot1");
@@ -35,21 +40,28 @@ public class PID {
 
     private final int NUM_PID_ADJUSTMENTS = 10;
     private final int MS_BTWN_VEL_READINGS = 12;
-    private final int NUM_VELOCITY_READINGS = 25;
+    private final int NUM_VELOCITY_READINGS = 20;  // was 25 TEST THIS NUMBER -- keep halving it
 
     private double targetVelocity = 0.0;
     public double currentVelocity = 0.0;
     private double currentPower = 0.0;
-    private long async_prevTime = 0;
-    private double async_motorPrev = 0.0;
-    private double async_prevError = 0.0;
-    private double velocity_accumulator = 0.0;
-    private int velocity_reading_count = 0;
+
+    private long lastLoopTime = 0;
+    private double previousMotor = 0.0;
+
+
+
+    private double velocity_sum;
+
+    private Queue<Double> velocity_accumulator = new LinkedList<Double>();
+
+    private double previousError = 0.0;
     private int pid_adjust_count = 0;
+    private long lastAdjustTime = 0;
 
     private enum PID_STATE {
         RUNNING,
-        DONE,
+        READY,
     }
 
     private PID.PID_STATE state1;
@@ -58,51 +70,57 @@ public class PID {
         state1 = PID.PID_STATE.RUNNING;
 
         targetVelocity = inTargetVelocity;
-        currentPower = targetVelocity / 3.36;
+        currentPower = targetVelocity / 12;  // 3.36
         shoot1.setPower(currentPower);
         shoot2.setPower(currentPower);
 
-        async_prevTime = System.currentTimeMillis();
-        async_motorPrev = shoot1.getCurrentPosition(); // changed from Math.abs(shoot1.getCurrentPosition()
-        async_prevError = 0;
-        velocity_accumulator = 0.0;
-        velocity_reading_count = 0;
+        lastLoopTime = System.currentTimeMillis();
+        previousMotor = shoot1.getCurrentPosition(); // changed from Math.abs(shoot1.getCurrentPosition()
 
+        velocity_accumulator.clear();
+        velocity_sum = 0;
+
+
+
+        previousError = 0;
         pid_adjust_count = 0;
+        lastAdjustTime = System.currentTimeMillis();
     }
 
     public void loop() {
         // Read velocity and calculate error; set motors
         final long currentTime = System.currentTimeMillis();
-        if (currentTime - async_prevTime < MS_BTWN_VEL_READINGS) {
+        if (currentTime - lastLoopTime < MS_BTWN_VEL_READINGS) {
             return;
         }
 
         // calculate velocity
         final int currentMotor = shoot1.getCurrentPosition(); // changed from Math.abs(shoot1.getCurrentPosition())
-        final double changeMotor = currentMotor - async_motorPrev;
-        async_motorPrev = currentMotor;
-        final long changeTime = currentTime - async_prevTime;
-        async_prevTime = currentTime;
-        final double new_velocity = changeMotor / changeTime;
-        velocity_accumulator += new_velocity;
-        velocity_reading_count++;
+        final double changeMotor = currentMotor - previousMotor;
+        previousMotor = currentMotor;
+        final double new_velocity = changeMotor / (currentTime - lastLoopTime);
+        lastLoopTime = currentTime;
+        velocity_accumulator.add(new_velocity);
+        velocity_sum += new_velocity;
 
-        if (velocity_reading_count < NUM_VELOCITY_READINGS) {
+
+        if (velocity_accumulator.size() <= NUM_VELOCITY_READINGS) {
             return;
         }
 
-        currentVelocity = velocity_accumulator / velocity_reading_count;
-        velocity_reading_count = 0;
-        velocity_accumulator = 0.0;
+        velocity_sum -= velocity_accumulator.remove();
+        currentVelocity = velocity_sum / velocity_accumulator.size();
 
-        final double kp = 0.10;  // .10
-        final double kd = 0.30;  // .30
+
+
+        final double kp = .1;
+        final double kd = .15;
 
         final double error = targetVelocity - currentVelocity;
         final double p = kp * error;
-        final double d = kd * ((error - async_prevError) / changeTime);
-        async_prevError = error;
+        final double d = kd * (error - previousError) / (currentTime - lastAdjustTime);
+        previousError = error;
+        lastAdjustTime = currentTime;
 
         currentPower = p + d + currentPower;
         shoot1.setPower(currentPower);
@@ -120,12 +138,12 @@ public class PID {
 
         // Update state
         if (++pid_adjust_count >= NUM_PID_ADJUSTMENTS) {
-            state1 = PID.PID_STATE.DONE;
+            state1 = PID.PID_STATE.READY;
         }
     }
 
-    public boolean done() {
-        return state1 == PID.PID_STATE.DONE;
+    public boolean ready() {
+        return state1 == PID.PID_STATE.READY;
     }
 
 }
