@@ -49,11 +49,16 @@ public class PID {
     private long lastLoopTime = 0;
     private double previousMotor = 0.0;
 
+<<<<<<< HEAD
 
 
     private double velocity_sum;
 
     private Queue<Double> velocity_accumulator = new LinkedList<Double>();
+=======
+    private double velocity_accumulator = 0.0;
+    private int velocity_reading_count = 0;
+>>>>>>> 1e9b33ec7976514b749edb7a557c0dd071ca2d0d
 
     private double previousError = 0.0;
     private int pid_adjust_count = 0;
@@ -77,10 +82,15 @@ public class PID {
         lastLoopTime = System.currentTimeMillis();
         previousMotor = shoot1.getCurrentPosition(); // changed from Math.abs(shoot1.getCurrentPosition()
 
+<<<<<<< HEAD
         velocity_accumulator.clear();
         velocity_sum = 0;
 
 
+=======
+        velocity_accumulator = 0.0;
+        velocity_reading_count = 0;
+>>>>>>> 1e9b33ec7976514b749edb7a557c0dd071ca2d0d
 
         previousError = 0;
         pid_adjust_count = 0;
@@ -100,11 +110,18 @@ public class PID {
         previousMotor = currentMotor;
         final double new_velocity = changeMotor / (currentTime - lastLoopTime);
         lastLoopTime = currentTime;
+<<<<<<< HEAD
         velocity_accumulator.add(new_velocity);
         velocity_sum += new_velocity;
 
 
         if (velocity_accumulator.size() <= NUM_VELOCITY_READINGS) {
+=======
+        velocity_accumulator += new_velocity;
+        velocity_reading_count++;
+
+        if (velocity_reading_count < NUM_VELOCITY_READINGS) {
+>>>>>>> 1e9b33ec7976514b749edb7a557c0dd071ca2d0d
             return;
         }
 
