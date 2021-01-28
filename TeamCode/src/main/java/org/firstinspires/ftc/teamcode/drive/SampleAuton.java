@@ -177,11 +177,7 @@ public class SampleAuton extends LinearOpMode {
         }
 
         int rings = 0;
-<<<<<<< HEAD
-        
-=======
 
->>>>>>> 1e9b33ec7976514b749edb7a557c0dd071ca2d0d
         //detect using camera
         boolean ison = true;
 
