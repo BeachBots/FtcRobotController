@@ -195,7 +195,7 @@ public class FinalAuton extends LinearOpMode {
                 .build();
 
         Trajectory zeroRings3 = drive.trajectoryBuilder(zeroRings2.end())
-                .lineToLinearHeading(new Pose2d(-38, -45, Math.toRadians(0))) // Move to get Wobble #2
+                .lineToLinearHeading(new Pose2d(-37.5, -45, Math.toRadians(0))) // Move to get Wobble #2
                 .build();
 
         Trajectory zeroRings4 = drive.trajectoryBuilder(zeroRings3.end())
@@ -214,7 +214,7 @@ public class FinalAuton extends LinearOpMode {
                 .build();
 
         Trajectory oneRing3 = drive.trajectoryBuilder(oneRing2.end())  // Move to Wobble 2
-                .lineToLinearHeading(new Pose2d(-38, -45, Math.toRadians(0)))
+                .lineToLinearHeading(new Pose2d(-37.5, -45, Math.toRadians(0)))
                 .build();
 
         Trajectory oneRing4 = drive.trajectoryBuilder(oneRing3.end()) // Move to Square B
@@ -237,7 +237,7 @@ public class FinalAuton extends LinearOpMode {
                 .build();
 
         Trajectory fourRing3 = drive.trajectoryBuilder(fourRing2.end())  // Move to Wobble 2
-                .lineToLinearHeading(new Pose2d(-40, -45, Math.toRadians(0)))
+                .lineToLinearHeading(new Pose2d(-37.5, -45, Math.toRadians(0)))
                 .build();
 
         Trajectory fourRing4 = drive.trajectoryBuilder(fourRing3.end())  // Return to Square C
@@ -245,7 +245,7 @@ public class FinalAuton extends LinearOpMode {
                 .build();
 
         Trajectory fourRing5 = drive.trajectoryBuilder(fourRing4.end()) // Move to white line
-                .lineToLinearHeading(new Pose2d(9, -18, Math.toRadians(0)))
+                .lineToLinearHeading(new Pose2d(9, -28, Math.toRadians(0)))
                 .build();
 
 
@@ -300,8 +300,8 @@ public class FinalAuton extends LinearOpMode {
                             drive.update();
                         } else {
                             wobbleClaw.setPosition(wobbleClawOpen);
-                            wobbleArm1.setPosition(wobbleArmUp);
-                            wobbleArm2.setPosition(wobbleArmUp);
+                            wobbleArm1.setPosition(wobbleArmStowed);
+                            wobbleArm2.setPosition(wobbleArmStowed);
                             autonStartTime = System.currentTimeMillis();
                             state = ZERO_RINGS_STATE.WAIT;
                         }
@@ -310,7 +310,7 @@ public class FinalAuton extends LinearOpMode {
                         telemetry.addData("state = ", state);
                         telemetry.update();
                         autonDeltaTime = System.currentTimeMillis() - autonStartTime;
-                        if (autonDeltaTime > 200) {
+                        if (autonDeltaTime > 1000) {
                             state = ZERO_RINGS_STATE.DRIVE_TO_WOBBLE_2;
                         }
                         break;
@@ -408,6 +408,8 @@ public class FinalAuton extends LinearOpMode {
                             drive.update();
                         } else {
                             wobbleClaw.setPosition(wobbleClawOpen);
+                            wobbleArm1.setPosition(wobbleArmStowed);
+                            wobbleArm2.setPosition(wobbleArmStowed);
                             autonStartTime = System.currentTimeMillis();
                             state2 = ONE_RINGS_STATE.WAIT;
                         }
@@ -417,8 +419,6 @@ public class FinalAuton extends LinearOpMode {
                         telemetry.update();
                         autonDeltaTime = System.currentTimeMillis() - autonStartTime;
                         if (autonDeltaTime > 1000) {
-                            wobbleArm1.setPosition(wobbleArmUp); // MOVE ARM SO IT DOESN'T KNOCK OVER WOBBLE GOAL
-                            wobbleArm2.setPosition(wobbleArmUp);
                             state2 = ONE_RINGS_STATE.DRIVE_TO_WOBBLE_2;
                         }
                         break;
@@ -518,8 +518,9 @@ public class FinalAuton extends LinearOpMode {
                             drive.update();
                         } else {
                             wobbleClaw.setPosition(wobbleClawOpen);
-                            wobbleArm1.setPosition(wobbleArmUp);
-                            wobbleArm2.setPosition(wobbleArmUp);
+                            wobbleArm1.setPosition(wobbleArmStowed);
+                            wobbleArm2.setPosition(wobbleArmStowed);
+                            autonStartTime = System.currentTimeMillis();
                             state3 = FOUR_RINGS_STATE.WAIT;
                         }
                         break;
@@ -527,7 +528,7 @@ public class FinalAuton extends LinearOpMode {
                         telemetry.addData("state = ", state3);
                         telemetry.update();
                         autonDeltaTime = System.currentTimeMillis() - autonStartTime;
-                        if (autonDeltaTime > 300) {
+                        if (autonDeltaTime > 1000) {
                             state3 = FOUR_RINGS_STATE.DRIVE_TO_WOBBLE_2;
                         }
                         break;
@@ -612,11 +613,11 @@ public class FinalAuton extends LinearOpMode {
             bottomRollingAvg = new double[]{0, 0, 0};
             bottomAvg = (int) Core.mean(greyBottom).val[0];
 
-            if (bottomAvg < 5) {
+            if (bottomAvg < 7) {
                 stack = 0;
-            } else if ((bottomAvg > 5) && (bottomAvg < 12)) {
+            } else if ((bottomAvg > 7) && (bottomAvg < 16)) {
                 stack = 1;
-            } else if (bottomAvg > 12) {
+            } else if (bottomAvg > 16) {
                 stack = 4;
             }
             if (val == 0) {
