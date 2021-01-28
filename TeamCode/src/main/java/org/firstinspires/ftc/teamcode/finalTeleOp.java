@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -10,6 +11,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.drive.SampleAuton;
 
+@Config
 @TeleOp(name = "FinalTeleOP")
 public class finalTeleOp extends LinearOpMode {
 
@@ -137,7 +139,7 @@ public class finalTeleOp extends LinearOpMode {
                     shoot1.setPower(0);
                     shoot2.setPower(0);
                     sleep(5);
-                    pid.start(0);
+                    pid.setTargetVelocity(0);
                 }
             }
 
@@ -192,7 +194,7 @@ public class finalTeleOp extends LinearOpMode {
                 last_dpad_up_press = now;
                 targetVelocity = targetVelocity + 0.1;
                 if (shooterOn) {
-                    pid.start(targetVelocity);
+                    pid.setTargetVelocity(targetVelocity);
                 }
             }
 
@@ -200,7 +202,7 @@ public class finalTeleOp extends LinearOpMode {
                 last_dpad_down_press = now;
                 targetVelocity = targetVelocity - 0.1;
                 if (shooterOn) {
-                    pid.start(targetVelocity);
+                    pid.setTargetVelocity(targetVelocity);
                 }
 
             }
@@ -209,7 +211,7 @@ public class finalTeleOp extends LinearOpMode {
                 last_dpad_right_press = now;
                 targetVelocity = targetVelocity + 0.01;
                 if (shooterOn) {
-                    pid.start(targetVelocity);
+                    pid.setTargetVelocity(targetVelocity);
                 }
 
             }
@@ -218,7 +220,7 @@ public class finalTeleOp extends LinearOpMode {
                 last_dpad_left_press = now;
                 targetVelocity = targetVelocity - 0.01;
                 if (shooterOn) {
-                    pid.start(targetVelocity);
+                    pid.setTargetVelocity(targetVelocity);
                 }
 
             }

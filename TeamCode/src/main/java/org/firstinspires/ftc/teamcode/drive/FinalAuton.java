@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.drive;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
@@ -313,7 +314,7 @@ public class FinalAuton extends LinearOpMode {
                         telemetry.addData("state = ", state);
                         telemetry.update();
                         autonDeltaTime = System.currentTimeMillis() - autonStartTime;
-                        if (autonDeltaTime > 1000) {
+                        if (autonDeltaTime > 700) {
                             state = ZERO_RINGS_STATE.DRIVE_TO_WOBBLE_2;
                         }
                         break;
@@ -421,7 +422,7 @@ public class FinalAuton extends LinearOpMode {
                         telemetry.addData("state = ", state2);
                         telemetry.update();
                         autonDeltaTime = System.currentTimeMillis() - autonStartTime;
-                        if (autonDeltaTime > 1000) {
+                        if (autonDeltaTime > 700) {
                             state2 = ONE_RINGS_STATE.DRIVE_TO_WOBBLE_2;
                         }
                         break;
@@ -531,7 +532,7 @@ public class FinalAuton extends LinearOpMode {
                         telemetry.addData("state = ", state3);
                         telemetry.update();
                         autonDeltaTime = System.currentTimeMillis() - autonStartTime;
-                        if (autonDeltaTime > 1000) {
+                        if (autonDeltaTime > 700) {
                             state3 = FOUR_RINGS_STATE.DRIVE_TO_WOBBLE_2;
                         }
                         break;
