@@ -115,12 +115,12 @@ public class PID {
         velocity_accumulator.add(new_velocity);
         velocity_sum += new_velocity;
 
-        if (velocity_accumulator.size() <= NUM_VELOCITY_READINGS) {
+        if (velocity_accumulator.size() < NUM_VELOCITY_READINGS) {
             return;
         }
 
-        velocity_sum -= velocity_accumulator.remove();
         currentVelocity = velocity_sum / velocity_accumulator.size();
+        velocity_sum -= velocity_accumulator.remove();
 
         // calculate error
         final double error = targetVelocity - currentVelocity;
