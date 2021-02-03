@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.logging.SocketHandler;
-
+@Config
 //@TeleOp(name = "ShooterStateMachine")
 public class ShooterStateMachine {
     public enum ShooterState {
@@ -31,11 +31,11 @@ public class ShooterStateMachine {
 
     public ShooterState shooterState = ShooterState.SHOOTER_IDLE;
 
-    private DcMotor shoot1;
-    private DcMotor shoot2;
+    //private DcMotor shoot1;  // we don't seem to need these here
+   // private DcMotor shoot2;
     public Servo flick;
     public Servo stopper;
-    public DcMotor intake;
+    //public DcMotor intake;
 
     public double flickExtend = 0.80;
     public double flickRetract = 0.48;
@@ -47,17 +47,18 @@ public class ShooterStateMachine {
     private long shooterDeltaTime = System.currentTimeMillis();
     private int num_shots = 0;
 
+    public static int timeBetweenShots = 150;
 
     public void init(HardwareMap hardwaremap) {
 
-        shoot1 = hardwaremap.dcMotor.get("shoot1");
-        shoot2 = hardwaremap.dcMotor.get("shoot2");
-        intake = hardwaremap.dcMotor.get("intake");
+      //  shoot1 = hardwaremap.dcMotor.get("shoot1");  // we don't seem to need these here
+      //  shoot2 = hardwaremap.dcMotor.get("shoot2");
+      //  intake = hardwaremap.dcMotor.get("intake");
         flick = hardwaremap.servo.get("flick");
         stopper = hardwaremap.servo.get("stopper");
 
-        shoot1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shoot2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+       // shoot1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+       // shoot2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         flick.setPosition(flickRetract);
         stopper.setPosition(stopperClosed);
@@ -129,7 +130,7 @@ public class ShooterStateMachine {
                 break;
             case SHOOTER_WAITING3:
                 shooterDeltaTime = System.currentTimeMillis() - shooterStartTime;
-                if (shooterDeltaTime > 400) { //This is the timer between shots
+                if (shooterDeltaTime > timeBetweenShots) { //This is the timer between shots
                     shooterState = ShooterState.SHOOTER_INDEXING; //Returns our state to Indexing
                 }
                 break;

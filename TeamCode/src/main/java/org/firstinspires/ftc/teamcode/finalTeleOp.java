@@ -11,7 +11,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.drive.SampleAuton;
 
-@Config
 @TeleOp(name = "FinalTeleOP")
 public class finalTeleOp extends LinearOpMode {
 
@@ -39,8 +38,6 @@ public class finalTeleOp extends LinearOpMode {
         intake = hardwareMap.dcMotor.get("intake");
         flick = hardwareMap.servo.get("flick");
         stopper = hardwareMap.servo.get("stopper");
-        shoot1 = hardwareMap.dcMotor.get("shoot1");
-        shoot2 = hardwareMap.dcMotor.get("shoot2");
         intakeServo = hardwareMap.servo.get("intakeServo");
         wobbleClaw = hardwareMap.servo.get("wobbleClaw");
         wobbleArm1 = hardwareMap.servo.get("wobbleArm1");
@@ -104,7 +101,7 @@ public class finalTeleOp extends LinearOpMode {
 
         double whiteLineHighGoalVelocity = 1.80;
         double starterStackHighGoalVelocity = 2.00;
-        double powerShotVelocity = 1.30;
+        double powerShotVelocity = 1.60;
 
         intakeServo.setPosition(intakeServoClosed);
         wobbleClaw.setPosition(wobbleClawClosed);
@@ -136,8 +133,8 @@ public class finalTeleOp extends LinearOpMode {
                 if (shooterOn) {
                     pid.start(targetVelocity);
                 } else {
-                    shoot1.setPower(0);
-                    shoot2.setPower(0);
+                    pid.shoot1.setPower(0);  // added the pid so we don't have to init shooter here
+                    pid.shoot2.setPower(0);
                     sleep(5);
                     pid.setTargetVelocity(0);
                 }

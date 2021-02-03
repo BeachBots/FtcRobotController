@@ -34,9 +34,10 @@ import java.util.List;
 
 import static org.opencv.core.Core.inRange;
 
-@Autonomous(name = "FinalAuton", group = "LinearOpmode")
+@Config
+@Autonomous(name = "FinalAutonAlternative", group = "LinearOpmode")
 
-public class FinalAuton extends LinearOpMode {
+public class FinalAutonAlternative extends LinearOpMode {
 
     private Servo flick;
     private Servo stopper;
@@ -56,7 +57,7 @@ public class FinalAuton extends LinearOpMode {
     private long autonDeltaTime = System.currentTimeMillis();
     private long autonStartTime;
 
-    private double shooterLineVelocity = 1.90;
+    private double shooterLineVelocity = 1.70;
     private double starterStackVelocity = 1.70;
 
     public enum ZERO_RINGS_STATE {
@@ -76,6 +77,7 @@ public class FinalAuton extends LinearOpMode {
     }
 
     public enum ONE_RINGS_STATE {
+
         INITIALIZING,
         DRIVE_TO_LINE,
         DRIVE_TO_SQUARE_B,
@@ -84,12 +86,16 @@ public class FinalAuton extends LinearOpMode {
         DRIVE_TO_WOBBLE_2,
         PICK_UP_WOBBLE_2,
         WAIT2,
+        DRIVE_TO_STARTER_STACK,
+        RETURN_TO_LINE,
+        SHOOT_RING,
         RETURN_TO_SQUARE_B,
         DROP_WOBBLE_2,
         STOW_ARM,
         PARK,
         DONE,
     }
+
 
     public enum FOUR_RINGS_STATE {
         INITIALIZING,
@@ -181,7 +187,7 @@ public class FinalAuton extends LinearOpMode {
 
         // This identifies the starting position of our robot -- otherwise it default to (0,0) which is the center of the field.
 
-        Pose2d startPose = new Pose2d(-63, -34.5, Math.toRadians(0));
+        Pose2d startPose = new Pose2d(-61, -63, Math.toRadians(0));
         drive.setPoseEstimate(startPose);
 
         // This is where we build all the trajectories. We won't call them until the bottom.
@@ -189,6 +195,7 @@ public class FinalAuton extends LinearOpMode {
         //zero rings
 
         Trajectory zeroRings1 = drive.trajectoryBuilder(startPose)
+                //   .splineToConstantHeading(new Vector2d(-30, -58), Math.toRadians(0))
                 .splineToConstantHeading(new Vector2d(-4, -45), Math.toRadians(0))  // Move to shooting line
                 .build();
 
@@ -197,7 +204,7 @@ public class FinalAuton extends LinearOpMode {
                 .build();
 
         Trajectory zeroRings3 = drive.trajectoryBuilder(zeroRings2.end())
-                .lineToLinearHeading(new Pose2d(-38, -45, Math.toRadians(0))) // Move to get Wobble #2
+                .lineToLinearHeading(new Pose2d(-38, -21, Math.toRadians(0))) // Move to get Wobble #2
                 .build();
 
         Trajectory zeroRings4 = drive.trajectoryBuilder(zeroRings3.end())
@@ -208,7 +215,8 @@ public class FinalAuton extends LinearOpMode {
         //one ring
 
         Trajectory oneRing1 = drive.trajectoryBuilder(startPose)  // Move to shooting line
-                .splineToConstantHeading(new Vector2d(-4, -45), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(-20, -63), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(-3, -41), Math.toRadians(0))
                 .build();
 
         Trajectory oneRing2 = drive.trajectoryBuilder(oneRing1.end()) // Move to Square B
@@ -216,14 +224,22 @@ public class FinalAuton extends LinearOpMode {
                 .build();
 
         Trajectory oneRing3 = drive.trajectoryBuilder(oneRing2.end())  // Move to Wobble 2
-                .lineToLinearHeading(new Pose2d(-38, -45, Math.toRadians(0)))
+                .lineToLinearHeading(new Pose2d(-38, -21, Math.toRadians(0)))
                 .build();
 
-        Trajectory oneRing4 = drive.trajectoryBuilder(oneRing3.end()) // Move to Square B
+        Trajectory oneRing4 = drive.trajectoryBuilder(oneRing3.end()) // Move to starter stack
+                .lineToLinearHeading(new Pose2d(-32, -25, Math.toRadians(-55)))
+                .build();
+
+        Trajectory oneRing5 = drive.trajectoryBuilder(oneRing4.end()) // Move to shooting line
+                .lineToLinearHeading(new Pose2d(-3, -41, Math.toRadians(0)))
+                .build();
+
+        Trajectory oneRing6 = drive.trajectoryBuilder(oneRing5.end()) // Move to Square B
                 .lineToLinearHeading(new Pose2d(28, -25, Math.toRadians(90)))
                 .build();
 
-        Trajectory oneRing5 = drive.trajectoryBuilder(oneRing4.end()) // Move to white line
+        Trajectory oneRing7 = drive.trajectoryBuilder(oneRing6.end()) // Move to white line
                 .lineToLinearHeading(new Pose2d(9, -18, Math.toRadians(0)))
                 .build();
 
@@ -231,7 +247,8 @@ public class FinalAuton extends LinearOpMode {
         //four rings
 
         Trajectory fourRing1 = drive.trajectoryBuilder(startPose) // Move to shooting line
-                .splineToConstantHeading(new Vector2d(-4, -45), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(-20, -63), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(-3, -41), Math.toRadians(0))
                 .build();
 
         Trajectory fourRing2 = drive.trajectoryBuilder(fourRing1.end())  // Move to Square C
@@ -239,14 +256,46 @@ public class FinalAuton extends LinearOpMode {
                 .build();
 
         Trajectory fourRing3 = drive.trajectoryBuilder(fourRing2.end())  // Move to Wobble 2
-                .lineToLinearHeading(new Pose2d(-38, -45, Math.toRadians(0)))
+                .lineToLinearHeading(new Pose2d(-38, -21, Math.toRadians(0)))
                 .build();
 
-        Trajectory fourRing4 = drive.trajectoryBuilder(fourRing3.end())  // Return to Square C
+        Trajectory fourRing4 = drive.trajectoryBuilder(fourRing3.end()) // Move to starter stack
+                // do this slow?
+                .lineToLinearHeading(new Pose2d(-32, -25, Math.toRadians(-55)))
+                .build();
+        /*.lineTo(
+                new Pose2d(-32, -25), Math.toRadians(-55),
+                new MinVelocityConstraint(
+                        Arrays.asList(
+                                new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
+                                new MecanumVelocityConstraint(15, DriveConstants.TRACK_WIDTH)
+                        )
+                ),
+                new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
+        )*/
+
+
+        Trajectory fourRing5 = drive.trajectoryBuilder(fourRing4.end(),true) // Back up a bit
+                .lineToLinearHeading(new Pose2d(-36,-24, Math.toRadians(-55)))
+                .build();
+
+        Trajectory fourRing6 = drive.trajectoryBuilder(fourRing5.end()) // Move to shooting line
+                .lineToLinearHeading(new Pose2d(-3, -41, Math.toRadians(0)))
+                .build();
+
+        Trajectory fourRing7 = drive.trajectoryBuilder(fourRing6.end()) // Return to get ring
+                .lineToLinearHeading(new Pose2d(-33, -26, Math.toRadians(-100)))
+                .build();
+
+        Trajectory fourRing8 = drive.trajectoryBuilder(fourRing7.end())  // Move to shooting line
+                .lineToLinearHeading(new Pose2d(-3, -41, Math.toRadians(90)))
+                .build();
+
+        Trajectory fourRing9 = drive.trajectoryBuilder(fourRing8.end())  // Return to Square C
                 .lineToLinearHeading(new Pose2d(53, -49, Math.toRadians(90)))
                 .build();
 
-        Trajectory fourRing5 = drive.trajectoryBuilder(fourRing4.end()) // Move to white line
+        Trajectory fourRing10 = drive.trajectoryBuilder(fourRing9.end()) // Move to white line
                 .lineToLinearHeading(new Pose2d(9, -28, Math.toRadians(0)))
                 .build();
 
@@ -466,14 +515,52 @@ public class FinalAuton extends LinearOpMode {
                         autonDeltaTime = System.currentTimeMillis() - autonStartTime;
                         if (autonDeltaTime > 800) {
                             wobbleClaw.setPosition(wobbleClawClosed);
+                            state2 = ONE_RINGS_STATE.DRIVE_TO_STARTER_STACK;
+                        }
+                        break;
+                    case DRIVE_TO_STARTER_STACK:
+                        telemetry.addData("state = ", state2);
+                        telemetry.update();
+                        intake.setPower(1);
+                        pid.start(shooterLineVelocity);
+                        drive.followTrajectoryAsync(oneRing4);
+                        state2 = ONE_RINGS_STATE.RETURN_TO_LINE;
+                        break;
+                    case RETURN_TO_LINE:
+                        telemetry.addData("state = ", state2);
+                        telemetry.update();
+                        if (drive.isBusy()) {
+                            drive.update();
+                        } else {
+                            drive.followTrajectoryAsync(oneRing5);
+                            state2 = ONE_RINGS_STATE.SHOOT_RING;
+                        }
+                        break;
+                    case SHOOT_RING:
+                        telemetry.addData("state = ", state2);
+                        telemetry.update();
+                        if (drive.isBusy() || !pid.ready()) {
+                            drive.update();
+                            pid.loop();
+                        } else if (pid.ready()) {
+                            shooter.shoot(1);
                             state2 = ONE_RINGS_STATE.RETURN_TO_SQUARE_B;
                         }
                         break;
                     case RETURN_TO_SQUARE_B:
                         telemetry.addData("state = ", state2);
                         telemetry.update();
-                        drive.followTrajectory(oneRing4);
-                        state2 = ONE_RINGS_STATE.DROP_WOBBLE_2;
+                        if (shooter.shooterState != ShooterStateMachine.ShooterState.SHOOTER_IDLE) {
+                            shooter.loop();
+                        } else {
+                            intake.setPower(0);
+                            pid.shoot1.setPower(0);
+                            pid.shoot2.setPower(0);
+                            sleep(5);
+                            pid.start(0);
+                            drive.followTrajectory(oneRing6);
+                            state2 = ONE_RINGS_STATE.DROP_WOBBLE_2;
+                        }
                         break;
                     case DROP_WOBBLE_2:
                         telemetry.addData("state = ", state2);
@@ -495,7 +582,7 @@ public class FinalAuton extends LinearOpMode {
                     case PARK:
                         telemetry.addData("state = ", state2);
                         telemetry.update();
-                        drive.followTrajectory(oneRing5);
+                        drive.followTrajectory(oneRing7);
                         state2 = ONE_RINGS_STATE.DONE;
                         break;
                     case DONE:
@@ -508,6 +595,161 @@ public class FinalAuton extends LinearOpMode {
             }
 
         }
+
+        // Alternate 1 ring code for shooting additional ring
+
+//        if (stack == 1) {
+//            state2 = ONE_RINGS_STATE.INITIALIZING;
+//            while (opModeIsActive()) {
+//                pid.loop();
+//                switch (state2) {
+//                    case INITIALIZING:
+//                        telemetry.addData("state = ", state2);
+//                        telemetry.update();
+//                        intakeServo.setPosition(intakeServoOpen);
+//                        drive.followTrajectoryAsync(oneRing1);
+//                        pid.start(starterStackVelocity);
+//                        state2 = ONE_RINGS_STATE.DRIVE_TO_STARTER_STACK;
+//                        break;
+//                    case DRIVE_TO_STARTER_STACK:
+//                        telemetry.addData("state = ", state2);
+//                        telemetry.update();
+//                        if (drive.isBusy() || !pid.ready()) {
+//                            drive.update();
+//                            pid.loop();
+//                        } else if (pid.ready()) {
+//                            shooter.shoot(3);
+//                            state2 = ONE_RINGS_STATE.SCOOP_STARTER_STACK;
+//                        }
+//                        break;
+//                    case SCOOP_STARTER_STACK:
+//                        telemetry.addData("state = ", state2);
+//                        telemetry.update();
+//                        if (shooter.shooterState != ShooterStateMachine.ShooterState.SHOOTER_IDLE) {
+//                            shooter.loop();
+//                        } else {
+//                            intake.setPower(1);
+//                            pid.setTargetVelocity(shooterLineVelocity);
+//                          autonStartTime = System.currentTimeMillis();
+//                            state2 = ONE_RINGS_STATE.WAIT1;
+//                        }
+//                        break;
+//                    case WAIT1:
+//                        telemetry.addData("state = ", state2);
+//                        telemetry.update();
+//                        autonDeltaTime = System.currentTimeMillis() - autonStartTime;
+//                        if (autonDeltaTime > 3000) {   // THIS CAN BE ADJUSTED TO GIVE INTAKE ENOUGH TIME TO LOAD RING
+//                            drive.followTrajectoryAsync(oneRing2);
+//                            state2 = ONE_RINGS_STATE.SHOOT_STARTER_STACK;
+//                        }
+//                        break;
+//                    case SHOOT_STARTER_STACK:
+//                        telemetry.addData("state = ", state2);
+//                        telemetry.update();
+//                        if (drive.isBusy() || !pid.ready()) {
+//                            drive.update();
+//                            pid.loop();
+//                        }
+//                        shooter.shoot(1);
+//                        state2 = ONE_RINGS_STATE.DRIVE_TO_SQUARE_B;
+//                        break;
+//                    case DRIVE_TO_SQUARE_B:
+//                        telemetry.addData("state = ", state2);
+//                        telemetry.update();
+//                        if (shooter.shooterState != ShooterStateMachine.ShooterState.SHOOTER_IDLE) {
+//                            shooter.loop();
+//                        } else {
+//                            pid.shoot1.setPower(0);
+//                            pid.shoot2.setPower(0);
+//                            sleep(5);
+//                            pid.start(0);
+//                            intake.setPower(0);
+//                            drive.followTrajectoryAsync(oneRing3);
+//                            wobbleArm1.setPosition(wobbleArmExtended);
+//                            wobbleArm2.setPosition(wobbleArmExtended);
+//                            state2 = ONE_RINGS_STATE.DROP_WOBBLE_1;
+//                        }
+//                        break;
+//                    case DROP_WOBBLE_1:
+//                        telemetry.addData("state = ", state2);
+//                        telemetry.update();
+//                        if (drive.isBusy()) {
+//                            drive.update();
+//                        } else {
+//                            wobbleClaw.setPosition(wobbleClawOpen);
+//                            wobbleArm1.setPosition(wobbleArmStowed); // MOVE ARM SO IT DOESN'T KNOCK OVER WOBBLE GOAL
+//                            wobbleArm2.setPosition(wobbleArmStowed);
+//                            autonStartTime = System.currentTimeMillis();
+//                            state2 = ONE_RINGS_STATE.WAIT2;
+//                        }
+//                        break;
+//                    case WAIT2:
+//                        telemetry.addData("state = ", state2);
+//                        telemetry.update();
+//                        autonDeltaTime = System.currentTimeMillis() - autonStartTime;
+//                        if (autonDeltaTime > 700) {
+//                            state2 = ONE_RINGS_STATE.DRIVE_TO_WOBBLE_2;
+//                        }
+//                        break;
+//                    case DRIVE_TO_WOBBLE_2:
+//                        telemetry.addData("state = ", state2);
+//                        telemetry.update();
+//                        drive.followTrajectoryAsync(oneRing4);
+//                        wobbleArm1.setPosition(wobbleArmExtended);
+//                        wobbleArm2.setPosition(wobbleArmExtended);
+//                        state2 = ONE_RINGS_STATE.PICK_UP_WOBBLE_2;
+//                        break;
+//                    case PICK_UP_WOBBLE_2:
+//                        telemetry.addData("state = ", state2);
+//                        telemetry.update();
+//                        if (drive.isBusy()) {
+//                            drive.update();
+//                        } else {
+//                            autonStartTime = System.currentTimeMillis();
+//                            state2 = ONE_RINGS_STATE.WAIT3;
+//                        }
+//                        break;
+//                    case WAIT3:
+//                        telemetry.addData("state = ", state2);
+//                        telemetry.update();
+//                        autonDeltaTime = System.currentTimeMillis() - autonStartTime;
+//                        if (autonDeltaTime > 800) {
+//                            wobbleClaw.setPosition(wobbleClawClosed);
+//                            state2 = ONE_RINGS_STATE.RETURN_TO_SQUARE_B;
+//                        }
+//                        break;
+//                    case RETURN_TO_SQUARE_B:
+//                        telemetry.addData("state = ", state2);
+//                        telemetry.update();
+//                        drive.followTrajectory(oneRing5);
+//                        state2 = ONE_RINGS_STATE.DROP_WOBBLE_2;
+//                        break;
+//                    case DROP_WOBBLE_2:
+//                        telemetry.addData("state = ", state2);
+//                        telemetry.update();
+//                        wobbleClaw.setPosition(wobbleClawOpen);
+//                        sleep(500);
+//                        wobbleArm1.setPosition(wobbleArmStowed);
+//                        wobbleArm2.setPosition(wobbleArmStowed);
+//                        state2 = ONE_RINGS_STATE.PARK;
+//                        break;
+//                    case PARK:
+//                        telemetry.addData("state = ", state2);
+//                        telemetry.update();
+//                        drive.followTrajectory(oneRing6);
+//                        state2 = ONE_RINGS_STATE.DONE;
+//                        break;
+//                    case DONE:
+//                        telemetry.addData("state = ", state2);
+//                        telemetry.update();
+//                        break;
+//                    default:
+//
+//                }
+//
+//            }
+//
+//        }
 
 
         if (stack == 4) {
