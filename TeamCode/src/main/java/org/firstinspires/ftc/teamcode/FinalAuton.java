@@ -1,36 +1,45 @@
-package org.firstinspires.ftc.teamcode.drive;
+package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Pose2dKt;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-import org.firstinspires.ftc.teamcode.AutonTest;
+import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.teamcode.PID;
 import org.firstinspires.ftc.teamcode.ShooterStateMachine;
+import org.firstinspires.ftc.teamcode.Webcam;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvPipeline;
 
+import java.util.ArrayList;
 import java.util.List;
 
-@Autonomous(name = "SampleAuton", group = "LinearOpmode")
+import static org.opencv.core.Core.inRange;
 
-public class SampleAuton extends LinearOpMode {
+@Autonomous(name = "FinalAuton", group = "LinearOpmode")
+
+public class FinalAuton extends LinearOpMode {
 
     private Servo flick;
-    private DcMotor shoot1;
-    private DcMotor shoot2;
     private Servo stopper;
     private DcMotor intake;
     private Servo intakeServo;
@@ -41,16 +50,6 @@ public class SampleAuton extends LinearOpMode {
     private ShooterStateMachine shooter = new ShooterStateMachine();
     private PID pid = new PID();
 
-    private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
-    private static final String LABEL_FIRST_ELEMENT = "Quad";
-    private static final String LABEL_SECOND_ELEMENT = "Single";
-    private static final String VUFORIA_KEY =
-            "ATOQy0T/////AAABmQ/SASRSuUzAugTNY1JUz6NSX/K0IyvPgOTMGlPcjAUyxoQlqULPX1jcW4C4fMzALWwznPmVdS4QFyFERfGevgAJPX1U8c6c1wfPTrhaqwhhoG0SBo/8b6iGaeweb65NN1Xu7PG+LHieN8rr339wsfsGROM9TW3oRp6uYdDFq30aM9tAIadifcbtQq9XUSdUyzF7Owgr8QjIbAw57OYIb6Bwl+7tenxUVSM+pYEkZyVdbCWAWEHAeu10tX7qGXmPEENNiKfnTT/TvGCsjTVK0Xa536mx70V74J/wBadTw32md6QMKjQmWWtCqyYnYZenYws42NGZzXsD/cLU+IbXOIJBaohDU8SaPr7mienrXGgc";
-    private VuforiaLocalizer vuforia;
-    private TFObjectDetector tfod;
-
-    boolean isRunning = true;
-
     private ZERO_RINGS_STATE state;
     private ONE_RINGS_STATE state2;
     private FOUR_RINGS_STATE state3;
@@ -58,8 +57,8 @@ public class SampleAuton extends LinearOpMode {
     private long autonDeltaTime = System.currentTimeMillis();
     private long autonStartTime;
 
-
-    private double targetVelocity = 175;
+    private double shooterLineVelocity = 1.90;
+    private double starterStackVelocity = 1.70;
 
     public enum ZERO_RINGS_STATE {
         INITIALIZING,  // drop intake, start shooter, start moving to line
@@ -69,8 +68,10 @@ public class SampleAuton extends LinearOpMode {
         WAIT,
         DRIVE_TO_WOBBLE_2,
         PICK_UP_WOBBLE_2,
+        WAIT2,
         MOVE_TO_DROP_WOBBLE_2,
         DROP_WOBBLE_2,
+        STOW_ARM,
         TURN_TO_PARK,
         DONE,
     }
@@ -83,8 +84,10 @@ public class SampleAuton extends LinearOpMode {
         WAIT,
         DRIVE_TO_WOBBLE_2,
         PICK_UP_WOBBLE_2,
+        WAIT2,
         RETURN_TO_SQUARE_B,
         DROP_WOBBLE_2,
+        STOW_ARM,
         PARK,
         DONE,
     }
@@ -97,46 +100,26 @@ public class SampleAuton extends LinearOpMode {
         WAIT,
         DRIVE_TO_WOBBLE_2,
         PICK_UP_WOBBLE_2,
+        WAIT2,
         RETURN_TO_SQUARE_C,
         DROP_WOBBLE_2,
         PARK,
         DONE,
     }
 
+    public static int VALUE_0A = 0;
+    public static int VALUE_0B = 25;
+    public static int VALUE_1A = 100;
+    public static int VALUE_1B = 255;
+    public static int VALUE_2A = 80;
+    public static int VALUE_2B = 255;
+    public static int val = 1;
+    OpenCvCamera webcam;
 
-    ;
-
-    /*
-    HOW TO TURN YOUR CODE INTO ANOTHER STATE MACHINE:
-    1. Declare a state like so, that defines concrete states where different actions will be done.
-    2. Inside a while loop like opModeIsActive, make a switch statement
-    3. You just take the steps in order, and make a case statement for each stage where you do something.
-        switch(state){
-          case INITIALIZING:
-            drive.followTrajectory(trajectory);
-            state = THIS_STATE.NEXT_STEP_IN_SERIES;
-            break;
-        }
-    4. This should just get you behavior you already had - do all things in order once.
-    5. One step at a time, don't need to do all of them in one shot
-       Change a call to followTrajectory() to followTrajectoryAsync(trajectory);
-       And then move that call to when we *enter* the state. i.e. go to the previous state, and
-       when you transition to the next one, that's where you call followTrajectoryAsync().
-       INITIALIZING should just call the function and immediately move to the next state.
-       Any other one should have a condition for moving forward.
-    6. In a state where we're supposed to be driving, we check if the trajectory is still being
-       followed. This is done by calling if (drive.isBusy()) {drive.update();}
-       If we've already completed it, we can enter the next state.
-    7. For cases where you just want to wait, instead of starting a trajectory, you save a time
-       marker when you enter the next state.
-       In the following state, you check "now" vs that saved timestamp until the desired amount
-       of time has passed.
-    8. If we want to spin up the PID controller or anything else that updates, call pid.update();
-       or whatever at the same time as stuff like drive.update() - this is being called continuously
-       until a drive is complete.
-       You can also check if pid.ready() before ending a state if it's important the PID has reached
-       the correct speed before moving on.
-    */;
+    double[] bottomRollingAvg = {0, 0, 0};
+    double bottomAvg = 0;
+    int stack;
+    boolean objectDetected = false;
 
 
     @Override
@@ -150,8 +133,6 @@ public class SampleAuton extends LinearOpMode {
         wobbleClaw = hardwareMap.servo.get("wobbleClaw");
         wobbleArm1 = hardwareMap.servo.get("wobbleArm1");
         wobbleArm2 = hardwareMap.servo.get("wobbleArm2");
-        shoot1 = hardwareMap.dcMotor.get("shoot1");
-        shoot2 = hardwareMap.dcMotor.get("shoot2");
 
         intake.setDirection(DcMotor.Direction.REVERSE);
 
@@ -168,60 +149,39 @@ public class SampleAuton extends LinearOpMode {
         wobbleArm2.setPosition(wobbleArmStowed);
         intakeServo.setPosition(intakeServoClosed);
 
-        initVuforia();
-        initTfod();
+        // ======  OPENCV  ======
 
-        if (tfod != null) {
-            tfod.activate();
-            tfod.setZoom(1.5, 1.78);
-        }
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam"), cameraMonitorViewId);
 
-        int rings = 0;
+        webcam.setPipeline(new stackPipeline());
 
-        //detect using camera
-        boolean ison = true;
+        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+
+            @Override
+            public void onOpened() {
+
+                webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+            }
+        });
+        FtcDashboard.getInstance().startCameraStream(webcam, 0);
 
         while (isStarted() == false) {
-            if (tfod != null) {
-                // getUpdatedRecognitions() will return null if no new information is available since
-                // the last time that call was made.
-                List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-                if (updatedRecognitions != null) {
-                    telemetry.addData("# Object Detected", updatedRecognitions.size());
-                    // step through the list of recognitions and display boundary info.
-                    int i = 0;
-                    if (updatedRecognitions.size() == 0) {
-                        rings = 0;
-                    }
-                    for (Recognition recognition : updatedRecognitions) {
-                        telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
-                        telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
-                                recognition.getLeft(), recognition.getTop());
-                        telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
-                                recognition.getRight(), recognition.getBottom());
 
-                        if (recognition.getLabel().equals(LABEL_SECOND_ELEMENT)) {
-                            rings = 1;
-                            isRunning = false;
-                        } else if (recognition.getLabel().equals(LABEL_FIRST_ELEMENT)) {
-                            rings = 4;
-                            isRunning = false;
-                        }
-                    }
-                    telemetry.addData("rings = ", rings);
-                    telemetry.update();
-                }
-            }
+            telemetry.addData("bottom Avg", bottomAvg);
+            telemetry.addData("Stack of:", stack);
+            telemetry.update();
 
         }
+        webcam.stopStreaming();
+
+        // ====== END OF OPEN CV ======
 
         shooter.init(hardwareMap);
         pid.init(hardwareMap);
 
-        // waitForStart(); // THIS WAS HERE BUT WE SHOULD MOVE TO LINE 304
-
         // This identifies the starting position of our robot -- otherwise it default to (0,0) which is the center of the field.
-        // We should tune this number, which I'm estimating to be (-63, -34.5).
+
         Pose2d startPose = new Pose2d(-63, -34.5, Math.toRadians(0));
         drive.setPoseEstimate(startPose);
 
@@ -230,7 +190,7 @@ public class SampleAuton extends LinearOpMode {
         //zero rings
 
         Trajectory zeroRings1 = drive.trajectoryBuilder(startPose)
-                .splineToConstantHeading(new Vector2d(-3, -45), Math.toRadians(0))  // Move to shooting line
+                .splineToConstantHeading(new Vector2d(-4, -45), Math.toRadians(0))  // Move to shooting line
                 .build();
 
         Trajectory zeroRings2 = drive.trajectoryBuilder(zeroRings1.end())
@@ -249,11 +209,11 @@ public class SampleAuton extends LinearOpMode {
         //one ring
 
         Trajectory oneRing1 = drive.trajectoryBuilder(startPose)  // Move to shooting line
-                .splineToConstantHeading(new Vector2d(-3, -45), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(-4, -45), Math.toRadians(0))
                 .build();
 
         Trajectory oneRing2 = drive.trajectoryBuilder(oneRing1.end()) // Move to Square B
-                .lineToLinearHeading(new Pose2d(35, -25, Math.toRadians(90)))
+                .lineToLinearHeading(new Pose2d(35, -28, Math.toRadians(90)))
                 .build();
 
         Trajectory oneRing3 = drive.trajectoryBuilder(oneRing2.end())  // Move to Wobble 2
@@ -261,7 +221,7 @@ public class SampleAuton extends LinearOpMode {
                 .build();
 
         Trajectory oneRing4 = drive.trajectoryBuilder(oneRing3.end()) // Move to Square B
-                .lineToLinearHeading(new Pose2d(32, -18, Math.toRadians(90)))
+                .lineToLinearHeading(new Pose2d(28, -25, Math.toRadians(90)))
                 .build();
 
         Trajectory oneRing5 = drive.trajectoryBuilder(oneRing4.end()) // Move to white line
@@ -272,7 +232,7 @@ public class SampleAuton extends LinearOpMode {
         //four rings
 
         Trajectory fourRing1 = drive.trajectoryBuilder(startPose) // Move to shooting line
-                .splineToConstantHeading(new Vector2d(-3, -45), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(-4, -45), Math.toRadians(0))
                 .build();
 
         Trajectory fourRing2 = drive.trajectoryBuilder(fourRing1.end())  // Move to Square C
@@ -284,30 +244,21 @@ public class SampleAuton extends LinearOpMode {
                 .build();
 
         Trajectory fourRing4 = drive.trajectoryBuilder(fourRing3.end())  // Return to Square C
-                .lineToLinearHeading(new Pose2d(60, -45, Math.toRadians(90)))
+                .lineToLinearHeading(new Pose2d(53, -49, Math.toRadians(90)))
                 .build();
 
         Trajectory fourRing5 = drive.trajectoryBuilder(fourRing4.end()) // Move to white line
-                .lineToLinearHeading(new Pose2d(9, -18, Math.toRadians(0)))
+                .lineToLinearHeading(new Pose2d(9, -28, Math.toRadians(0)))
                 .build();
 
 
-        /*
-         *   loop infinitely:
-         *       driving to shooting line:
-         *           follow trajectory
-         *       followTrajectory() <- blocks until completion
-         *      followTrajectoryAsync() <- you have to call update() but you can do stuff in between.
-         *
-         */
-
-
         waitForStart();
-        if (isStopRequested()) return;
+        if (
+                isStopRequested()) return;
 
-        state = ZERO_RINGS_STATE.INITIALIZING;
 
-        if (rings == 0) {
+        if (stack == 0) {
+            state = ZERO_RINGS_STATE.INITIALIZING;
             while (opModeIsActive()) {
                 switch (state) {
                     case INITIALIZING:
@@ -315,7 +266,7 @@ public class SampleAuton extends LinearOpMode {
                         telemetry.update();
                         intakeServo.setPosition(intakeServoOpen);
                         drive.followTrajectoryAsync(zeroRings1);  // Kick off moving to SHOOTING LINE
-                        pid.start(targetVelocity);
+                        pid.start(shooterLineVelocity);
                         state = ZERO_RINGS_STATE.DRIVE_TO_LINE;
                         break;
                     case DRIVE_TO_LINE:
@@ -335,8 +286,8 @@ public class SampleAuton extends LinearOpMode {
                         if (shooter.shooterState != ShooterStateMachine.ShooterState.SHOOTER_IDLE) {
                             shooter.loop();
                         } else {
-                            shoot1.setPower(0);
-                            shoot2.setPower(0);
+                            pid.shoot1.setPower(0);
+                            pid.shoot2.setPower(0);
                             sleep(5);
                             pid.start(0);
                             drive.followTrajectoryAsync(zeroRings2);
@@ -352,8 +303,8 @@ public class SampleAuton extends LinearOpMode {
                             drive.update();
                         } else {
                             wobbleClaw.setPosition(wobbleClawOpen);
-                            wobbleArm1.setPosition(wobbleArmUp);
-                            wobbleArm2.setPosition(wobbleArmUp);
+                            wobbleArm1.setPosition(wobbleArmStowed);
+                            wobbleArm2.setPosition(wobbleArmStowed);
                             autonStartTime = System.currentTimeMillis();
                             state = ZERO_RINGS_STATE.WAIT;
                         }
@@ -362,7 +313,7 @@ public class SampleAuton extends LinearOpMode {
                         telemetry.addData("state = ", state);
                         telemetry.update();
                         autonDeltaTime = System.currentTimeMillis() - autonStartTime;
-                        if (autonDeltaTime > 300) {
+                        if (autonDeltaTime > 700) {
                             state = ZERO_RINGS_STATE.DRIVE_TO_WOBBLE_2;
                         }
                         break;
@@ -380,6 +331,15 @@ public class SampleAuton extends LinearOpMode {
                         if (drive.isBusy()) {
                             drive.update();
                         } else {
+                            autonStartTime = System.currentTimeMillis();
+                            state = ZERO_RINGS_STATE.WAIT2;
+                        }
+                        break;
+                    case WAIT2:
+                        telemetry.addData("state = ", state);
+                        telemetry.update();
+                        autonDeltaTime = System.currentTimeMillis() - autonStartTime;
+                        if (autonDeltaTime > 800) {
                             wobbleClaw.setPosition(wobbleClawClosed); // CLOSE CLAW
                             state = ZERO_RINGS_STATE.MOVE_TO_DROP_WOBBLE_2;
                         }
@@ -394,9 +354,18 @@ public class SampleAuton extends LinearOpMode {
                         telemetry.addData("state = ", state);
                         telemetry.update();
                         wobbleClaw.setPosition(wobbleClawOpen);
-                        wobbleArm1.setPosition(wobbleArmStowed);
-                        wobbleArm2.setPosition(wobbleArmStowed);
-                        state = ZERO_RINGS_STATE.TURN_TO_PARK;
+                        autonStartTime = System.currentTimeMillis();
+                        state = ZERO_RINGS_STATE.STOW_ARM;
+                        break;
+                    case STOW_ARM:
+                        telemetry.addData("state = ", state);
+                        telemetry.update();
+                        autonDeltaTime = System.currentTimeMillis() - autonStartTime;
+                        if (autonDeltaTime > 800) {
+                            wobbleArm1.setPosition(wobbleArmStowed);
+                            wobbleArm2.setPosition(wobbleArmStowed);
+                            state = ZERO_RINGS_STATE.TURN_TO_PARK;
+                        }
                         break;
                     case TURN_TO_PARK:
                         telemetry.addData("state = ", state);
@@ -413,7 +382,8 @@ public class SampleAuton extends LinearOpMode {
             }
         }
 
-        if (rings == 1) {
+        if (stack == 1) {
+            state2 = ONE_RINGS_STATE.INITIALIZING;
             while (opModeIsActive()) {
                 pid.loop();
                 switch (state2) {
@@ -422,7 +392,7 @@ public class SampleAuton extends LinearOpMode {
                         telemetry.update();
                         intakeServo.setPosition(intakeServoOpen);
                         drive.followTrajectoryAsync(oneRing1);
-                        pid.start(targetVelocity);
+                        pid.start(shooterLineVelocity);
                         state2 = ONE_RINGS_STATE.DRIVE_TO_LINE;
                         break;
                     case DRIVE_TO_LINE:
@@ -442,8 +412,8 @@ public class SampleAuton extends LinearOpMode {
                         if (shooter.shooterState != ShooterStateMachine.ShooterState.SHOOTER_IDLE) {
                             shooter.loop();
                         } else {
-                            shoot1.setPower(0);
-                            shoot2.setPower(0);
+                            pid.shoot1.setPower(0);
+                            pid.shoot2.setPower(0);
                             sleep(5);
                             pid.start(0);
                             drive.followTrajectoryAsync(oneRing2);
@@ -459,8 +429,9 @@ public class SampleAuton extends LinearOpMode {
                             drive.update();
                         } else {
                             wobbleClaw.setPosition(wobbleClawOpen);
-                            wobbleArm1.setPosition(wobbleArmUp); // MOVE ARM SO IT DOESN'T KNOCK OVER WOBBLE GOAL
-                            wobbleArm2.setPosition(wobbleArmUp);
+                            wobbleArm1.setPosition(wobbleArmStowed);
+                            wobbleArm2.setPosition(wobbleArmStowed);
+                            autonStartTime = System.currentTimeMillis();
                             state2 = ONE_RINGS_STATE.WAIT;
                         }
                         break;
@@ -468,7 +439,7 @@ public class SampleAuton extends LinearOpMode {
                         telemetry.addData("state = ", state2);
                         telemetry.update();
                         autonDeltaTime = System.currentTimeMillis() - autonStartTime;
-                        if (autonDeltaTime > 300) {
+                        if (autonDeltaTime > 700) {
                             state2 = ONE_RINGS_STATE.DRIVE_TO_WOBBLE_2;
                         }
                         break;
@@ -486,6 +457,15 @@ public class SampleAuton extends LinearOpMode {
                         if (drive.isBusy()) {
                             drive.update();
                         } else {
+                            autonStartTime = System.currentTimeMillis();
+                            state2 = ONE_RINGS_STATE.WAIT2;
+                        }
+                        break;
+                    case WAIT2:
+                        telemetry.addData("state = ", state2);
+                        telemetry.update();
+                        autonDeltaTime = System.currentTimeMillis() - autonStartTime;
+                        if (autonDeltaTime > 800) {
                             wobbleClaw.setPosition(wobbleClawClosed);
                             state2 = ONE_RINGS_STATE.RETURN_TO_SQUARE_B;
                         }
@@ -500,9 +480,18 @@ public class SampleAuton extends LinearOpMode {
                         telemetry.addData("state = ", state2);
                         telemetry.update();
                         wobbleClaw.setPosition(wobbleClawOpen);
-                        wobbleArm1.setPosition(wobbleArmStowed);
-                        wobbleArm2.setPosition(wobbleArmStowed);
-                        state2 = ONE_RINGS_STATE.PARK;
+                        autonStartTime = System.currentTimeMillis();
+                        state2 = ONE_RINGS_STATE.STOW_ARM;
+                        break;
+                    case STOW_ARM:
+                        telemetry.addData("state = ", state2);
+                        telemetry.update();
+                        autonDeltaTime = System.currentTimeMillis() - autonStartTime;
+                        if (autonDeltaTime > 800) {
+                            wobbleArm1.setPosition(wobbleArmStowed);
+                            wobbleArm2.setPosition(wobbleArmStowed);
+                            state2 = ONE_RINGS_STATE.PARK;
+                        }
                         break;
                     case PARK:
                         telemetry.addData("state = ", state2);
@@ -521,7 +510,9 @@ public class SampleAuton extends LinearOpMode {
 
         }
 
-        if (rings == 4) {
+
+        if (stack == 4) {
+            state3 = FOUR_RINGS_STATE.INITIALIZING;
             while (opModeIsActive()) {
                 pid.loop();
                 switch (state3) {
@@ -530,7 +521,7 @@ public class SampleAuton extends LinearOpMode {
                         telemetry.update();
                         intakeServo.setPosition(intakeServoOpen);
                         drive.followTrajectoryAsync(fourRing1);
-                        pid.start(targetVelocity);
+                        pid.start(shooterLineVelocity);
                         state3 = FOUR_RINGS_STATE.DRIVE_TO_LINE;
                         break;
                     case DRIVE_TO_LINE:
@@ -550,8 +541,8 @@ public class SampleAuton extends LinearOpMode {
                         if (shooter.shooterState != ShooterStateMachine.ShooterState.SHOOTER_IDLE) {
                             shooter.loop();
                         } else {
-                            shoot1.setPower(0);
-                            shoot2.setPower(0);
+                            pid.shoot1.setPower(0);
+                            pid.shoot2.setPower(0);
                             sleep(5);
                             pid.start(0);
                             drive.followTrajectoryAsync(fourRing2);
@@ -567,8 +558,9 @@ public class SampleAuton extends LinearOpMode {
                             drive.update();
                         } else {
                             wobbleClaw.setPosition(wobbleClawOpen);
-                            wobbleArm1.setPosition(wobbleArmUp);
-                            wobbleArm2.setPosition(wobbleArmUp);
+                            wobbleArm1.setPosition(wobbleArmStowed);
+                            wobbleArm2.setPosition(wobbleArmStowed);
+                            autonStartTime = System.currentTimeMillis();
                             state3 = FOUR_RINGS_STATE.WAIT;
                         }
                         break;
@@ -576,7 +568,7 @@ public class SampleAuton extends LinearOpMode {
                         telemetry.addData("state = ", state3);
                         telemetry.update();
                         autonDeltaTime = System.currentTimeMillis() - autonStartTime;
-                        if (autonDeltaTime > 300) {
+                        if (autonDeltaTime > 700) {
                             state3 = FOUR_RINGS_STATE.DRIVE_TO_WOBBLE_2;
                         }
                         break;
@@ -594,6 +586,15 @@ public class SampleAuton extends LinearOpMode {
                         if (drive.isBusy()) {
                             drive.update();
                         } else {
+                            autonStartTime = System.currentTimeMillis();
+                            state3 = FOUR_RINGS_STATE.WAIT2;
+                        }
+                        break;
+                    case WAIT2:
+                        telemetry.addData("state = ", state);
+                        telemetry.update();
+                        autonDeltaTime = System.currentTimeMillis() - autonStartTime;
+                        if (autonDeltaTime > 800) {
                             wobbleClaw.setPosition(wobbleClawClosed);
                             state3 = FOUR_RINGS_STATE.RETURN_TO_SQUARE_C;
                         }
@@ -608,6 +609,7 @@ public class SampleAuton extends LinearOpMode {
                         telemetry.addData("state = ", state3);
                         telemetry.update();
                         wobbleClaw.setPosition(wobbleClawOpen);
+                        sleep(500);
                         wobbleArm1.setPosition(wobbleArmStowed);
                         wobbleArm2.setPosition(wobbleArmStowed);
                         state3 = FOUR_RINGS_STATE.PARK;
@@ -631,26 +633,50 @@ public class SampleAuton extends LinearOpMode {
 
     }
 
+    class stackPipeline extends OpenCvPipeline {
 
-    private void initVuforia() {
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+        Mat submat;
 
-        parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam");
+        Mat greyBottom = new Mat();
+        Mat matTest = new Mat();
 
-        //  Instantiate the Vuforia engine
-        vuforia = ClassFactory.getInstance().createVuforia(parameters);
+        @Override
+        public void init(Mat firstFrame) {
+            submat = firstFrame.submat(0, 240, 0, 320);
+        }
 
-        // Loading trackables is not necessary for the TensorFlow Object Detection engine.
-    }
+        @Override
+        public Mat processFrame(Mat input) {
+            greyBottom = input.submat(100, 240, 60, 320);
 
-    private void initTfod() {
-        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
-                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-        tfodParameters.minResultConfidence = 0.8f;
-        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
+            Imgproc.cvtColor(greyBottom, greyBottom, Imgproc.COLOR_RGB2HSV);
+            Scalar lowerOrange = new Scalar(VALUE_0A, VALUE_1A, VALUE_2A);
+            Scalar upperOrange = new Scalar(VALUE_0B, VALUE_1B, VALUE_2B);
+            inRange(greyBottom, lowerOrange, upperOrange, greyBottom);
+
+            List<MatOfPoint> test = new ArrayList<MatOfPoint>();
+
+            Imgproc.findContours(greyBottom, test, matTest, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+
+            objectDetected = false;
+
+            bottomRollingAvg = new double[]{0, 0, 0};
+            bottomAvg = (int) Core.mean(greyBottom).val[0];
+
+            if (bottomAvg < 7) {
+                stack = 0;
+            } else if ((bottomAvg > 7) && (bottomAvg < 16)) {
+                stack = 1;
+            } else if (bottomAvg > 16) {
+                stack = 4;
+            }
+            if (val == 0) {
+                return input;
+            } else {
+                return greyBottom;
+            }
+
+        }
 
     }
 

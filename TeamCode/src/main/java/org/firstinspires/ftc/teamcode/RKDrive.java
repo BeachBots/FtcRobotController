@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -25,7 +26,7 @@ import java.io.File;
 
 //test from Jon
 
-
+@Disabled
 @TeleOp(name = "RKdrive")
 public class RKDrive extends LinearOpMode {
     private DcMotor motorFrontRight;
