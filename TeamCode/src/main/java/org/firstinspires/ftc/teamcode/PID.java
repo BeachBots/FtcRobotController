@@ -54,7 +54,7 @@ public class PID {
 
     private double targetVelocity = 0.0;
     public double currentVelocity = 0.0;
-    private double currentPower = 0.0;
+    public double currentPower = 0.0;
 
     private long lastLoopTime = 0;
     private double previousMotor = 0.0;
@@ -92,6 +92,7 @@ public class PID {
         previousError = 0;
         pid_adjust_count = 0;
         lastAdjustTime = System.currentTimeMillis();
+
     }
 
     public void loop() {

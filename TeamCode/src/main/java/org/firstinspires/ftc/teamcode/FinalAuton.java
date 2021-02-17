@@ -140,7 +140,7 @@ public class FinalAuton extends LinearOpMode {
         double intakeServoClosed = .20;
         double wobbleClawOpen = .50;
         double wobbleClawClosed = .15;
-        double wobbleArmStowed = .10;
+        double wobbleArmStowed = .12;
         double wobbleArmExtended = .64;
         double wobbleArmUp = .29;
 

@@ -47,7 +47,7 @@ public class ShooterStateMachine {
     private long shooterDeltaTime = System.currentTimeMillis();
     private int num_shots = 0;
 
-    public static int timeBetweenShots = 150;
+    public static int timeBetweenShots = 100;
 
     public void init(HardwareMap hardwaremap) {
 

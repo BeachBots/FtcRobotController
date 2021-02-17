@@ -1,18 +1,18 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
+        import com.acmerobotics.roadrunner.geometry.Pose2d;
+        import com.acmerobotics.roadrunner.geometry.Vector2d;
+        import com.acmerobotics.roadrunner.trajectory.Trajectory;
+        import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+        import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+        import com.qualcomm.robotcore.hardware.DcMotor;
+        import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+        import org.firstinspires.ftc.robotcore.external.Telemetry;
+        import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
-@TeleOp(name = "FinalTeleOP")
-public class finalTeleOp extends LinearOpMode {
+@TeleOp(name = "FinalTeleOpAlternative")
+public class FinalTeleOpAlternative extends LinearOpMode {
 
     private Servo flick;
     private Servo stopper;
@@ -31,6 +31,25 @@ public class finalTeleOp extends LinearOpMode {
     private ShooterStateMachine shooter = new ShooterStateMachine();
 
     private PID pid = new PID();
+
+    enum Mode {
+        DRIVER_CONTROL,
+        AUTOMATIC_CONTROL_1,
+        AUTOMATIC_CONTROL_2,
+        AUTOMATIC_CONTROL_3,
+        AUTOMATIC_CONTROL_4,
+        AUTOMATIC_CONTROL_5,
+    }
+
+    Mode currentMode = Mode.DRIVER_CONTROL;
+
+    // The coordinates we want the bot to automatically go to when we press the Y button
+    Vector2d powerShot1Vector = new Vector2d(-4, -10);
+    Vector2d powerShot2Vector = new Vector2d(-4, -17.5);
+    Vector2d powerShot3Vector = new Vector2d(-4, -25);
+
+    // The heading we want the bot to end on for targetY
+    double powerShotHeading = Math.toRadians(0);
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -75,9 +94,7 @@ public class finalTeleOp extends LinearOpMode {
         boolean shooterOn = false;
         boolean a_output = false;
         boolean y_output = false;
-        boolean slowModeActive = false;
         boolean back_output = false;
-        double gamepadPower = .8;
         double last_rb_press = 0.;
         double last_lb_press = 0.;
         double last_a_press = 0.;
@@ -107,7 +124,6 @@ public class finalTeleOp extends LinearOpMode {
         telemetry.setAutoClear(false);
         Telemetry.Item TeleTargetVelocty = telemetry.addData("Target Velocity:", targetVelocity);
         Telemetry.Item TeleCurrentVelocity = telemetry.addData("Actual Velocity:", pid.currentVelocity);
-        Telemetry.Item Power = telemetry.addData("Power:", pid.currentPower);
 
 
         // INPUT SHOOTER POWER VALUES HERE
@@ -127,26 +143,75 @@ public class finalTeleOp extends LinearOpMode {
 
             final double now = System.currentTimeMillis();
             shooter.loop();
+            Pose2d poseEstimate = drive.getPoseEstimate();
 
             //DRIVETRAIN CONTROL
-            float deadZone = (float) 0.5;
-            gamepad1.setJoystickDeadzone(deadZone);
-            motorFrontRight.setPower(-gamepad1.left_stick_y * gamepadPower - gamepad1.right_stick_x * gamepadPower - gamepad1.left_stick_x * gamepadPower);
-            motorBackRight.setPower(-gamepad1.left_stick_y * gamepadPower - gamepad1.right_stick_x * gamepadPower + gamepad1.left_stick_x * gamepadPower);
-            motorFrontLeft.setPower(-gamepad1.left_stick_y * gamepadPower + gamepad1.right_stick_x * gamepadPower + gamepad1.left_stick_x * gamepadPower);
-            motorBackLeft.setPower(-gamepad1.left_stick_y * gamepadPower + gamepad1.right_stick_x * gamepadPower - gamepad1.left_stick_x * gamepadPower);
+            switch (currentMode) {
+                case DRIVER_CONTROL:
+                    float deadZone = (float) 0.5;
+                    gamepad1.setJoystickDeadzone(deadZone);
+                    motorFrontRight.setPower(-gamepad1.left_stick_y * 0.8 - gamepad1.right_stick_x * 0.8 - gamepad1.left_stick_x * 0.8);
+                    motorBackRight.setPower(-gamepad1.left_stick_y * 0.8 - gamepad1.right_stick_x * 0.8 + gamepad1.left_stick_x * 0.8);
+                    motorFrontLeft.setPower(-gamepad1.left_stick_y * 0.8 + gamepad1.right_stick_x * 0.8 + gamepad1.left_stick_x * 0.8);
+                    motorBackLeft.setPower(-gamepad1.left_stick_y * 0.8 + gamepad1.right_stick_x * 0.8 - gamepad1.left_stick_x * 0.8);
 
-            // Y BUTTON SLOWS MOTORS
-            if (gamepad1.y && (now - last_y_press > PRESS_TIME_MS)) {
-                last_y_press = now;
-                slowModeActive = !slowModeActive;
+                    // THIS TURNS THE Y BUTTON INTO AN AUTOMATED POWER SHOT ROUTINE
+                    if (gamepad1.y && (now - last_y_press > PRESS_TIME_MS)) {
+                        last_y_press = now;
+                        Trajectory traj1 = drive.trajectoryBuilder(poseEstimate)
+                                .splineTo(powerShot1Vector, powerShotHeading)
+                                .build();
+                        drive.followTrajectoryAsync(traj1);
+                        currentMode = Mode.AUTOMATIC_CONTROL_1;
+                    }
+                    break;
+                case AUTOMATIC_CONTROL_1:
+                    if (drive.isBusy()) {
+                        drive.update();
+                    } else {
+                        shooter.shoot(1);
+                        currentMode = Mode.AUTOMATIC_CONTROL_2;
+                    }
+                    break;
+                case AUTOMATIC_CONTROL_2:
+                    if (shooter.shooterState != ShooterStateMachine.ShooterState.SHOOTER_IDLE) {
+                        shooter.loop();
+                    } else {
+                        Trajectory traj1 = drive.trajectoryBuilder(poseEstimate)
+                                .splineTo(powerShot2Vector, powerShotHeading)
+                                .build();
+                        drive.followTrajectoryAsync(traj1);
+                        currentMode = Mode.AUTOMATIC_CONTROL_3;
+                    }
+                    break;
+                case AUTOMATIC_CONTROL_3:
+                    if (drive.isBusy()) {
+                        drive.update();
+                    } else {
+                        shooter.shoot(1);
+                        currentMode = Mode.AUTOMATIC_CONTROL_4;
+                    }
+                    break;
+                case AUTOMATIC_CONTROL_4:
+                    if (shooter.shooterState != ShooterStateMachine.ShooterState.SHOOTER_IDLE) {
+                        shooter.loop();
+                    } else {
+                        Trajectory traj1=drive.trajectoryBuilder(poseEstimate)
+                                .splineTo(powerShot3Vector, powerShotHeading)
+                                .build();
+                        drive.followTrajectoryAsync(traj1);
+                        currentMode = Mode.AUTOMATIC_CONTROL_5;
+                    }
+                    break;
+                case AUTOMATIC_CONTROL_5:
+                    if (drive.isBusy()) {
+                        drive.update();
+                    } else {
+                        shooter.shoot(1);
+                        currentMode = Mode.DRIVER_CONTROL;
+                    }
+                    break;
             }
-
-            if (slowModeActive) {
-                gamepadPower = .5;
-            }
-            else gamepadPower = .8;
-
 
             //INTAKE
             double intake_power = gamepad1.right_trigger - gamepad1.left_trigger;
