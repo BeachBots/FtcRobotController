@@ -49,7 +49,7 @@ public class PID {
     public static int NUM_PID_ADJUSTMENTS = 175; // number of adjustments before we move to READY
     public static int MS_BTWN_VEL_READINGS = 12;
     public static int NUM_VELOCITY_READINGS = 20;
-    public static double FEED_FORWARD = 4;
+    public static double FEED_FORWARD = 0.5;
     // public static int PID_DELAY = 1000;
 
     private double targetVelocity = 0.0;
@@ -79,7 +79,7 @@ public class PID {
         state1 = PID.PID_STATE.RUNNING;
 
         targetVelocity = inTargetVelocity;
-        currentPower = targetVelocity / FEED_FORWARD; //.563
+        //currentPower = targetVelocity / FEED_FORWARD; //.563
         shoot1.setPower(currentPower);
         shoot2.setPower(currentPower);
 
@@ -133,7 +133,7 @@ public class PID {
         lastAdjustTime = currentTime;
 
         // set motor power
-        currentPower = p + d + currentPower;
+        currentPower = p + d + 0.5;
         shoot1.setPower(currentPower);
         shoot2.setPower(currentPower);
 
