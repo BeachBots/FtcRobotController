@@ -70,7 +70,7 @@ public class finalTeleOp extends LinearOpMode {
         shooter.init(hardwareMap);
         pid.init(hardwareMap);
 
-        double targetVelocity = 1.90; // this is the default starting velocity
+        double targetVelocity = 2.10; // this is the default starting velocity
 
         boolean shooterOn = false;
         boolean a_output = false;
@@ -112,9 +112,9 @@ public class finalTeleOp extends LinearOpMode {
 
         // INPUT SHOOTER POWER VALUES HERE
 
-        double whiteLineHighGoalVelocity = 1.80;
+        double whiteLineHighGoalVelocity = 2.10;
         double starterStackHighGoalVelocity = 2.00;
-        double powerShotVelocity = 1.60;
+        double powerShotVelocity = 1.40;
 
         intakeServo.setPosition(intakeServoClosed);
         wobbleClaw.setPosition(wobbleClawClosed);

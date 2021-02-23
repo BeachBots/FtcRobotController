@@ -47,7 +47,8 @@ public class ShooterStateMachine {
     private long shooterDeltaTime = System.currentTimeMillis();
     private int num_shots = 0;
 
-    public static int timeBetweenShots = 100;
+    public static int timeBetweenShots = 110;
+    public static int timeForFlicker = 100; // was 150
 
     public void init(HardwareMap hardwaremap) {
 
@@ -114,7 +115,7 @@ public class ShooterStateMachine {
                 break;
             case SHOOTER_WAITING2:
                 shooterDeltaTime = System.currentTimeMillis() - shooterStartTime;
-                if (shooterDeltaTime > 150) { //Pause before retracting
+                if (shooterDeltaTime > timeForFlicker) { //Pause before retracting
                     shooterState = ShooterState.SHOOTER_RETRACTING; //Moves us to Retracting state
                 }
                 break;
