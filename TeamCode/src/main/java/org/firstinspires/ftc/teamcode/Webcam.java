@@ -24,6 +24,7 @@
 
     import com.acmerobotics.dashboard.FtcDashboard;
     import com.acmerobotics.dashboard.config.Config;
+    import com.qualcomm.robotcore.eventloop.opmode.Disabled;
     import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
     import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -49,6 +50,7 @@
     import static org.opencv.core.Core.inRange;
     import static org.opencv.core.Core.mean;
 
+@Disabled
 @Config
 @TeleOp
 //Disabled

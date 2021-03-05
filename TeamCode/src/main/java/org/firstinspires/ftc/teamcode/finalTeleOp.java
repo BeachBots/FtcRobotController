@@ -32,6 +32,17 @@ public class finalTeleOp extends LinearOpMode {
 
     private PID pid = new PID();
 
+    enum Mode {
+        DRIVER_CONTROL,
+        AUTOMATIC_CONTROL_1,
+        AUTOMATIC_CONTROL_2,
+        AUTOMATIC_CONTROL_3,
+        AUTOMATIC_CONTROL_4,
+        AUTOMATIC_CONTROL_5,
+    }
+
+    Mode currentMode = Mode.DRIVER_CONTROL;
+
     @Override
     public void runOpMode() throws InterruptedException {
 
@@ -64,15 +75,18 @@ public class finalTeleOp extends LinearOpMode {
         // Velocity control per wheel is not necessary outside of motion profiled auto
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        // Retrieve our pose from the PoseStorage.currentPose static field
-        drive.setPoseEstimate(org.firstinspires.ftc.teamcode.drive.advanced.PoseStorage.currentPose);
 
         shooter.init(hardwareMap);
         pid.init(hardwareMap);
 
-        double targetVelocity = 2.10; // this is the default starting velocity
 
-        boolean shooterOn = false;
+        // INPUT SHOOTER POWER VALUES HERE
+        double whiteLineHighGoalVelocity = 2.10;
+        double starterStackHighGoalVelocity = 2.00;
+        double powerShotVelocity = 1.60;
+
+        double targetVelocity = whiteLineHighGoalVelocity; // this is the default starting velocity
+
         boolean a_output = false;
         boolean y_output = false;
         boolean slowModeActive = false;
@@ -90,6 +104,8 @@ public class finalTeleOp extends LinearOpMode {
         double last_dpad_down_press = 0.;
         double last_dpad_left_press = 0.;
         double last_dpad_right_press = 0.;
+        double teleDeltaTime = 0;
+        double teleStartTime = 0;
         final double PRESS_TIME_MS = 200;
         final double WOBBLE_PRESS_TIME_MS = 300;
         final double THREE_SHOT_PRESS_TIME_MS = 400;
@@ -103,18 +119,10 @@ public class finalTeleOp extends LinearOpMode {
         int powerPreset = 0; // This is for the presets assigned to the START button
         int wobblePreset = 0; // This is for the toggles for the B button
 
-
         telemetry.setAutoClear(false);
         Telemetry.Item TeleTargetVelocty = telemetry.addData("Target Velocity:", targetVelocity);
         Telemetry.Item TeleCurrentVelocity = telemetry.addData("Actual Velocity:", pid.currentVelocity);
         Telemetry.Item Power = telemetry.addData("Power:", pid.currentPower);
-
-
-        // INPUT SHOOTER POWER VALUES HERE
-
-        double whiteLineHighGoalVelocity = 2.10;
-        double starterStackHighGoalVelocity = 2.00;
-        double powerShotVelocity = 1.40;
 
         intakeServo.setPosition(intakeServoClosed);
         wobbleClaw.setPosition(wobbleClawClosed);
@@ -129,24 +137,77 @@ public class finalTeleOp extends LinearOpMode {
             shooter.loop();
 
             //DRIVETRAIN CONTROL
-            float deadZone = (float) 0.5;
-            gamepad1.setJoystickDeadzone(deadZone);
-            motorFrontRight.setPower(-gamepad1.left_stick_y * gamepadPower - gamepad1.right_stick_x * gamepadPower - gamepad1.left_stick_x * gamepadPower);
-            motorBackRight.setPower(-gamepad1.left_stick_y * gamepadPower - gamepad1.right_stick_x * gamepadPower + gamepad1.left_stick_x * gamepadPower);
-            motorFrontLeft.setPower(-gamepad1.left_stick_y * gamepadPower + gamepad1.right_stick_x * gamepadPower + gamepad1.left_stick_x * gamepadPower);
-            motorBackLeft.setPower(-gamepad1.left_stick_y * gamepadPower + gamepad1.right_stick_x * gamepadPower - gamepad1.left_stick_x * gamepadPower);
+            switch (currentMode) {
+                case DRIVER_CONTROL:
+                    float deadZone = (float) 0.5;
+                    gamepad1.setJoystickDeadzone(deadZone);
+                    motorFrontRight.setPower(-gamepad1.left_stick_y * gamepadPower - gamepad1.right_stick_x * gamepadPower - gamepad1.left_stick_x * gamepadPower);
+                    motorBackRight.setPower(-gamepad1.left_stick_y * gamepadPower - gamepad1.right_stick_x * gamepadPower + gamepad1.left_stick_x * gamepadPower);
+                    motorFrontLeft.setPower(-gamepad1.left_stick_y * gamepadPower + gamepad1.right_stick_x * gamepadPower + gamepad1.left_stick_x * gamepadPower);
+                    motorBackLeft.setPower(-gamepad1.left_stick_y * gamepadPower + gamepad1.right_stick_x * gamepadPower - gamepad1.left_stick_x * gamepadPower);
 
-            // Y BUTTON SLOWS MOTORS
-            if (gamepad1.y && (now - last_y_press > PRESS_TIME_MS)) {
-                last_y_press = now;
-                slowModeActive = !slowModeActive;
+                    // Y BUTTON SLOWS MOTORS
+                    if (gamepad1.y && (now - last_y_press > PRESS_TIME_MS)) {
+                        last_y_press = now;
+                        slowModeActive = !slowModeActive;
+                    }
+
+                    if (slowModeActive) {
+                        gamepadPower = .5;
+                    } else gamepadPower = .8;
+
+
+                    // THIS TURNS THE START BUTTON INTO AN AUTOMATED POWER SHOT ROUTINE
+                    if (gamepad1.start && (now - last_start_press > PRESS_TIME_MS)) {
+                        last_start_press = now;
+                        currentMode = Mode.AUTOMATIC_CONTROL_1;
+                    }
+                    break;
+                case AUTOMATIC_CONTROL_1:
+                    Pose2d startPose = new Pose2d(0, 0, Math.toRadians(0));
+                    drive.setPoseEstimate(startPose);
+                    Trajectory powerShot1 = drive.trajectoryBuilder(startPose)
+                            .strafeRight(30)
+                            .build();
+                    drive.followTrajectory(powerShot1);
+                    shooter.shoot(1);
+                    teleStartTime = System.currentTimeMillis();
+                    currentMode = Mode.AUTOMATIC_CONTROL_2;
+                    break;
+                case AUTOMATIC_CONTROL_2:
+                    teleDeltaTime = System.currentTimeMillis() - teleStartTime;
+                    if (teleDeltaTime > 300) {
+                        currentMode = Mode.AUTOMATIC_CONTROL_3;
+                    }
+                    break;
+                case AUTOMATIC_CONTROL_3:
+                    startPose = new Pose2d(0, 0, Math.toRadians(0));
+                    drive.setPoseEstimate(startPose);
+                    Trajectory powerShot2 = drive.trajectoryBuilder(startPose)
+                            .strafeRight(12)
+                            .build();
+                    drive.followTrajectory(powerShot2);
+                    shooter.shoot(1);
+                    teleStartTime = System.currentTimeMillis();
+                    currentMode = Mode.AUTOMATIC_CONTROL_4;
+                    break;
+                case AUTOMATIC_CONTROL_4:
+                    teleDeltaTime = System.currentTimeMillis() - teleStartTime;
+                    if (teleDeltaTime > 300) {
+                        currentMode = Mode.AUTOMATIC_CONTROL_5;
+                    }
+                    break;
+                case AUTOMATIC_CONTROL_5:
+                    startPose = new Pose2d(0, 0, Math.toRadians(0));
+                    drive.setPoseEstimate(startPose);
+                    Trajectory powerShot3 = drive.trajectoryBuilder(startPose)
+                            .strafeRight(12)
+                            .build();
+                    drive.followTrajectory(powerShot3);
+                    shooter.shoot(1);
+                    currentMode = Mode.DRIVER_CONTROL;
+                    break;
             }
-
-            if (slowModeActive) {
-                gamepadPower = .5;
-            }
-            else gamepadPower = .8;
-
 
             //INTAKE
             double intake_power = gamepad1.right_trigger - gamepad1.left_trigger;
@@ -155,8 +216,8 @@ public class finalTeleOp extends LinearOpMode {
             //SHOOTER ON AND OFF
             if (gamepad1.x && (now - last_x_press > PRESS_TIME_MS)) {
                 last_x_press = now;
-                shooterOn = !shooterOn;
-                if (shooterOn) {
+                pid.shooterOn = !pid.shooterOn;
+                if (pid.shooterOn) {
                     pid.start(targetVelocity);
                 } else {
                     pid.shoot1.setPower(0);
@@ -166,8 +227,8 @@ public class finalTeleOp extends LinearOpMode {
                 }
             }
 
-            //RUN PID
-            if (shooterOn) {
+            //RUN PID IF THE SHOOTER IS ON
+            if (pid.shooterOn) {
                 pid.loop();
                 TeleCurrentVelocity.setValue(pid.currentVelocity);
             }
@@ -212,36 +273,28 @@ public class finalTeleOp extends LinearOpMode {
             if (gamepad1.dpad_up && (now - last_dpad_up_press > PRESS_TIME_MS)) {
                 last_dpad_up_press = now;
                 targetVelocity = targetVelocity + 0.1;
-                if (shooterOn) {
-                    pid.setTargetVelocity(targetVelocity);
-                }
+                pid.setTargetVelocity(targetVelocity);
             }
             if (gamepad1.dpad_down && (now - last_dpad_down_press > PRESS_TIME_MS)) {
                 last_dpad_down_press = now;
                 targetVelocity = targetVelocity - 0.1;
-                if (shooterOn) {
-                    pid.setTargetVelocity(targetVelocity);
-                }
+                pid.setTargetVelocity(targetVelocity);
             }
             if (gamepad1.dpad_right && (now - last_dpad_right_press > PRESS_TIME_MS)) {
                 last_dpad_right_press = now;
                 targetVelocity = targetVelocity + 0.01;
-                if (shooterOn) {
-                    pid.setTargetVelocity(targetVelocity);
-                }
+                pid.setTargetVelocity(targetVelocity);
             }
             if (gamepad1.dpad_left && (now - last_dpad_left_press > PRESS_TIME_MS)) {
                 last_dpad_left_press = now;
                 targetVelocity = targetVelocity - 0.01;
-                if (shooterOn) {
-                    pid.setTargetVelocity(targetVelocity);
-                }
+                pid.setTargetVelocity(targetVelocity);
             }
 
             TeleTargetVelocty.setValue((Math.round(100 * targetVelocity)));
 
             // VELOCITY TOGGLE
-            if (gamepad1.start && (now - last_start_press > PRESS_TIME_MS)) {
+           /* if (gamepad1.start && (now - last_start_press > PRESS_TIME_MS)) {
                 last_start_press = now;
                 powerPreset++;
                 if (powerPreset == 1) {
@@ -255,7 +308,7 @@ public class finalTeleOp extends LinearOpMode {
                     powerPreset = 0;
                     TeleTargetVelocty.setValue((Math.round(100 * targetVelocity)) + "POWER SHOT");
                 }
-            }
+            }*/
 
             // FAILSAFE: if the intake fails to drop during Autonomous, this lets us manually drop it
             if (gamepad1.back && (now - last_back_press > PRESS_TIME_MS)) {

@@ -21,11 +21,13 @@ import java.util.logging.SocketHandler;
 //@TeleOp(name = "PID")
 @Config
 public class PID {
-    public DcMotor shoot1;   // these used to be private. now can be seen in FinalTeleOp
+    public DcMotor shoot1;
     public DcMotor shoot2;
 
-    public static double kp = .0052; //.007; // .0052;
-    public static double kd = 1.0; //.6; // .4;
+    public static double kp = .5;
+    public static double kd = .5;
+    public static double kf = 3.375;
+    public boolean shooterOn = true;
 
     public void init(HardwareMap hardwaremap) {
         shoot1 = hardwaremap.dcMotor.get("shoot1");
@@ -46,15 +48,14 @@ public class PID {
         targetVelocity = velocity;
     }
 
-    public static int NUM_PID_ADJUSTMENTS = 175; // number of adjustments before we move to READY
+    public static int NUM_PID_ADJUSTMENTS = 100; // number of adjustments before we move to READY
     public static int MS_BTWN_VEL_READINGS = 12;
     public static int NUM_VELOCITY_READINGS = 20;
-    public static double FEED_FORWARD = 0.5;
-    // public static int PID_DELAY = 1000;
 
     private double targetVelocity = 0.0;
     public double currentVelocity = 0.0;
-    public double currentPower = 0.0; // 3.374?
+    public double currentPower = 0.0;
+    private double feedForward = 0.0;
 
     private long lastLoopTime = 0;
     private double previousMotor = 0.0;
@@ -66,7 +67,6 @@ public class PID {
     private double previousError = 0.0;
     private int pid_adjust_count = 0;
     private long lastAdjustTime = 0;
-    // private long pidStartDelayTime = 0;  // THIS IS IF WE USE THE TIMER
 
     private enum PID_STATE {
         RUNNING,
@@ -79,11 +79,10 @@ public class PID {
         state1 = PID.PID_STATE.RUNNING;
 
         targetVelocity = inTargetVelocity;
-        //currentPower = targetVelocity / FEED_FORWARD; //.563
-        shoot1.setPower(currentPower);
-        shoot2.setPower(currentPower);
+        feedForward = targetVelocity / kf;
+        shoot1.setPower(feedForward);
+        shoot2.setPower(feedForward);
 
-    //  pidStartDelayTime = System.currentTimeMillis();
         lastLoopTime = System.currentTimeMillis();
         previousMotor = shoot1.getCurrentPosition();
 
@@ -97,11 +96,9 @@ public class PID {
 
     public void loop() {
 
-//        // OPTIONAL TIMER -- wait predetermined time for motor to reach speed before starting PID
-//        long currentTime = System.currentTimeMillis();
-//        if (currentTime - pidStartDelayTime < PID_DELAY) {
-//            return;
-//        }
+        if (!shooterOn) {
+            return;
+        }
 
         // read and calculate velocity
         long currentTime = System.currentTimeMillis();
@@ -133,7 +130,7 @@ public class PID {
         lastAdjustTime = currentTime;
 
         // set motor power
-        currentPower = p + d + 0.5;
+        currentPower = (p + d + feedForward);
         shoot1.setPower(currentPower);
         shoot2.setPower(currentPower);
 
