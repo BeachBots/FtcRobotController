@@ -90,7 +90,7 @@ public class finalTeleOp extends LinearOpMode {
         boolean a_output = false;
         boolean y_output = false;
         boolean slowModeActive = false;
-        boolean back_output = false;
+        boolean start_output = false;
         double gamepadPower = .8;
         double last_rb_press = 0.;
         double last_lb_press = 0.;
@@ -146,7 +146,7 @@ public class finalTeleOp extends LinearOpMode {
                     motorFrontLeft.setPower(-gamepad1.left_stick_y * gamepadPower + gamepad1.right_stick_x * gamepadPower + gamepad1.left_stick_x * gamepadPower);
                     motorBackLeft.setPower(-gamepad1.left_stick_y * gamepadPower + gamepad1.right_stick_x * gamepadPower - gamepad1.left_stick_x * gamepadPower);
 
-                    // Y BUTTON SLOWS MOTORS
+                // Y BUTTON SLOWS MOTORS
                     if (gamepad1.y && (now - last_y_press > PRESS_TIME_MS)) {
                         last_y_press = now;
                         slowModeActive = !slowModeActive;
@@ -157,12 +157,24 @@ public class finalTeleOp extends LinearOpMode {
                     } else gamepadPower = .8;
 
 
-                    // THIS TURNS THE START BUTTON INTO AN AUTOMATED POWER SHOT ROUTINE
-                    if (gamepad1.start && (now - last_start_press > PRESS_TIME_MS)) {
-                        last_start_press = now;
+                // THIS TURNS THE BACK BUTTON INTO AN AUTOMATED POWER SHOT ROUTINE
+
+                    if (gamepad1.back && (now - last_back_press > PRESS_TIME_MS)) {
+                        last_back_press = now;
                         currentMode = Mode.AUTOMATIC_CONTROL_1;
                     }
                     break;
+
+//                    if (gamepad1.back && (now - last_back_press > PRESS_TIME_MS)) {
+//                        last_back_press = now;
+//                        if (currentMode == Mode.DRIVER_CONTROL){
+//                            // Start automatic sequence.
+//                            currentMode = Mode.AUTOMATIC_CONTROL_1;
+//                        } else {
+//                            // Exit automatic mode.
+//                            currentMode = Mode.DRIVER_CONTROL;
+//                        }
+//                    }
                 case AUTOMATIC_CONTROL_1:
                     Pose2d startPose = new Pose2d(0, 0, Math.toRadians(0));
                     drive.setPoseEstimate(startPose);
@@ -294,28 +306,25 @@ public class finalTeleOp extends LinearOpMode {
             TeleTargetVelocty.setValue((Math.round(100 * targetVelocity)));
 
             // VELOCITY TOGGLE
-           /* if (gamepad1.start && (now - last_start_press > PRESS_TIME_MS)) {
+            if (gamepad1.start && (now - last_start_press > PRESS_TIME_MS)) {
                 last_start_press = now;
                 powerPreset++;
                 if (powerPreset == 1) {
                     targetVelocity = whiteLineHighGoalVelocity;
-                    TeleTargetVelocty.setValue((Math.round(100 * targetVelocity)) + "WHITE LINE HIGH GOAL");
+                    TeleTargetVelocty.setValue((Math.round(100 * targetVelocity)) + "HIGH GOAL");
                 } else if (powerPreset == 2) {
-                    targetVelocity = starterStackHighGoalVelocity;
-                    TeleTargetVelocty.setValue((Math.round(100 * targetVelocity)) + "STARTER STACK HIGH GOAL");
-                } else if (powerPreset == 3) {
                     targetVelocity = powerShotVelocity;
-                    powerPreset = 0;
                     TeleTargetVelocty.setValue((Math.round(100 * targetVelocity)) + "POWER SHOT");
+                    powerPreset = 0;
                 }
-            }*/
+            }
 
             // FAILSAFE: if the intake fails to drop during Autonomous, this lets us manually drop it
-            if (gamepad1.back && (now - last_back_press > PRESS_TIME_MS)) {
-                last_back_press = now;
-                back_output = !back_output;
-                intakeServo.setPosition(back_output ? intakeServoOpen : intakeServoClosed);
-            }
+//            if (gamepad1.start && (now - last_start_press > PRESS_TIME_MS)) {
+//                last_start_press = now;
+//                start_output = !start_output;
+//                intakeServo.setPosition(start_output ? intakeServoOpen : intakeServoClosed);
+//            }
             telemetry.update();
         }
     }

@@ -48,7 +48,7 @@ public class PID {
         targetVelocity = velocity;
     }
 
-    public static int NUM_PID_ADJUSTMENTS = 100; // number of adjustments before we move to READY
+    public static int NUM_PID_ADJUSTMENTS = 125; // number of adjustments before we move to READY
     public static int MS_BTWN_VEL_READINGS = 12;
     public static int NUM_VELOCITY_READINGS = 20;
 

@@ -14,20 +14,12 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-import org.firstinspires.ftc.teamcode.PID;
-import org.firstinspires.ftc.teamcode.ShooterStateMachine;
-import org.firstinspires.ftc.teamcode.Webcam;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
-import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -42,9 +34,8 @@ import java.util.List;
 import static org.opencv.core.Core.inRange;
 
 @Config
-@Autonomous(name = "FinalAutonAlternative", group = "LinearOpmode")
-
-public class FinalAutonAlternative extends LinearOpMode {
+@Autonomous(name = "AutonZeroRingsPowerShot", group = "LinearOpmode")
+public class AutonZeroRingsPowerShot extends LinearOpMode {
 
     private Servo flick;
     private Servo stopper;
@@ -59,20 +50,27 @@ public class FinalAutonAlternative extends LinearOpMode {
 
     private ZERO_RINGS_STATE state;
     private ONE_RINGS_STATE state2;
-    private FOUR_RINGS_STATE state3;
+    // private FOUR_RINGS_STATE state3;
 
     private long autonDeltaTime = System.currentTimeMillis();
     private long autonStartTime;
 
     private double shooterLineVelocity = 2.10;
-    private double starterStackVelocity = 1.81;
-    private double powerShot = 1.53;
+    private double starterStackVelocity = 1.74;
+    private double powerShotVelocity = 1.53;
 
     public enum ZERO_RINGS_STATE {
         INITIALIZING,  // drop intake, start shooter, start moving to line
-        DRIVE_TO_LINE, // reach line and fire three shots
-        DRIVE_RIGHT, // drive to Box A
+        POWERSHOT_1,
+        POWERSHOT_2,
+        POWERSHOT_2_FIRE,
+        POWERSHOT_3,
+        POWERSHOT_3_FIRE,
+        DRIVE_TO_SQUARE_A,
         DROP_WOBBLE_1,
+        INTAKE,
+        DRIVE_TO_LINE,
+        SHOOT_RINGS, // reach line and fire three shots
         DRIVE_TO_WOBBLE_2,
         PICK_UP_WOBBLE_2,
         WAIT,
@@ -99,32 +97,6 @@ public class FinalAutonAlternative extends LinearOpMode {
         RETURN_TO_LINE,
         SHOOT_RING,
         RETURN_TO_SQUARE_B,
-        DROP_WOBBLE_2,
-        STOW_ARM,
-        PARK,
-        DONE,
-    }
-
-
-    public enum FOUR_RINGS_STATE {
-        INITIALIZING,
-        DRIVE_TO_STACK,
-        HIT_STACK,
-        BACK_UP,
-        INTAKE_STARTER_3,
-        PICK_UP_THREE,
-        WAIT_1,
-        SHOOT_STARTER_3,
-        INTAKE_STARTER_1,
-        PICK_UP_ONE,
-        WAIT_2,
-        SHOOT_STARTER_1,
-        DRIVE_TO_SQUARE_C,
-        DROP_WOBBLE_1,
-        DRIVE_TO_WOBBLE_2,
-        WAIT_3,
-        PICK_UP_WOBBLE_2,
-        RETURN_TO_SQUARE_C,
         DROP_WOBBLE_2,
         STOW_ARM,
         PARK,
@@ -213,26 +185,46 @@ public class FinalAutonAlternative extends LinearOpMode {
 
         //zero rings
 
-        Trajectory zeroRings1 = drive.trajectoryBuilder(startPose) // Move to shooting line
-                .splineToConstantHeading(new Vector2d(-6, -38), Math.toRadians(0))
+        Trajectory zeroRings1 = drive.trajectoryBuilder(startPose) // Move to First PowerShot
+               .splineToConstantHeading(new Vector2d(-10, -4), Math.toRadians(0))
+               .build();
+
+        Trajectory zeroRings2 = drive.trajectoryBuilder(zeroRings1.end()) // Move to Second PowerShot
+                .strafeTo (new Vector2d(-10, -16))
                 .build();
 
-        Trajectory zeroRings2 = drive.trajectoryBuilder(zeroRings1.end()) // Move to Square A
-                .lineToLinearHeading(
-                        new Pose2d(4, -45, Math.toRadians(90)),
-                        new MinVelocityConstraint(
-                                Arrays.asList(
-                                        new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
-                                        new MecanumVelocityConstraint(40, DriveConstants.TRACK_WIDTH)
-                                )
-                        ),
-                        new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                )
+        Trajectory zeroRings3 = drive.trajectoryBuilder(zeroRings2.end()) // Move to Third PowerShot
+                .strafeTo (new Vector2d(-10, -26))
                 .build();
 
-        Trajectory zeroRings3 = drive.trajectoryBuilder(zeroRings2.end()) //Move to Wobble 2
+        Trajectory zeroRings4 = drive.trajectoryBuilder(zeroRings3.end()) // Move to Square A
+                .lineToLinearHeading(new Pose2d(8, -45, Math.toRadians(90)))
+                .build();
+
+        Trajectory zeroRings5 = drive.trajectoryBuilder(zeroRings4.end()) // Spline to front
+                .splineToConstantHeading(new Vector2d(67, -56), Math.toRadians(90))
+                .build();
+
+        Trajectory zeroRings6 = drive.trajectoryBuilder(zeroRings5.end()) // Intake
+        .lineToLinearHeading(
+                new Pose2d(67, 5, Math.toRadians(90)),
+                new MinVelocityConstraint(
+                        Arrays.asList(
+                                new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
+                                new MecanumVelocityConstraint(40, DriveConstants.TRACK_WIDTH)
+                        )
+                ),
+                new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
+        )
+                .build();
+
+        Trajectory zeroRings7 = drive.trajectoryBuilder(zeroRings6.end()) // Move to shooting line
+                .lineToLinearHeading(new Pose2d(-4, -38, Math.toRadians(0)))
+                .build();
+
+        Trajectory zeroRings8 = drive.trajectoryBuilder(zeroRings7.end()) // Move to Wobble 2
                 .lineToLinearHeading(
-                        new Pose2d(-43, -17, Math.toRadians(0)),
+                        new Pose2d(-35, -17, Math.toRadians(0)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
@@ -243,13 +235,13 @@ public class FinalAutonAlternative extends LinearOpMode {
                 )
                 .build();
 
-        Trajectory zeroRings4 = drive.trajectoryBuilder(zeroRings3.end()) // Move to Square A
+        Trajectory zeroRings9 = drive.trajectoryBuilder(zeroRings8.end()) // Move to Square A
                 .lineToLinearHeading(
-                        new Pose2d(4, -43, Math.toRadians(90)),
+                        new Pose2d(8, -43, Math.toRadians(90)),
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
-                                        new MecanumVelocityConstraint(40, DriveConstants.TRACK_WIDTH)
+                                        new MecanumVelocityConstraint(50, DriveConstants.TRACK_WIDTH)
                                 )
                         ),
                         new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
@@ -298,16 +290,16 @@ public class FinalAutonAlternative extends LinearOpMode {
         Trajectory oneRing5 = drive.trajectoryBuilder(oneRing4.end()) // Move to shooting line
 //                .lineToLinearHeading(new Pose2d(-10, -39, Math.toRadians(0)))
 //                .build();
-        .lineToLinearHeading(
-                new Pose2d(-10, -39, Math.toRadians(0)),
-                new MinVelocityConstraint(
-                        Arrays.asList(
-                                new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
-                                new MecanumVelocityConstraint(30, DriveConstants.TRACK_WIDTH)
-                        )
-                ),
-                new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
-        )
+                .lineToLinearHeading(
+                        new Pose2d(-10, -39, Math.toRadians(0)),
+                        new MinVelocityConstraint(
+                                Arrays.asList(
+                                        new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
+                                        new MecanumVelocityConstraint(30, DriveConstants.TRACK_WIDTH)
+                                )
+                        ),
+                        new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
+                )
                 .build();
 
         Trajectory oneRing6 = drive.trajectoryBuilder(oneRing5.end()) // Move to Square B
@@ -319,78 +311,8 @@ public class FinalAutonAlternative extends LinearOpMode {
                 .build();
 
 
-        //four rings
-
-        Trajectory fourRing1 = drive.trajectoryBuilder(startPose) // Move to in front of starter stack
-                .splineToConstantHeading(new Vector2d(-42, -36), Math.toRadians(0))
-                .build();
-
-        Trajectory fourRing1a = drive.trajectoryBuilder(fourRing1.end()) // Hit stack
-                .splineToConstantHeading(new Vector2d(-30, -36), Math.toRadians(0))
-                .build();
-
-        Trajectory fourRing2 = drive.trajectoryBuilder(fourRing1a.end()) // Back up and move to left
-                .splineToConstantHeading(new Vector2d(-31, -35), Math.toRadians(0))
-                .build();
-
-        Trajectory fourRing3 = drive.trajectoryBuilder(fourRing2.end()) // Pick up 3 rings
-                .splineTo(
-                        new Vector2d(-27, -35), Math.toRadians(0),
-                        new MinVelocityConstraint(
-                                Arrays.asList(
-                                        new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
-                                        new MecanumVelocityConstraint(10, DriveConstants.TRACK_WIDTH)
-                                )
-                        ),
-                        new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                )
-                .build();
-
-        Trajectory fourRing4 = drive.trajectoryBuilder(fourRing3.end()) // Pick up 1 ring
-                .splineTo(
-                        new Vector2d(-11, -35), Math.toRadians(0),
-                        new MinVelocityConstraint(
-                                Arrays.asList(
-                                        new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
-                                        new MecanumVelocityConstraint(10, DriveConstants.TRACK_WIDTH)
-                                )
-                        ),
-                        new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                )
-                .build();
-
-        Trajectory fourRing5 = drive.trajectoryBuilder(fourRing4.end())  // Move to Square C
-                .lineToLinearHeading(new Pose2d(57, -52, Math.toRadians(90)))
-                .build();
-
-        Trajectory fourRing6 = drive.trajectoryBuilder(fourRing5.end())  // Move to Wobble 2
-                .lineToLinearHeading(new Pose2d(-42, -17, Math.toRadians(0)))
-                .build();
-
-        Trajectory fourRing7 = drive.trajectoryBuilder(fourRing6.end())  // Return to Square C
-                .lineToLinearHeading(new Pose2d(52, -49, Math.toRadians(90)))
-                .build();
-
-        Trajectory fourRing8 = drive.trajectoryBuilder(fourRing7.end()) // Park on white line
-//                .lineToLinearHeading(new Pose2d(6, -28, Math.toRadians(0)))
-//                .build();
-        .lineToLinearHeading(
-                new Pose2d(6, -28, Math.toRadians(0)),
-                new MinVelocityConstraint(
-                        Arrays.asList(
-                                new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
-                                new MecanumVelocityConstraint(65, DriveConstants.TRACK_WIDTH)
-                        )
-                ),
-                new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
-        )
-                .build();
-
-
-
         waitForStart();
         if (isStopRequested()) return;
-
 
         if (stack == 0) {
             state = ZERO_RINGS_STATE.INITIALIZING;
@@ -400,24 +322,58 @@ public class FinalAutonAlternative extends LinearOpMode {
                         telemetry.addData("state = ", state);
                         telemetry.update();
                         intakeServo.setPosition(intakeServoOpen);
-                        drive.followTrajectoryAsync(zeroRings1);  // Kick off moving to SHOOTING LINE
-                        pid.start(shooterLineVelocity);
-                        state = ZERO_RINGS_STATE.DRIVE_TO_LINE;
+                        drive.followTrajectoryAsync(zeroRings1);  // Kick off moving to POWERSHOT 1
+                        pid.start(powerShotVelocity);
+                        state = ZERO_RINGS_STATE.POWERSHOT_1;
                         break;
-                    case DRIVE_TO_LINE:
+                    case POWERSHOT_1:
                         telemetry.addData("state = ", state);
                         telemetry.update();
-                        if (drive.isBusy() || !pid.ready()) { // Still moving to shooting line.
+                        if (drive.isBusy() || !pid.ready()) { // Still moving to position
                             drive.update();
                             pid.loop();
                         } else if (pid.ready()) {
-                            shooter.shoot(3);
-                            state = ZERO_RINGS_STATE.DRIVE_RIGHT;
+                            shooter.shoot(1);
+                            state = ZERO_RINGS_STATE.POWERSHOT_2;
                         }
                         break;
-                    case DRIVE_RIGHT:
+                    case POWERSHOT_2:
                         telemetry.addData("state = ", state);
                         telemetry.update();
+                        if (shooter.shooterState != ShooterStateMachine.ShooterState.SHOOTER_IDLE) {
+                            shooter.loop();
+                        } else {
+                            drive.followTrajectoryAsync(zeroRings2);
+                            state = ZERO_RINGS_STATE.POWERSHOT_2_FIRE;
+                        }
+                        break;
+                    case POWERSHOT_2_FIRE:
+                        if (drive.isBusy()) {
+                            drive.update();
+                        } else {
+                            shooter.shoot(1);
+                            state = ZERO_RINGS_STATE.POWERSHOT_3;
+                        }
+                        break;
+                    case POWERSHOT_3:
+                        telemetry.addData("state = ", state);
+                        telemetry.update();
+                        if (shooter.shooterState != ShooterStateMachine.ShooterState.SHOOTER_IDLE) {
+                            shooter.loop();
+                        } else {
+                            drive.followTrajectoryAsync(zeroRings3);
+                            state = ZERO_RINGS_STATE.POWERSHOT_3_FIRE;
+                        }
+                        break;
+                    case POWERSHOT_3_FIRE:
+                        if (drive.isBusy()) {
+                            drive.update();
+                        } else {
+                            shooter.shoot(1);
+                            state = ZERO_RINGS_STATE.DRIVE_TO_SQUARE_A;
+                        }
+                        break;
+                    case DRIVE_TO_SQUARE_A:
                         if (shooter.shooterState != ShooterStateMachine.ShooterState.SHOOTER_IDLE) {
                             shooter.loop();
                         } else {
@@ -425,7 +381,7 @@ public class FinalAutonAlternative extends LinearOpMode {
                             pid.shoot2.setPower(0);
                             sleep(5);
                             pid.start(0);
-                            drive.followTrajectoryAsync(zeroRings2);
+                            drive.followTrajectoryAsync(zeroRings4);
                             wobbleArm1.setPosition(wobbleArmUp);
                             wobbleArm2.setPosition(wobbleArmUp);
                             state = ZERO_RINGS_STATE.DROP_WOBBLE_1;
@@ -438,16 +394,59 @@ public class FinalAutonAlternative extends LinearOpMode {
                             drive.update();
                         } else {
                             wobbleClaw.setPosition(wobbleClawOpen);
+                            drive.followTrajectoryAsync(zeroRings5);
+                            state = ZERO_RINGS_STATE.INTAKE;
+                        }
+                        break;
+                    case INTAKE:
+                        telemetry.addData("state = ", state);
+                        telemetry.update();
+                        if (drive.isBusy()) {
+                            drive.update();
+                        } else {
+                            intake.setPower(1);
+                            drive.followTrajectoryAsync(zeroRings6);
+                            state = ZERO_RINGS_STATE.DRIVE_TO_LINE;
+                        }
+                        break;
+                    case DRIVE_TO_LINE:
+                        telemetry.addData("state = ", state);
+                        telemetry.update();
+                        if (drive.isBusy()) {
+                            drive.update();
+                        } else {
+                            pid.start(shooterLineVelocity);
+                            drive.followTrajectoryAsync(zeroRings7);
+                            state = ZERO_RINGS_STATE.SHOOT_RINGS;
+                        }
+                        break;
+                    case SHOOT_RINGS:
+                        telemetry.addData("state = ", state);
+                        telemetry.update();
+                        if (drive.isBusy() || !pid.ready()) { // Still moving to shooting line.
+                            drive.update();
+                            pid.loop();
+                        } else if (pid.ready()) {
+                            intake.setPower(0);
+                            shooter.shoot(3);
                             state = ZERO_RINGS_STATE.DRIVE_TO_WOBBLE_2;
                         }
                         break;
                     case DRIVE_TO_WOBBLE_2:
                         telemetry.addData("state = ", state);
                         telemetry.update();
-                        drive.followTrajectoryAsync(zeroRings3);  // MOVE TO PICK UP WOBBLE 2
-                        wobbleArm1.setPosition(wobbleArmExtended);
-                        wobbleArm2.setPosition(wobbleArmExtended);
-                        state = ZERO_RINGS_STATE.PICK_UP_WOBBLE_2;
+                        if (shooter.shooterState != ShooterStateMachine.ShooterState.SHOOTER_IDLE) {
+                            shooter.loop();
+                        } else {
+                            pid.shoot1.setPower(0);
+                            pid.shoot2.setPower(0);
+                            sleep(5);
+                            pid.start(0);
+                            drive.followTrajectoryAsync(zeroRings8);
+                            wobbleArm1.setPosition(wobbleArmExtended);
+                            wobbleArm2.setPosition(wobbleArmExtended);
+                            state = ZERO_RINGS_STATE.PICK_UP_WOBBLE_2;
+                        }
                         break;
                     case PICK_UP_WOBBLE_2:
                         telemetry.addData("state = ", state);
@@ -463,7 +462,7 @@ public class FinalAutonAlternative extends LinearOpMode {
                         telemetry.addData("state = ", state);
                         telemetry.update();
                         autonDeltaTime = System.currentTimeMillis() - autonStartTime;
-                        if (autonDeltaTime > 1000) {
+                        if (autonDeltaTime > 700) {
                             wobbleClaw.setPosition(wobbleClawClosed); // CLOSE CLAW
                             autonStartTime = System.currentTimeMillis();
                             state = ZERO_RINGS_STATE.WAIT_2;
@@ -482,7 +481,7 @@ public class FinalAutonAlternative extends LinearOpMode {
                     case MOVE_TO_DROP_WOBBLE_2:
                         telemetry.addData("state = ", state);
                         telemetry.update();
-                        drive.followTrajectoryAsync(zeroRings4);  // MOVE TO BOX A TO DROP OFF WOBBLE 2
+                        drive.followTrajectoryAsync(zeroRings9);  // MOVE TO BOX A TO DROP OFF WOBBLE 2
                         state = ZERO_RINGS_STATE.DROP_WOBBLE_2;
                         break;
                     case DROP_WOBBLE_2:
@@ -691,219 +690,6 @@ public class FinalAutonAlternative extends LinearOpMode {
             }
 
         }
-
-
-        if (stack == 4) {
-            state3 = FOUR_RINGS_STATE.INITIALIZING;
-            while (opModeIsActive()) {
-                pid.loop();
-                switch (state3) {
-                    case INITIALIZING:
-                        telemetry.addData("state = ", state3);
-                        telemetry.update();
-                        intakeServo.setPosition(intakeServoOpen);
-                        drive.followTrajectoryAsync(fourRing1);
-                        pid.start(starterStackVelocity);
-                        state3 = FOUR_RINGS_STATE.DRIVE_TO_STACK;
-                        break;
-                    case DRIVE_TO_STACK:
-                        telemetry.addData("state = ", state3);
-                        telemetry.update();
-                        if (drive.isBusy() || !pid.ready()) {
-                            drive.update();
-                            pid.loop();
-                        } else if (pid.ready()) {
-                            shooter.shoot(3);
-                            state3 = FOUR_RINGS_STATE.HIT_STACK;
-                        }
-                        break;
-                    case HIT_STACK:
-                        telemetry.addData("state = ", state3);
-                        telemetry.update();
-                        if (shooter.shooterState != ShooterStateMachine.ShooterState.SHOOTER_IDLE) {
-                            shooter.loop();
-                        } else {
-                            drive.followTrajectoryAsync(fourRing1a);
-                            state3 = FOUR_RINGS_STATE.BACK_UP;
-                        }
-                        break;
-                    case BACK_UP:
-                        telemetry.addData("state = ", state3);
-                        telemetry.update();
-                        if (drive.isBusy()) {
-                            drive.update();
-                        } else {
-                            drive.followTrajectoryAsync(fourRing2);
-                            intake.setPower(1);
-                            state3 = FOUR_RINGS_STATE.INTAKE_STARTER_3;
-                        }
-                        break;
-                    case INTAKE_STARTER_3:
-                        telemetry.addData("state = ", state3);
-                        telemetry.update();
-                        if (drive.isBusy()) {
-                            drive.update();
-                        } else {
-                            drive.followTrajectoryAsync(fourRing3); // pick up three
-                            state3 = FOUR_RINGS_STATE.PICK_UP_THREE;
-                        }
-                        break;
-                    case PICK_UP_THREE:
-                        telemetry.addData("state = ", state3);
-                        telemetry.update();
-                        if (drive.isBusy()) {
-                            drive.update();
-                        } else {
-                            //pid.setTargetVelocity(190);// change shooter speed
-                            autonStartTime = System.currentTimeMillis();
-                            state3 = FOUR_RINGS_STATE.WAIT_1;
-                        }
-                        break;
-                    case WAIT_1:
-                        telemetry.addData("state = ", state3);
-                        telemetry.update();
-                        autonDeltaTime = System.currentTimeMillis() - autonStartTime;
-                        if (autonDeltaTime > 1500) { // wait for intake to bring in 3 rings
-                            intake.setPower(0);
-                            state3 = FOUR_RINGS_STATE.SHOOT_STARTER_3;
-                        }
-                        break;
-                    case SHOOT_STARTER_3:
-                        telemetry.addData("state = ", state3);
-                        telemetry.update();
-                        shooter.shoot(3);
-                        state3 = FOUR_RINGS_STATE.INTAKE_STARTER_1;
-                        break;
-                    case INTAKE_STARTER_1:
-                        telemetry.addData("state = ", state3);
-                        telemetry.update();
-                        if (shooter.shooterState != ShooterStateMachine.ShooterState.SHOOTER_IDLE) {
-                            shooter.loop();
-                        } else {
-                            intake.setPower(1);
-                            pid.setTargetVelocity(shooterLineVelocity); // increase shooter speed
-                            drive.followTrajectoryAsync(fourRing4); // pick up one
-                            state3 = FOUR_RINGS_STATE.PICK_UP_ONE;
-                        }
-                        break;
-                    case PICK_UP_ONE:
-                        telemetry.addData("state = ", state3);
-                        telemetry.update();
-                        if (drive.isBusy()) {
-                            drive.update();
-                        } else {
-                            autonStartTime = System.currentTimeMillis();
-                            state3 = FOUR_RINGS_STATE.WAIT_2;
-                        }
-                        break;
-                    case WAIT_2:
-                        telemetry.addData("state = ", state3);
-                        telemetry.update();
-                        autonDeltaTime = System.currentTimeMillis() - autonStartTime;
-                        if (autonDeltaTime > 1500) { // wait for intake to bring in 1 ring
-                            state3 = FOUR_RINGS_STATE.SHOOT_STARTER_1;
-                        }
-                        break;
-                    case SHOOT_STARTER_1:
-                        telemetry.addData("state = ", state3);
-                        telemetry.update();
-                        shooter.shoot(3);
-                        state3 = FOUR_RINGS_STATE.DRIVE_TO_SQUARE_C;
-                        break;
-                    case DRIVE_TO_SQUARE_C:
-                        telemetry.addData("state = ", state3);
-                        telemetry.update();
-                        if (shooter.shooterState != ShooterStateMachine.ShooterState.SHOOTER_IDLE) {
-                            shooter.loop();
-                        } else {
-                            intake.setPower(0);
-                            pid.shoot1.setPower(0);
-                            pid.shoot2.setPower(0);
-                            sleep(5);
-                            pid.start(0);
-                            drive.followTrajectoryAsync(fourRing5); // drive to C
-                            wobbleArm1.setPosition(wobbleArmUp);
-                            wobbleArm2.setPosition(wobbleArmUp);
-                            state3 = FOUR_RINGS_STATE.DROP_WOBBLE_1;
-                        }
-                        break;
-                    case DROP_WOBBLE_1:
-                        telemetry.addData("state = ", state3);
-                        telemetry.update();
-                        if (drive.isBusy()) { // Still moving to Square C
-                            drive.update();
-                        } else {
-                            sleep(100); // added to see if it keep wobble from tipping
-                            wobbleClaw.setPosition(wobbleClawOpen);
-                            state3 = FOUR_RINGS_STATE.DRIVE_TO_WOBBLE_2;
-                        }
-                        break;
-                    case DRIVE_TO_WOBBLE_2:
-                        telemetry.addData("state = ", state3);
-                        telemetry.update();
-                        drive.followTrajectoryAsync(fourRing6);
-                        wobbleArm1.setPosition(wobbleArmExtended);
-                        wobbleArm2.setPosition(wobbleArmExtended);
-                        state3 = FOUR_RINGS_STATE.PICK_UP_WOBBLE_2;
-                        break;
-                    case PICK_UP_WOBBLE_2:
-                        telemetry.addData("state = ", state3);
-                        telemetry.update();
-                        if (drive.isBusy()) {
-                            drive.update();
-                        } else {
-                            autonStartTime = System.currentTimeMillis();
-                            state3 = FOUR_RINGS_STATE.WAIT_3;
-                        }
-                        break;
-                    case WAIT_3:
-                        telemetry.addData("state = ", state3);
-                        telemetry.update();
-                        autonDeltaTime = System.currentTimeMillis() - autonStartTime;
-                        if (autonDeltaTime > 300) {
-                            wobbleClaw.setPosition(wobbleClawClosed);
-                            sleep (300); // added to give firm grip
-                            state3 = FOUR_RINGS_STATE.RETURN_TO_SQUARE_C;
-                        }
-                        break;
-                    case RETURN_TO_SQUARE_C:
-                        telemetry.addData("state = ", state3);
-                        telemetry.update();
-                        drive.followTrajectoryAsync(fourRing7); // return to Square C
-                        wobbleArm1.setPosition(wobbleArmUp);
-                        wobbleArm2.setPosition(wobbleArmUp);
-                        state3 = FOUR_RINGS_STATE.DROP_WOBBLE_2;
-                        break;
-                    case DROP_WOBBLE_2:
-                        telemetry.addData("state = ", state3);
-                        telemetry.update();
-                        if (drive.isBusy()) {
-                            drive.update();
-                        } else {
-                            wobbleClaw.setPosition(wobbleClawOpen);
-                            wobbleArm1.setPosition(wobbleArmStowed);
-                            wobbleArm2.setPosition(wobbleArmStowed);
-                            state3 = FOUR_RINGS_STATE.PARK;
-                        }
-                        break;
-                    case PARK:
-                        telemetry.addData("state = ", state3);
-                        telemetry.update();
-                        drive.followTrajectory(fourRing8);
-                        state3 = FOUR_RINGS_STATE.DONE;
-                        break;
-                    case DONE:
-                        telemetry.addData("state = ", state3);
-                        telemetry.update();
-                        break;
-                    default:
-                }
-
-            }
-
-        }
-
-        org.firstinspires.ftc.teamcode.drive.advanced.PoseStorage.currentPose = drive.getPoseEstimate();
 
 
     }
